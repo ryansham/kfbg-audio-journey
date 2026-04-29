@@ -4,569 +4,488 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#4A5C3A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="KFBG Journey"/>
 <link rel="manifest" href="manifest.json"/>
 <link rel="apple-touch-icon" href="icons/icon-192.png"/>
 <title>Audio Journey · KFBG</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --olive: #4A5C3A;
-  --olive-mid: #3B4A2F;
-  --olive-light: #8A9A78;
-  --cream: #F7F3EC;
-  --sand: #EEEBE4;
-  --border: #D8D3CB;
-  --text: #1E2418;
-  --text-mid: #444;
-  --text-muted: #7A7A6A;
-  --gold: #C4A96A;
-  --player-h: 88px;
-}
+:root{--olive:#4A5C3A;--olive-mid:#3B4A2F;--olive-light:#8A9A78;--cream:#F7F3EC;--sand:#EEEBE4;--border:#D8D3CB;--text:#1E2418;--text-mid:#444;--text-muted:#7A7A6A;--gold:#C4A96A;}
 *{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
 body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.6;overflow-x:hidden;}
-
-/* ── TOP NAV ── */
+#scrollBar{position:fixed;top:0;left:0;height:3px;background:var(--gold);width:0%;z-index:400;pointer-events:none;}
 .top-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(247,243,236,0.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--olive);text-decoration:none;font-weight:500;letter-spacing:0.02em;padding:6px 0;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--olive);text-decoration:none;font-weight:500;}
 .back-btn svg{width:16px;height:16px;}
-.nav-title{font-size:12px;color:var(--text-muted);letter-spacing:0.04em;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-title{font-size:12px;color:var(--text-muted);flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .lang-toggle{display:flex;gap:2px;background:var(--sand);border-radius:100px;padding:2px;}
-.lang-btn{border:none;background:transparent;padding:4px 10px;border-radius:100px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.04em;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+.lang-btn{border:none;background:transparent;padding:4px 10px;border-radius:100px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
 .lang-btn.active{background:var(--olive);color:#fff;}
-
-/* ── CHAPTER TRANSITION OVERLAY ── */
-.transition-overlay{position:fixed;inset:0;z-index:500;background:var(--olive-mid);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.4s;}
-.transition-overlay.show{opacity:1;pointer-events:all;}
-.t-num{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:400;color:rgba(247,243,236,0.15);line-height:1;margin-bottom:8px;}
-.t-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(247,243,236,0.5);margin-bottom:12px;}
-.t-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--cream);text-align:center;padding:0 32px;line-height:1.3;margin-bottom:8px;}
-.t-location{font-size:11px;color:rgba(247,243,236,0.55);letter-spacing:0.12em;text-transform:uppercase;}
-.t-bar{width:48px;height:2px;background:rgba(247,243,236,0.15);border-radius:2px;margin-top:28px;overflow:hidden;}
-.t-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width linear;}
-
-/* ── STICKY PLAYER BAR ── */
-.player-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olive-mid);padding:0;border-top:1px solid rgba(255,255,255,0.08);}
-.progress-track{height:3px;background:rgba(255,255,255,0.1);cursor:pointer;position:relative;}
-.progress-fill{height:100%;background:var(--gold);border-radius:0;pointer-events:none;transition:width 0.1s linear;}
-.player-inner{padding:10px 16px 14px;display:flex;align-items:center;gap:12px;}
-.btn-play-main{width:44px;height:44px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.15s,opacity 0.2s;}
-.btn-play-main:hover{opacity:0.85;}
-.btn-play-main:active{transform:scale(0.95);}
-.btn-play-main svg{width:16px;height:16px;fill:var(--olive-mid);}
+.trans-overlay{position:fixed;inset:0;z-index:500;background:var(--olive-mid);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.trans-overlay.show{opacity:1;pointer-events:all;}
+.t-num{font-family:'Cormorant Garamond',serif;font-size:56px;font-weight:400;color:rgba(247,243,236,0.12);line-height:1;margin-bottom:4px;}
+.t-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(247,243,236,0.4);margin-bottom:8px;}
+.t-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--cream);text-align:center;padding:0 32px;line-height:1.3;}
+.t-location{font-size:10px;color:rgba(247,243,236,0.4);letter-spacing:0.12em;text-transform:uppercase;margin-top:5px;}
+.ios-banner{display:none;position:fixed;bottom:96px;left:12px;right:12px;z-index:350;background:var(--olive-mid);border-radius:12px;padding:14px 16px;box-shadow:0 4px 24px rgba(0,0,0,0.3);}
+.ios-banner.show{display:block;}
+.ios-banner-row{display:flex;align-items:flex-start;gap:10px;}
+.ios-banner p{font-size:12px;color:rgba(247,243,236,0.85);line-height:1.5;flex:1;}
+.ios-banner p strong{color:#fff;}
+.ios-dismiss{background:transparent;border:none;color:rgba(247,243,236,0.4);font-size:20px;cursor:pointer;padding:0;line-height:1;flex-shrink:0;}
+.ios-arrow{text-align:center;font-size:10px;color:rgba(196,169,106,0.65);margin-top:7px;letter-spacing:0.03em;}
+.dl-banner{background:var(--sand);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:60px 16px 0;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);}
+.dl-banner.hidden{display:none;}
+.btn-dl{background:var(--olive);color:#fff;border:none;border-radius:100px;padding:6px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.btn-dl:disabled{opacity:0.5;cursor:default;}
+.dl-prog{flex:1;height:3px;background:var(--border);border-radius:2px;display:none;overflow:hidden;}
+.dl-prog-fill{height:100%;background:var(--olive);border-radius:2px;width:0%;transition:width 0.3s;}
+.ch-pills{display:flex;gap:8px;overflow-x:auto;padding:8px 16px;scrollbar-width:none;}
+.ch-pills::-webkit-scrollbar{display:none;}
+.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:100px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.ch-pill.active{background:var(--olive);border-color:var(--olive);color:#fff;}
+.ch-pill.done{border-color:var(--olive-light);color:var(--olive-light);}
+.ch-pill-num{font-size:9px;opacity:0.55;}
+.play-all-bar{margin:4px 16px 0;background:var(--olive);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border:none;width:calc(100% - 32px);}
+.play-all-bar:hover{opacity:0.92;}
+.pa-icon{width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pa-icon svg{width:13px;height:13px;fill:var(--olive-mid);}
+.pa-text{flex:1;min-width:0;text-align:left;}
+.pa-label{font-size:10px;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
+.pa-title{font-size:13px;font-weight:500;color:var(--cream);}
+.journey-content{max-width:640px;margin:0 auto;padding:0 16px 120px;}
+.ch-section{margin-top:36px;scroll-margin-top:160px;transition:outline 0.3s;}
+.ch-section.active-chapter .ch-img-wrap{box-shadow:0 0 0 3px var(--olive);}
+.ch-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;margin-bottom:16px;background:var(--sand);transition:box-shadow 0.3s;}
+.ch-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.ch-img-badge{position:absolute;top:12px;left:12px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.95);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 11px;border-radius:100px;}
+.ch-img-num{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--olive);}
+.ch-kicker{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:5px;}
+.ch-title{font-family:'Cormorant Garamond',serif;font-size:clamp(18px,4.5vw,24px);font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
+.ch-desc{font-size:13.5px;color:var(--text-muted);line-height:1.75;margin-bottom:16px;}
+.ch-player{background:var(--olive);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
+.ch-player-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.ch-play-btn{width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ch-play-btn svg{width:13px;height:13px;fill:var(--olive-mid);}
+.ch-play-btn .icon-pause{display:none;}
+.ch-play-btn.playing .icon-play{display:none;}
+.ch-play-btn.playing .icon-pause{display:block;}
+.ch-play-info{flex:1;min-width:0;}
+.ch-play-label{font-size:10px;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
+.ch-play-name{font-size:13px;font-weight:500;color:var(--cream);}
+.ch-play-time{font-size:11px;color:rgba(247,243,236,0.35);margin-top:1px;}
+.ch-seek{height:3px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;margin-bottom:8px;}
+.ch-seek-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;pointer-events:none;}
+.ch-speed{display:flex;align-items:center;gap:6px;}
+.ch-speed-label{font-size:10px;color:rgba(247,243,236,0.35);}
+.speed-btn{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.45);font-size:10px;font-family:'DM Sans',sans-serif;padding:3px 9px;border-radius:100px;cursor:pointer;transition:all 0.2s;}
+.speed-btn.active{background:rgba(196,169,106,0.25);color:var(--gold);}
+details summary{cursor:pointer;padding:10px 14px;background:var(--sand);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);list-style:none;display:flex;align-items:center;justify-content:space-between;margin-bottom:0;}
+details summary::after{content:'▸';font-size:10px;}
+details[open] summary::after{content:'▾';}
+.transcript-body{padding:14px;background:#F9F7F3;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:12.5px;color:var(--text-muted);line-height:1.9;white-space:pre-wrap;margin-bottom:12px;}
+.practice-card{background:var(--sand);border-left:3px solid var(--olive);padding:14px 16px;}
+.practice-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--olive);margin-bottom:6px;font-weight:600;}
+.practice-text{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--text);line-height:1.55;}
+.ch-divider{display:flex;align-items:center;gap:10px;margin:32px 0 0;opacity:0.18;}
+.ch-divider::before,.ch-divider::after{content:'';flex:1;height:1px;background:var(--olive);}
+.ch-divider-dot{width:4px;height:4px;border-radius:50%;background:var(--olive);}
+.completion{display:none;text-align:center;padding:40px 24px;background:var(--olive);border-radius:16px;margin-top:32px;}
+.completion.show{display:block;}
+.completion-stamp{width:72px;height:72px;border-radius:50%;border:2px solid rgba(196,169,106,0.35);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:28px;}
+.completion h2{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--cream);margin-bottom:8px;}
+.completion p{font-size:13px;color:rgba(247,243,236,0.68);line-height:1.7;margin-bottom:22px;max-width:260px;margin-left:auto;margin-right:auto;}
+.btn-home{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--olive-mid);padding:10px 20px;border-radius:100px;text-decoration:none;font-size:13px;font-weight:600;}
+.player-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olive-mid);border-top:1px solid rgba(255,255,255,0.07);}
+.pb-track{height:3px;background:rgba(255,255,255,0.1);cursor:pointer;}
+.pb-fill{height:100%;background:var(--gold);pointer-events:none;transition:width 0.1s linear;}
+.pb-inner{padding:9px 16px 13px;display:flex;align-items:center;gap:11px;}
+.btn-play-main{width:42px;height:42px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.btn-play-main svg{width:15px;height:15px;fill:var(--olive-mid);}
 .btn-play-main .icon-pause{display:none;}
 .btn-play-main.playing .icon-play{display:none;}
 .btn-play-main.playing .icon-pause{display:block;}
-.player-info{flex:1;min-width:0;}
-.player-ch{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(196,169,106,0.65);margin-bottom:2px;}
-.player-title{font-size:13px;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.player-time{font-size:11px;color:rgba(247,243,236,0.4);margin-top:2px;}
-.btn-next{background:transparent;border:none;cursor:pointer;padding:4px;color:rgba(247,243,236,0.5);transition:color 0.2s;}
-.btn-next:hover{color:var(--cream);}
+.pb-info{flex:1;min-width:0;}
+.pb-ch{font-size:9px;color:rgba(196,169,106,0.55);letter-spacing:0.12em;margin-bottom:1px;}
+.pb-title{font-size:13px;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.pb-time{font-size:11px;color:rgba(247,243,236,0.32);margin-top:1px;}
+.btn-next{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);}
 .btn-next svg{width:20px;height:20px;}
-.btn-skip{background:transparent;border:none;cursor:pointer;padding:4px;color:rgba(247,243,236,0.35);transition:color 0.2s;font-size:10px;letter-spacing:0.06em;}
-.btn-skip:hover{color:rgba(247,243,236,0.7);}
-
-/* ── CHAPTER PILLS ── */
-.chapter-pills{padding:64px 16px 12px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
-.chapter-pills::-webkit-scrollbar{display:none;}
-.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
-.ch-pill.active{background:var(--olive);border-color:var(--olive);color:#fff;}
-.ch-pill.done{border-color:var(--olive-light);color:var(--olive-light);}
-.ch-pill-num{font-size:9px;opacity:0.6;}
-.ch-pill-check{width:10px;height:10px;display:none;}
-.ch-pill.done .ch-pill-check{display:block;}
-.ch-pill.done .ch-pill-num{display:none;}
-
-/* ── JOURNEY CONTENT ── */
-.journey-content{max-width:640px;margin:0 auto;padding:0 16px;padding-bottom:calc(var(--player-h) + 40px);}
-.chapter-section{margin-top:40px;scroll-margin-top:120px;}
-.chapter-section:first-child{margin-top:20px;}
-
-.ch-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;margin-bottom:18px;background:var(--sand);}
-.ch-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-.ch-img-badge{position:absolute;top:12px;left:12px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.95);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 11px;border-radius:100px;}
-.ch-img-num{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--olive);line-height:30px;}
-.ch-kicker{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:6px;}
-.ch-title{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,5vw,26px);font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
-.ch-desc{font-size:13.5px;color:var(--text-muted);line-height:1.75;margin-bottom:18px;}
-
-/* ── MINI PLAY BUTTON (per chapter) ── */
-.ch-play-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--olive);border-radius:12px;margin-bottom:12px;cursor:pointer;border:none;width:100%;text-align:left;transition:opacity 0.2s;}
-.ch-play-row:hover{opacity:0.9;}
-.ch-play-btn{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ch-play-btn svg{width:13px;height:13px;fill:var(--olive-mid);}
-.ch-play-info{flex:1;min-width:0;}
-.ch-play-label{font-size:10px;color:rgba(196,169,106,0.65);letter-spacing:0.08em;margin-bottom:2px;}
-.ch-play-name{font-size:13px;font-weight:500;color:var(--cream);}
-.ch-play-dur{font-size:11px;color:rgba(247,243,236,0.4);margin-top:2px;}
-
-/* ── TRANSCRIPT ── */
-.transcript-wrap{margin-bottom:14px;}
-details summary{cursor:pointer;padding:10px 14px;background:var(--sand);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);list-style:none;display:flex;align-items:center;justify-content:space-between;}
-details summary::after{content:'▸';font-size:10px;transition:transform 0.2s;}
-details[open] summary::after{transform:rotate(90deg);}
-details .transcript-body{padding:12px 14px;background:#F9F7F3;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:13px;color:var(--text-muted);line-height:1.75;}
-
-/* ── PRACTICE CARD ── */
-.practice-card{background:var(--sand);border-left:3px solid var(--olive);padding:16px 18px;margin-bottom:0;}
-.practice-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--olive);margin-bottom:7px;font-weight:600;}
-.practice-text{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--text);line-height:1.55;}
-
-/* ── DIVIDER ── */
-.ch-divider{display:flex;align-items:center;gap:10px;margin:36px 0 0;opacity:0.2;}
-.ch-divider::before,.ch-divider::after{content:'';flex:1;height:1px;background:var(--olive);}
-.ch-divider-dot{width:4px;height:4px;border-radius:50%;background:var(--olive);}
-
-/* ── COMPLETION ── */
-.completion{text-align:center;padding:48px 24px;display:none;}
-.completion.show{display:block;}
-.completion-icon{font-size:48px;margin-bottom:16px;}
-.completion h2{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--text);margin-bottom:8px;}
-.completion p{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:24px;}
-.btn-home{display:inline-flex;align-items:center;gap:8px;background:var(--olive);color:#fff;padding:12px 24px;border-radius:100px;text-decoration:none;font-size:13px;font-weight:500;letter-spacing:0.04em;}
-
-/* ── OFFLINE NOTICE ── */
-.offline-notice{background:var(--sand);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:8px 16px 0;font-size:12px;color:var(--text-muted);text-align:center;display:none;}
+.offline-notice{background:rgba(196,169,106,0.12);border:1px solid rgba(196,169,106,0.25);border-radius:8px;padding:7px 14px;margin:6px 16px 0;font-size:11px;color:var(--gold);text-align:center;display:none;}
 .offline-notice.show{display:block;}
-
-/* ── LANG ── */
 .tc{display:none;}.en{display:block;}
 body.zh .tc{display:block;}body.zh .en{display:none;}
 body.zh .lang-btn[data-lang="zh"]{background:var(--olive);color:#fff;}
 body.zh .lang-btn[data-lang="en"]{background:transparent;color:var(--text-muted);}
 body.en .lang-btn[data-lang="en"]{background:var(--olive);color:#fff;}
 body.en .lang-btn[data-lang="zh"]{background:transparent;color:var(--text-muted);}
-:lang(zh) .ch-title{font-family:'Noto Serif TC',serif;}
+:lang(zh) .ch-title,:lang(zh) .completion h2,:lang(zh) .practice-text{font-family:'Noto Serif TC',serif;}
 </style>
 </head>
 <body class="en">
-
-<!-- TOP NAV -->
+<div id="scrollBar"></div>
 <nav class="top-nav">
   <a href="index.html" class="back-btn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
     <span class="en">Journeys</span><span class="tc">旅程</span>
   </a>
-  <div class="nav-title" id="navTitle">Grounding Walk</div>
+  <div class="nav-title"><span class="en">Grounding Walk</span><span class="tc">連結大地</span></div>
   <div class="lang-toggle">
     <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
     <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">繁中</button>
   </div>
 </nav>
-
-<!-- CHAPTER TRANSITION OVERLAY -->
-<div class="transition-overlay" id="transOverlay">
+<div class="trans-overlay" id="transOverlay">
   <div class="t-num" id="tNum">01</div>
   <div class="t-label"><span class="en">Now playing</span><span class="tc">正在播放</span></div>
-  <div class="t-title" id="tTitle">The Beginning of Connection</div>
-  <div class="t-location" id="tLocation">The Plaza</div>
-  <div class="t-bar"><div class="t-bar-fill" id="tBarFill"></div></div>
+  <div class="t-title" id="tTitle"></div>
+  <div class="t-location" id="tLocation"></div>
 </div>
-
-<!-- OFFLINE NOTICE -->
-<div class="offline-notice" id="offlineNotice">
-  <span class="en">📶 You're offline — audio is playing from cache.</span>
-  <span class="tc">📶 目前離線 — 音頻正從緩存播放。</span>
-</div>
-
-<!-- CHAPTER PILLS -->
-<div class="chapter-pills" id="pillsRow"></div>
-
-<!-- JOURNEY CONTENT -->
-<main class="journey-content" id="journeyContent"></main>
-
-<!-- PLAYER BAR -->
-<div class="player-bar">
-  <div class="progress-track" id="progressTrack">
-    <div class="progress-fill" id="progressFill"></div>
+<div class="ios-banner" id="iosBanner">
+  <div class="ios-banner-row">
+    <div style="flex:1"><p class="en"><strong>Add to Home Screen</strong> to use offline in the forest — no signal needed.</p><p class="tc"><strong>加至主畫面</strong>即可在森林中離線收聽，無需網絡。</p></div>
+    <button class="ios-dismiss" onclick="dismissIOS()">×</button>
   </div>
-  <div class="player-inner">
+  <div class="ios-arrow"><span class="en">Tap Share ↑ then "Add to Home Screen"</span><span class="tc">點擊分享 ↑ 然後「加至主畫面」</span></div>
+</div>
+<div class="dl-banner" id="dlBanner">
+  <span class="en" style="flex:1">📶 Download for offline use in the forest</span>
+  <span class="tc" style="flex:1">📶 下載音頻，在森林中離線收聽</span>
+  <div class="dl-prog" id="dlProg"><div class="dl-prog-fill" id="dlFill"></div></div>
+  <button class="btn-dl" id="btnDl" onclick="downloadOffline()"><span class="en">Download</span><span class="tc">下載</span></button>
+</div>
+<div class="offline-notice" id="offlineNotice"><span class="en">📶 Offline — playing from cache</span><span class="tc">📶 離線模式 — 從緩存播放</span></div>
+<div class="ch-pills" id="pillsRow"></div>
+<button class="play-all-bar" onclick="playAll()">
+  <div class="pa-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+  <div class="pa-text">
+    <div class="pa-label"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div>
+    <div class="pa-title en">Grounding Walk at Lower Hillside of KFBG</div>
+    <div class="pa-title tc">連結大地 — 嘉道理下山區靜心漫步</div>
+  </div>
+</button>
+<main class="journey-content" id="journeyContent"></main>
+<div class="player-bar">
+  <div class="pb-track" id="pbTrack"><div class="pb-fill" id="pbFill"></div></div>
+  <div class="pb-inner">
     <button class="btn-play-main" id="btnPlayMain" onclick="togglePlayMain()">
       <svg class="icon-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-      <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
     </button>
-    <div class="player-info">
-      <div class="player-ch" id="playerCh">Chapter 01</div>
-      <div class="player-title" id="playerTitle">The Beginning of Connection</div>
-      <div class="player-time"><span id="playerCur">0:00</span> / <span id="playerDur">–:––</span></div>
+    <div class="pb-info">
+      <div class="pb-ch" id="pbCh">Chapter 01</div>
+      <div class="pb-title" id="pbTitle">The Beginning of Connection</div>
+      <div class="pb-time"><span id="pbCur">0:00</span> / <span id="pbDur">–:––</span></div>
     </div>
-    <button class="btn-next" onclick="nextChapter()" title="Next chapter">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+    <button class="btn-next" onclick="nextChapter()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
     </button>
   </div>
 </div>
-
-<!-- HIDDEN AUDIO -->
 <audio id="mainAudio" preload="none"></audio>
-
 <script>
-// ═══════════════════════════════════════════════════
-// JOURNEY DATA — update this when new sets are added
-// ═══════════════════════════════════════════════════
-const JOURNEYS = {
-  'grounding-walk': {
-    title: { en: 'Grounding Walk', tc: '正念漫步' },
-    subtitle: { en: 'Lower Hillside of KFBG', tc: '嘉道理農場下山坡' },
-    chapters: [
-      {
-        id: 1,
-        audio: 'audio/01_Final_v01_20260211.mp3',
-        location: { en: 'The Plaza', tc: '廣場' },
-        title: { en: 'The Beginning of Connection', tc: '連結的起點' },
-        subtitle: { en: 'Entrance & Sensory Awareness', tc: '入口與感官覺察' },
-        desc: { en: 'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colours of the forest with curiosity, rebuilding your connection with nature in the present moment.', tc: '在入口的樹蔭下駐足，放下城市的喧囂。帶著好奇心觀察森林的紋理與色彩，在當下重建與自然的連結。' },
-        practice: { en: 'Observe the nearest tree, touch its bark, and feel its temperature.', tc: '觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。' },
-        transcript: { en: '[Transcript for Chapter 01 to be provided]', tc: '[第01章文字稿待提供]' },
-        image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900',
-      },
-      {
-        id: 2,
-        audio: 'audio/02_Final_v01_20260211.mp3',
-        location: { en: 'Eco Garden', tc: '生態園' },
-        title: { en: 'Sensory Exploration', tc: '感官探索' },
-        subtitle: { en: 'Plant Observation at the Eco Garden', tc: '生態園植物觀察' },
-        desc: { en: 'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.', tc: '踏入生態園，收窄你的焦點。透過觸摸葉子的紋理、吸入泥土的芬芳，探索植物細膩而獨特的生命力。' },
-        practice: { en: 'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.', tc: '閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。' },
-        transcript: { en: '[Transcript for Chapter 02 to be provided]', tc: '[第02章文字稿待提供]' },
-        image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900',
-      },
-      {
-        id: 3,
-        audio: 'audio/03_Final_v01_20260211.mp3',
-        location: { en: 'Walter Kerr Garden', tc: '華嘉烈園' },
-        title: { en: 'Between Far and Near', tc: '遠近之間' },
-        subtitle: { en: 'The Rocks of Walter Kerr Garden', tc: '華嘉烈園的岩石' },
-        desc: { en: 'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.', tc: '在巨岩前練習轉換視角。從微觀紋理到宏觀地景輪廓，探索自然堅實的存在。' },
-        practice: { en: 'Focus on the moss on the rock for one minute, then look up at the distant ridge.', tc: '專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。' },
-        transcript: { en: '[Transcript for Chapter 03 to be provided]', tc: '[第03章文字稿待提供]' },
-        image: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900',
-      },
-      {
-        id: 4,
-        audio: 'audio/04_Final_v01_20260211.mp3',
-        location: { en: 'Stone Bridge', tc: '石橋' },
-        title: { en: 'The Sound of Water', tc: '流水之聲' },
-        subtitle: { en: 'A Listening Journey at the Stone Bridge', tc: '石橋聆聽之旅' },
-        desc: { en: 'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.', tc: '靜靜坐在石橋旁，沉浸於流水之中。練習感受音調與距離的變化，在聲音與寂靜的空間中尋得內心平靜。' },
-        practice: { en: 'Identify three distinct water sounds: drips, splashes, and steady flow.', tc: '辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。' },
-        transcript: { en: '[Transcript for Chapter 04 to be provided]', tc: '[第04章文字稿待提供]' },
-        image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900',
-      },
-      {
-        id: 5,
-        audio: 'audio/05_Final_v01_20260211.mp3',
-        location: { en: 'Cascade Garden', tc: '瀑布園' },
-        title: { en: 'Expansion and Grounding', tc: '擴展與紮根' },
-        subtitle: { en: 'Reflection at the Cascade Garden', tc: '瀑布園的沉思' },
-        desc: { en: 'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.', tc: '在瀑布園練習專注與擴展覺知。透過輕柔的伸展和深呼吸感受大地的支撐，讓身心在自然中得到滋養。' },
-        practice: { en: 'Place your feet flat on the ground and imagine roots extending into the soil.', tc: '將雙腳平放於地面，想像根系延伸進入泥土。' },
-        transcript: { en: '[Transcript for Chapter 05 to be provided]', tc: '[第05章文字稿待提供]' },
-        image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900',
-      }
-    ]
-  }
-};
+const CH=[
+{id:1,audio:'audio/01_Final_v01_20260211.mp3',loc:{en:'The Plaza',tc:'廣場'},
+title:{en:'The Beginning of Connection: Entrance of KFBG & Sensory Awareness',tc:'連結之始：進入園區與五感體驗'},
+desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},
+practice:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},
+tr:{en:`歡迎您嚟到嘉道理農場暨植物園。
 
-// ═══════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════
-let journey, chapters, currentIdx = 0, isPlaying = false, lang = 'en';
-const audio = document.getElementById('mainAudio');
-const CACHE = 'kfbg-audio-v1';
+呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。
 
-// ═══════════════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════════════
-function init() {
-  const params = new URLSearchParams(location.search);
-  const setKey = params.get('set') || 'grounding-walk';
-  journey = JOURNEYS[setKey] || JOURNEYS['grounding-walk'];
-  chapters = journey.chapters;
+喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。
 
-  // Resume position
-  const saved = parseInt(localStorage.getItem('kfbg-pos-' + setKey) || '0');
-  currentIdx = Math.min(saved, chapters.length - 1);
+接住落嚟，我會陪您一步一步，用眼、耳、鼻、皮膚，同大自然連繫。先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。用眼睛去觀察見到嘅形狀、紋理、顏色……試吓帶住好奇心，睇真啲？
 
-  // Restore lang
-  const savedLang = localStorage.getItem('kfbg-lang') || 'en';
-  setLang(savedLang, false);
+宜家，繼續用眼睛觀察之餘，同時細心聆聽四周圍嘅聲音？可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……帶住好奇心，聽真啲。
 
-  // Build UI
-  buildPills();
-  buildChapters();
-  loadChapter(currentIdx, false);
+可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……有啲乜嘢氣味喺度架？
 
-  // Cache all audio silently
-  cacheAudio();
+呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度：熱嘅？暖嘅？涼嘅？可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。
 
-  // Offline detection
-  window.addEventListener('offline', () => document.getElementById('offlineNotice').classList.add('show'));
-  window.addEventListener('online', () => document.getElementById('offlineNotice').classList.remove('show'));
-  if (!navigator.onLine) document.getElementById('offlineNotice').classList.add('show');
+接住落嚟，可以暫時放低呢段錄音，自由去用視覺、聽覺、嗅覺、觸覺去同廣場入面唔同嘅樹木連繫。當覺得合適嘅時候，一路觀察住四周圍、一路行到去下一個停留點：「生機園」。`,tc:'（廣東話文字稿）'},
+img:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900'},
+{id:2,audio:'audio/02_Final_v01_20260211.mp3',loc:{en:'Eco Garden',tc:'生機園'},
+title:{en:'Sensory Exploration: Plant Observation at the Eco Garden',tc:'感官探索：生機園的植物觀察'},
+desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},
+practice:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},
+tr:{en:`歡迎嚟到生機園。可以嘅話，帶住之前同一份嘅好奇心，喺生機園嘅呢個位置繼續將注意力放到去五官同身體嘅感覺。
 
-  // Service worker
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+不過今次會有少少唔同。我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。
+
+依家，慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。放低頭腦嘅既有認知，好似您第一次接觸呢棵植物咁樣，帶住好奇心，望真啲佢。
+
+合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。帶住好奇心，用觸覺去探索佢嘅葉、莖同花。
+
+用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？放低要去介定您「喜歡」、定「唔喜歡」呢種氣味嘅意向，單純咁去觀察呢種氣味。
+
+而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。如果覺得合適，可以用一隻手觸模孕育呢棵植物嘅泥土，嗰感覺又係點架呢？乾既？濕既？
+
+接住落嚟，可以暫時放低呢段錄音，自由去用唔同嘅感官，去探索生機園入面唔同嘅植物。直到覺得合適嘅時候，行到去下一個停留點：「葛先生花園」。`,tc:'（廣東話文字稿）'},
+img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900'},
+{id:3,audio:'audio/03_Final_v01_20260211.mp3',loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},
+title:{en:'Between Far and Near: The Rocks of Walter Kerr Garden',tc:'遠近之間：葛先生花園的磐石'},
+desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},
+practice:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},
+tr:{en:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。
+
+依家，慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色、同埋您所觀察到嘅形狀……亦都可以留意一下，大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走？
+
+呢一刻，慢慢向後退幾步，行遠少少，直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離同近距離觀察同一件物件，所留意到嘅係一樣、定唔同嘅？
+
+合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置。
+
+接住落嚟，可以緣住河邊嘅小路，慢慢進入被植物包圍嘅葛先生花園。有冇邊棵植物特別吸引您注意？帶住好奇心，用眼睛近距離觀察、遠距離觀察、然後又用手去探索。
+
+直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,tc:'（廣東話文字稿）'},
+img:'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900'},
+{id:4,audio:'audio/04_Final_v01_20260211.mp3',loc:{en:'Stone Bridge',tc:'石橋'},
+title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},
+desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},
+practice:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},
+tr:{en:`嚟到葛先生花園嘅石橋，眼前就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。
+
+宜家，仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。
+
+呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？聆聽住每一刻嘅流水聲，留心住佢每刻嘅變化。
+
+呢一刻，慢慢將注意力嘅範圍擴展開去，喺呢個開闊嘅覺察之中，留心依一刻任何嘅聲音。唔需要刻意去找尋，只係懷住好奇心、去聆聽、去接收任何進入聽覺範圍嘅聲音。
+
+可能會留意到，心會去為聲音命名：呢個係流水聲、嗰個係風聲、雞啼聲、樹葉聲……呢個時候，睇吓可唔可以帶住好奇心，聽真啲呢啲聲音、去探索吓佢到底係點嘅？係持續、定係間斷嘅？係近嘅、定遠架？同時都留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。
+
+接住落嚟，可以暫時放低呢段錄音，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,tc:'（廣東話文字稿）'},
+img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
+{id:5,audio:'audio/05_Final_v01_20260211.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},
+title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},
+desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},
+practice:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},
+tr:{en:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。
+
+喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。而家，就喺呢個視野開闊嘅沁思園，一齊體驗一下，集中同擴展注意力之間嘅轉換。
+
+宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施。無論揀選咗嘅位置係遠嘅、或者近嘅，都集中注意力，帶住好奇心、用眼睛睇真的呢個位置。留意見到嘅顏色、形狀……觀察住呢個位置，睇吓每一刻佢係一樣嘅、定係有變化嘅？
+
+呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、同埋當中所有嘅浮雲……整座山，以及所有嘅樹木……
+
+宜家，進一步開闊注意力，除咗視覺之外，接收埋進入聽覺範圍嘅聲音……皮膚嘅感覺……聞到嘅氣味等等……帶住好奇心，用唔同嘅感官去觀察身處嘅呢個空間。
+
+可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動、空氣進出身體嘅感覺……
+
+同時，留意一吓呢一刻，身體畀大地承托住，嗰份穩妥、安穩、實在嘅感覺……慢慢、溫柔咁伸展……喺伸展嘅過程之中，留意肌肉、骨頭，隨住移動一路變化緊嘅感覺。
+
+讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。
+
+你可以放低呢一系列錄音，繼續你既旅程啦。`,tc:'（廣東話文字稿）'},
+img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'}
+];
+
+let idx=0,playing=false,lang='en',rate=1;
+const aud=document.getElementById('mainAudio');
+const CACHE='kfbg-audio-v1';
+const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
+
+function init(){
+  const s=parseInt(localStorage.getItem('kfbg-pos')||'0');
+  idx=Math.min(s,CH.length-1);
+  const sl=localStorage.getItem('kfbg-lang')||'en';
+  setLang(sl,false);
+  buildPills();buildChapters();loadChapter(idx,false);
+  cacheAudio();checkCache();
+  setupScroll();setupOffline();setupIOS();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
-// ═══════════════════════════════════════════════════
-// BUILD PILLS
-// ═══════════════════════════════════════════════════
-function buildPills() {
-  const row = document.getElementById('pillsRow');
-  row.innerHTML = chapters.map((ch, i) => `
-    <button class="ch-pill" id="pill-${i}" onclick="jumpToChapter(${i})">
-      <svg class="ch-pill-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-      <span class="ch-pill-num">${String(ch.id).padStart(2,'0')}</span>
-      <span class="en">${ch.location.en}</span><span class="tc">${ch.location.tc}</span>
-    </button>
-  `).join('');
+function setupScroll(){
+  window.addEventListener('scroll',()=>{
+    const tot=document.documentElement.scrollHeight-window.innerHeight;
+    document.getElementById('scrollBar').style.width=(tot>0?(window.scrollY/tot)*100:0)+'%';
+    CH.forEach((_,i)=>{
+      const s=document.getElementById('sec-'+i);
+      if(!s)return;
+      const r=s.getBoundingClientRect();
+      const on=r.top<=180&&r.bottom>=180;
+      s.classList.toggle('active-chapter',on);
+      document.getElementById('pill-'+i)?.classList.toggle('active',on);
+    });
+  },{passive:true});
 }
 
-// ═══════════════════════════════════════════════════
-// BUILD CHAPTERS
-// ═══════════════════════════════════════════════════
-function buildChapters() {
-  const container = document.getElementById('journeyContent');
-  container.innerHTML = chapters.map((ch, i) => `
-    <section class="chapter-section" id="ch-${i}">
+function buildPills(){
+  document.getElementById('pillsRow').innerHTML=CH.map((c,i)=>
+    `<button class="ch-pill${DONE.has(i)?' done':''}" id="pill-${i}" onclick="jump(${i})">
+      <span class="ch-pill-num">${String(c.id).padStart(2,'0')}</span>
+      <span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span>
+    </button>`).join('');
+}
+
+function buildChapters(){
+  document.getElementById('journeyContent').innerHTML=CH.map((c,i)=>`
+    <section class="ch-section" id="sec-${i}">
       <div class="ch-img-wrap">
-        <img src="${ch.image}" alt="${ch.location.en}" loading="lazy"/>
-        <div class="ch-img-badge"><span class="en">${ch.location.en}</span><span class="tc">${ch.location.tc}</span></div>
-        <div class="ch-img-num">${ch.id}</div>
+        <img src="${c.img}" alt="${c.loc.en}" loading="lazy"/>
+        <div class="ch-img-badge"><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></div>
+        <div class="ch-img-num">${c.id}</div>
       </div>
-      <div class="ch-kicker">
-        <span class="en">Chapter 0${ch.id}</span><span class="tc">第0${ch.id}章</span>
-      </div>
-      <div class="ch-title en">${ch.title.en}: ${ch.subtitle.en}</div>
-      <div class="ch-title tc">${ch.title.tc}：${ch.subtitle.tc}</div>
-      <p class="ch-desc en">${ch.desc.en}</p>
-      <p class="ch-desc tc">${ch.desc.tc}</p>
-
-      <button class="ch-play-row" onclick="jumpToChapter(${i})" id="ch-play-${i}">
-        <div class="ch-play-btn">
-          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-        </div>
-        <div class="ch-play-info">
-          <div class="ch-play-label"><span class="en">Chapter 0${ch.id} · ${ch.location.en}</span><span class="tc">第0${ch.id}章 · ${ch.location.tc}</span></div>
-          <div class="ch-play-name en">${ch.title.en}</div>
-          <div class="ch-play-name tc">${ch.title.tc}</div>
-          <div class="ch-play-dur en">Tap to play this chapter</div>
-          <div class="ch-play-dur tc">點擊播放此章節</div>
-        </div>
-      </button>
-
-      <div class="transcript-wrap">
-        <details>
-          <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
-          <div class="transcript-body">
-            <span class="en">${ch.transcript.en}</span>
-            <span class="tc">${ch.transcript.tc}</span>
+      <div class="ch-kicker"><span class="en">Chapter 0${c.id}</span><span class="tc">第 0${c.id} 章</span></div>
+      <div class="ch-title en">${c.title.en}</div>
+      <div class="ch-title tc">${c.title.tc}</div>
+      <p class="ch-desc en">${c.desc.en}</p>
+      <p class="ch-desc tc">${c.desc.tc}</p>
+      <div class="ch-player">
+        <div class="ch-player-top">
+          <button class="ch-play-btn" id="cbtn-${i}" onclick="tapPlay(${i})">
+            <svg class="icon-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg class="icon-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+          <div class="ch-play-info">
+            <div class="ch-play-label"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc">第0${c.id}章 · ${c.loc.tc}</span></div>
+            <div class="ch-play-name en">${c.title.en.split(':')[0]}</div>
+            <div class="ch-play-name tc">${c.title.tc.split('：')[0]||c.title.tc}</div>
+            <div class="ch-play-time" id="ctime-${i}">0:00 / –:––</div>
           </div>
-        </details>
+        </div>
+        <div class="ch-seek" id="cseek-${i}" onclick="seekCh(event,${i})"><div class="ch-seek-fill" id="cfill-${i}"></div></div>
+        <div class="ch-speed">
+          <span class="ch-speed-label"><span class="en">Speed</span><span class="tc">速度</span></span>
+          <button class="speed-btn active" onclick="setSpd(1,this)">1×</button>
+          <button class="speed-btn" onclick="setSpd(1.25,this)">1.25×</button>
+          <button class="speed-btn" onclick="setSpd(1.5,this)">1.5×</button>
+        </div>
       </div>
-
+      <details style="margin-bottom:12px">
+        <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
+        <div class="transcript-body en">${c.tr.en}</div>
+        <div class="transcript-body tc">${c.tr.tc}</div>
+      </details>
       <div class="practice-card">
         <div class="practice-label"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div>
-        <div class="practice-text en">${ch.practice.en}</div>
-        <div class="practice-text tc">${ch.practice.tc}</div>
+        <div class="practice-text en">${c.practice.en}</div>
+        <div class="practice-text tc">${c.practice.tc}</div>
       </div>
-
-      ${i < chapters.length - 1 ? '<div class="ch-divider"><div class="ch-divider-dot"></div></div>' : ''}
-    </section>
-  `).join('') + `
+      ${i<CH.length-1?'<div class="ch-divider"><div class="ch-divider-dot"></div></div>':''}
+    </section>`).join('')+`
     <div class="completion" id="completion">
-      <div class="completion-icon">🌿</div>
-      <h2 class="en">Journey Complete</h2>
-      <h2 class="tc">旅程完成</h2>
-      <p class="en">You've completed all five stops. Take a moment to sit with what you've noticed before returning.</p>
-      <p class="tc">你已完成全部五個站點。在回程前，請花一刻靜靜感受你的覺察。</p>
+      <div class="completion-stamp">🌿</div>
+      <h2 class="en">Journey Complete</h2><h2 class="tc">旅程完成</h2>
+      <p class="en">You've walked all five stops of the Grounding Walk. Take a breath before you return.</p>
+      <p class="tc">你已完成「連結大地」的全部五個站點。在回程前，靜靜感受此刻的覺察。</p>
       <a href="index.html" class="btn-home">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span>
       </a>
-    </div>
-  `;
+    </div>`;
 }
 
-// ═══════════════════════════════════════════════════
-// LOAD CHAPTER (no transition)
-// ═══════════════════════════════════════════════════
-function loadChapter(idx, playAfter) {
-  currentIdx = idx;
-  const ch = chapters[idx];
-
-  // Update audio src
-  audio.src = ch.audio;
-  audio.load();
-
-  // Update player bar
-  document.getElementById('playerCh').textContent = `Chapter 0${ch.id} · ${ch.location[lang]}`;
-  document.getElementById('playerTitle').textContent = ch.title[lang];
-  document.getElementById('playerCur').textContent = '0:00';
-  document.getElementById('playerDur').textContent = '–:––';
-  document.getElementById('progressFill').style.width = '0%';
-
-  // Update pills
-  document.querySelectorAll('.ch-pill').forEach((p, i) => {
-    p.classList.remove('active');
-    if (i < idx) p.classList.add('done');
-    else p.classList.remove('done');
-  });
-  const activePill = document.getElementById('pill-' + idx);
-  if (activePill) {
-    activePill.classList.add('active');
-    activePill.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-  }
-
-  // Save position
-  const params = new URLSearchParams(location.search);
-  localStorage.setItem('kfbg-pos-' + (params.get('set') || 'grounding-walk'), idx);
-
-  if (playAfter) {
-    audio.play().then(() => { isPlaying = true; updatePlayBtn(); }).catch(() => {});
-  } else {
-    isPlaying = false;
-    updatePlayBtn();
-  }
+function loadChapter(i,play){
+  idx=i;aud.src=CH[i].audio;aud.load();aud.playbackRate=rate;
+  pbUpdate();allBtns();localStorage.setItem('kfbg-pos',i);
+  if(play){aud.play().then(()=>{playing=true;allBtns();}).catch(()=>{});}
+  else{playing=false;allBtns();}
 }
 
-// ═══════════════════════════════════════════════════
-// JUMP WITH TRANSITION
-// ═══════════════════════════════════════════════════
-function jumpToChapter(idx) {
-  if (idx === currentIdx && isPlaying) return;
-  const ch = chapters[idx];
-
-  // Show overlay
-  const overlay = document.getElementById('transOverlay');
-  document.getElementById('tNum').textContent = String(ch.id).padStart(2,'0');
-  document.getElementById('tTitle').textContent = ch.title[lang];
-  document.getElementById('tLocation').textContent = ch.location[lang];
-  overlay.classList.add('show');
-
-  // Animate bar
-  const bar = document.getElementById('tBarFill');
-  bar.style.transition = 'none';
-  bar.style.width = '0%';
-  requestAnimationFrame(() => {
-    bar.style.transition = 'width 2s linear';
-    bar.style.width = '100%';
-  });
-
-  // Pause current
-  audio.pause();
-  isPlaying = false;
-  updatePlayBtn();
-
-  // Scroll to chapter
-  const section = document.getElementById('ch-' + idx);
-  if (section) section.scrollIntoView({behavior:'smooth', block:'start'});
-
-  // Load + play after delay
-  setTimeout(() => {
-    overlay.classList.remove('show');
-    loadChapter(idx, true);
-  }, 2200);
+function jump(i){
+  const c=CH[i];
+  const ov=document.getElementById('transOverlay');
+  document.getElementById('tNum').textContent=String(c.id).padStart(2,'0');
+  document.getElementById('tTitle').textContent=c.title[lang].split(':')[0].split('：')[0];
+  document.getElementById('tLocation').textContent=c.loc[lang];
+  ov.classList.add('show');
+  aud.pause();playing=false;allBtns();
+  document.getElementById('sec-'+i)?.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>{ov.classList.remove('show');loadChapter(i,true);},900);
 }
 
-// ═══════════════════════════════════════════════════
-// PLAYER CONTROLS
-// ═══════════════════════════════════════════════════
-function togglePlayMain() {
-  if (isPlaying) {
-    audio.pause();
-    isPlaying = false;
-  } else {
-    audio.play().catch(() => {});
-    isPlaying = true;
-  }
-  updatePlayBtn();
+function playAll(){jump(0);}
+function tapPlay(i){if(i===idx)togglePlayMain();else jump(i);}
+function seekCh(e,i){if(i!==idx||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;}
+function setSpd(r,btn){rate=r;aud.playbackRate=r;document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function togglePlayMain(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}allBtns();}
+function nextChapter(){if(idx<CH.length-1)jump(idx+1);}
+function pbUpdate(){
+  const c=CH[idx];
+  document.getElementById('pbCh').textContent=`Ch.0${c.id} · ${c.loc[lang]}`;
+  document.getElementById('pbTitle').textContent=c.title[lang].split(':')[0].split('：')[0];
+  document.getElementById('pbCur').textContent='0:00';
+  document.getElementById('pbDur').textContent='–:––';
+  document.getElementById('pbFill').style.width='0%';
 }
-
-function nextChapter() {
-  if (currentIdx < chapters.length - 1) {
-    jumpToChapter(currentIdx + 1);
-  }
+function allBtns(){
+  document.getElementById('btnPlayMain').classList.toggle('playing',playing);
+  CH.forEach((_,i)=>document.getElementById('cbtn-'+i)?.classList.toggle('playing',i===idx&&playing));
 }
-
-function updatePlayBtn() {
-  const btn = document.getElementById('btnPlayMain');
-  btn.classList.toggle('playing', isPlaying);
-}
-
-// Progress bar
-audio.addEventListener('timeupdate', () => {
-  if (!audio.duration) return;
-  const pct = (audio.currentTime / audio.duration) * 100;
-  document.getElementById('progressFill').style.width = pct + '%';
-  document.getElementById('playerCur').textContent = fmt(audio.currentTime);
+aud.addEventListener('timeupdate',()=>{
+  if(!aud.duration)return;
+  const p=(aud.currentTime/aud.duration)*100;
+  document.getElementById('pbFill').style.width=p+'%';
+  document.getElementById('pbCur').textContent=fmt(aud.currentTime);
+  document.getElementById('cfill-'+idx).style.width=p+'%';
+  document.getElementById('ctime-'+idx).textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
 });
-
-audio.addEventListener('loadedmetadata', () => {
-  document.getElementById('playerDur').textContent = fmt(audio.duration);
+aud.addEventListener('loadedmetadata',()=>{
+  document.getElementById('pbDur').textContent=fmt(aud.duration);
+  document.getElementById('ctime-'+idx).textContent='0:00 / '+fmt(aud.duration);
 });
-
-// Auto-advance
-audio.addEventListener('ended', () => {
-  isPlaying = false;
-  updatePlayBtn();
-  if (currentIdx < chapters.length - 1) {
-    setTimeout(() => jumpToChapter(currentIdx + 1), 800);
-  } else {
-    // Show completion
-    document.getElementById('completion').classList.add('show');
-  }
+aud.addEventListener('ended',()=>{
+  DONE.add(idx);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));
+  document.getElementById('pill-'+idx)?.classList.add('done');
+  playing=false;allBtns();
+  if(idx<CH.length-1){setTimeout(()=>jump(idx+1),600);}
+  else{const c=document.getElementById('completion');c.classList.add('show');c.scrollIntoView({behavior:'smooth',block:'center'});}
 });
-
-// Seek on progress track click
-document.getElementById('progressTrack').addEventListener('click', e => {
-  if (!audio.duration) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const pct = (e.clientX - rect.left) / rect.width;
-  audio.currentTime = pct * audio.duration;
+document.getElementById('pbTrack').addEventListener('click',e=>{
+  if(!aud.duration)return;
+  const r=e.currentTarget.getBoundingClientRect();
+  aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;
 });
-
-function fmt(s) {
-  if (!isFinite(s)) return '–:––';
-  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
-  return m + ':' + (sec < 10 ? '0' : '') + sec;
+function fmt(s){if(!isFinite(s))return'–:––';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;}
+function setLang(l,sv=true){lang=l;document.body.className=l;document.documentElement.lang=l==='zh'?'zh-Hant':'en';if(sv)localStorage.setItem('kfbg-lang',l);pbUpdate();}
+function setupIOS(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone=window.navigator.standalone===true;
+  if(isIOS&&!standalone&&!sessionStorage.getItem('ios-ok'))
+    setTimeout(()=>document.getElementById('iosBanner').classList.add('show'),3500);
 }
-
-// ═══════════════════════════════════════════════════
-// LANG
-// ═══════════════════════════════════════════════════
-function setLang(l, save = true) {
-  lang = l;
-  document.body.className = l;
-  document.documentElement.lang = l === 'zh' ? 'zh-Hant' : 'en';
-  if (save) localStorage.setItem('kfbg-lang', l);
-  // Refresh player bar text
-  if (chapters) {
-    const ch = chapters[currentIdx];
-    document.getElementById('playerCh').textContent = `Chapter 0${ch.id} · ${ch.location[lang]}`;
-    document.getElementById('playerTitle').textContent = ch.title[lang];
-  }
+function dismissIOS(){document.getElementById('iosBanner').classList.remove('show');sessionStorage.setItem('ios-ok','1');}
+function setupOffline(){
+  const n=document.getElementById('offlineNotice');
+  window.addEventListener('offline',()=>n.classList.add('show'));
+  window.addEventListener('online',()=>n.classList.remove('show'));
+  if(!navigator.onLine)n.classList.add('show');
 }
-
-// ═══════════════════════════════════════════════════
-// SILENT AUDIO CACHING
-// ═══════════════════════════════════════════════════
-async function cacheAudio() {
-  if (!('caches' in window)) return;
-  try {
-    const cache = await caches.open(CACHE);
-    for (const ch of chapters) {
-      const match = await cache.match(ch.audio).catch(() => null);
-      if (!match) {
-        fetch(ch.audio).then(r => { if (r.ok) cache.put(ch.audio, r); }).catch(() => {});
-      }
+async function checkCache(){
+  if(!('caches'in window))return;
+  try{
+    const c=await caches.open(CACHE);
+    const all=await Promise.all(CH.map(x=>c.match(x.audio)));
+    if(all.every(Boolean))document.getElementById('dlBanner').classList.add('hidden');
+  }catch(e){}
+}
+async function downloadOffline(){
+  if(!('caches'in window))return;
+  const btn=document.getElementById('btnDl');
+  const prog=document.getElementById('dlProg');
+  const fill=document.getElementById('dlFill');
+  btn.disabled=true;prog.style.display='block';
+  try{
+    const c=await caches.open(CACHE);
+    for(let i=0;i<CH.length;i++){
+      const u=CH[i].audio;
+      if(!await c.match(u).catch(()=>null)){const r=await fetch(u);if(r.ok)await c.put(u,r);}
+      fill.style.width=Math.round(((i+1)/CH.length)*100)+'%';
     }
-  } catch(e) {}
+    document.getElementById('dlBanner').classList.add('hidden');
+  }catch(e){btn.disabled=false;}
 }
-
-// ═══════════════════════════════════════════════════
-// START
-// ═══════════════════════════════════════════════════
+async function cacheAudio(){
+  if(!('caches'in window))return;
+  try{
+    const c=await caches.open(CACHE);
+    CH.forEach(x=>fetch(x.audio).then(r=>{if(r.ok)c.put(x.audio,r);}).catch(()=>{}));
+  }catch(e){}
+}
 init();
 </script>
 </body>
