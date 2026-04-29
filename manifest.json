@@ -1,0 +1,16 @@
+{
+  "name": "Self-guided Audio Journey at KFBG",
+  "short_name": "KFBG Journey",
+  "description": "Mindful audio walks through Kadoorie Farm & Botanic Garden",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F3EC",
+  "theme_color": "#4A5C3A",
+  "lang": "en",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["lifestyle", "health", "education"]
+}

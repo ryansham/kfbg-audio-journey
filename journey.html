@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#4A5C3A"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<title>Audio Journey · KFBG</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --olive: #4A5C3A;
+  --olive-mid: #3B4A2F;
+  --olive-light: #8A9A78;
+  --cream: #F7F3EC;
+  --sand: #EEEBE4;
+  --border: #D8D3CB;
+  --text: #1E2418;
+  --text-mid: #444;
+  --text-muted: #7A7A6A;
+  --gold: #C4A96A;
+  --player-h: 88px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.6;overflow-x:hidden;}
+
+/* ── TOP NAV ── */
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(247,243,236,0.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.back-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--olive);text-decoration:none;font-weight:500;letter-spacing:0.02em;padding:6px 0;}
+.back-btn svg{width:16px;height:16px;}
+.nav-title{font-size:12px;color:var(--text-muted);letter-spacing:0.04em;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lang-toggle{display:flex;gap:2px;background:var(--sand);border-radius:100px;padding:2px;}
+.lang-btn{border:none;background:transparent;padding:4px 10px;border-radius:100px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.04em;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+.lang-btn.active{background:var(--olive);color:#fff;}
+
+/* ── CHAPTER TRANSITION OVERLAY ── */
+.transition-overlay{position:fixed;inset:0;z-index:500;background:var(--olive-mid);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.4s;}
+.transition-overlay.show{opacity:1;pointer-events:all;}
+.t-num{font-family:'Cormorant Garamond',serif;font-size:72px;font-weight:400;color:rgba(247,243,236,0.15);line-height:1;margin-bottom:8px;}
+.t-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(247,243,236,0.5);margin-bottom:12px;}
+.t-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--cream);text-align:center;padding:0 32px;line-height:1.3;margin-bottom:8px;}
+.t-location{font-size:11px;color:rgba(247,243,236,0.55);letter-spacing:0.12em;text-transform:uppercase;}
+.t-bar{width:48px;height:2px;background:rgba(247,243,236,0.15);border-radius:2px;margin-top:28px;overflow:hidden;}
+.t-bar-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;transition:width linear;}
+
+/* ── STICKY PLAYER BAR ── */
+.player-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olive-mid);padding:0;border-top:1px solid rgba(255,255,255,0.08);}
+.progress-track{height:3px;background:rgba(255,255,255,0.1);cursor:pointer;position:relative;}
+.progress-fill{height:100%;background:var(--gold);border-radius:0;pointer-events:none;transition:width 0.1s linear;}
+.player-inner{padding:10px 16px 14px;display:flex;align-items:center;gap:12px;}
+.btn-play-main{width:44px;height:44px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.15s,opacity 0.2s;}
+.btn-play-main:hover{opacity:0.85;}
+.btn-play-main:active{transform:scale(0.95);}
+.btn-play-main svg{width:16px;height:16px;fill:var(--olive-mid);}
+.btn-play-main .icon-pause{display:none;}
+.btn-play-main.playing .icon-play{display:none;}
+.btn-play-main.playing .icon-pause{display:block;}
+.player-info{flex:1;min-width:0;}
+.player-ch{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(196,169,106,0.65);margin-bottom:2px;}
+.player-title{font-size:13px;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.player-time{font-size:11px;color:rgba(247,243,236,0.4);margin-top:2px;}
+.btn-next{background:transparent;border:none;cursor:pointer;padding:4px;color:rgba(247,243,236,0.5);transition:color 0.2s;}
+.btn-next:hover{color:var(--cream);}
+.btn-next svg{width:20px;height:20px;}
+.btn-skip{background:transparent;border:none;cursor:pointer;padding:4px;color:rgba(247,243,236,0.35);transition:color 0.2s;font-size:10px;letter-spacing:0.06em;}
+.btn-skip:hover{color:rgba(247,243,236,0.7);}
+
+/* ── CHAPTER PILLS ── */
+.chapter-pills{padding:64px 16px 12px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}
+.chapter-pills::-webkit-scrollbar{display:none;}
+.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;font-size:11px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.ch-pill.active{background:var(--olive);border-color:var(--olive);color:#fff;}
+.ch-pill.done{border-color:var(--olive-light);color:var(--olive-light);}
+.ch-pill-num{font-size:9px;opacity:0.6;}
+.ch-pill-check{width:10px;height:10px;display:none;}
+.ch-pill.done .ch-pill-check{display:block;}
+.ch-pill.done .ch-pill-num{display:none;}
+
+/* ── JOURNEY CONTENT ── */
+.journey-content{max-width:640px;margin:0 auto;padding:0 16px;padding-bottom:calc(var(--player-h) + 40px);}
+.chapter-section{margin-top:40px;scroll-margin-top:120px;}
+.chapter-section:first-child{margin-top:20px;}
+
+.ch-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;margin-bottom:18px;background:var(--sand);}
+.ch-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+.ch-img-badge{position:absolute;top:12px;left:12px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.95);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 11px;border-radius:100px;}
+.ch-img-num{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--olive);line-height:30px;}
+.ch-kicker{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:6px;}
+.ch-title{font-family:'Cormorant Garamond',serif;font-size:clamp(20px,5vw,26px);font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
+.ch-desc{font-size:13.5px;color:var(--text-muted);line-height:1.75;margin-bottom:18px;}
+
+/* ── MINI PLAY BUTTON (per chapter) ── */
+.ch-play-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--olive);border-radius:12px;margin-bottom:12px;cursor:pointer;border:none;width:100%;text-align:left;transition:opacity 0.2s;}
+.ch-play-row:hover{opacity:0.9;}
+.ch-play-btn{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ch-play-btn svg{width:13px;height:13px;fill:var(--olive-mid);}
+.ch-play-info{flex:1;min-width:0;}
+.ch-play-label{font-size:10px;color:rgba(196,169,106,0.65);letter-spacing:0.08em;margin-bottom:2px;}
+.ch-play-name{font-size:13px;font-weight:500;color:var(--cream);}
+.ch-play-dur{font-size:11px;color:rgba(247,243,236,0.4);margin-top:2px;}
+
+/* ── TRANSCRIPT ── */
+.transcript-wrap{margin-bottom:14px;}
+details summary{cursor:pointer;padding:10px 14px;background:var(--sand);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text-muted);list-style:none;display:flex;align-items:center;justify-content:space-between;}
+details summary::after{content:'▸';font-size:10px;transition:transform 0.2s;}
+details[open] summary::after{transform:rotate(90deg);}
+details .transcript-body{padding:12px 14px;background:#F9F7F3;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:13px;color:var(--text-muted);line-height:1.75;}
+
+/* ── PRACTICE CARD ── */
+.practice-card{background:var(--sand);border-left:3px solid var(--olive);padding:16px 18px;margin-bottom:0;}
+.practice-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--olive);margin-bottom:7px;font-weight:600;}
+.practice-text{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--text);line-height:1.55;}
+
+/* ── DIVIDER ── */
+.ch-divider{display:flex;align-items:center;gap:10px;margin:36px 0 0;opacity:0.2;}
+.ch-divider::before,.ch-divider::after{content:'';flex:1;height:1px;background:var(--olive);}
+.ch-divider-dot{width:4px;height:4px;border-radius:50%;background:var(--olive);}
+
+/* ── COMPLETION ── */
+.completion{text-align:center;padding:48px 24px;display:none;}
+.completion.show{display:block;}
+.completion-icon{font-size:48px;margin-bottom:16px;}
+.completion h2{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--text);margin-bottom:8px;}
+.completion p{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:24px;}
+.btn-home{display:inline-flex;align-items:center;gap:8px;background:var(--olive);color:#fff;padding:12px 24px;border-radius:100px;text-decoration:none;font-size:13px;font-weight:500;letter-spacing:0.04em;}
+
+/* ── OFFLINE NOTICE ── */
+.offline-notice{background:var(--sand);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:8px 16px 0;font-size:12px;color:var(--text-muted);text-align:center;display:none;}
+.offline-notice.show{display:block;}
+
+/* ── LANG ── */
+.tc{display:none;}.en{display:block;}
+body.zh .tc{display:block;}body.zh .en{display:none;}
+body.zh .lang-btn[data-lang="zh"]{background:var(--olive);color:#fff;}
+body.zh .lang-btn[data-lang="en"]{background:transparent;color:var(--text-muted);}
+body.en .lang-btn[data-lang="en"]{background:var(--olive);color:#fff;}
+body.en .lang-btn[data-lang="zh"]{background:transparent;color:var(--text-muted);}
+:lang(zh) .ch-title{font-family:'Noto Serif TC',serif;}
+</style>
+</head>
+<body class="en">
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <a href="index.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <span class="en">Journeys</span><span class="tc">旅程</span>
+  </a>
+  <div class="nav-title" id="navTitle">Grounding Walk</div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">繁中</button>
+  </div>
+</nav>
+
+<!-- CHAPTER TRANSITION OVERLAY -->
+<div class="transition-overlay" id="transOverlay">
+  <div class="t-num" id="tNum">01</div>
+  <div class="t-label"><span class="en">Now playing</span><span class="tc">正在播放</span></div>
+  <div class="t-title" id="tTitle">The Beginning of Connection</div>
+  <div class="t-location" id="tLocation">The Plaza</div>
+  <div class="t-bar"><div class="t-bar-fill" id="tBarFill"></div></div>
+</div>
+
+<!-- OFFLINE NOTICE -->
+<div class="offline-notice" id="offlineNotice">
+  <span class="en">📶 You're offline — audio is playing from cache.</span>
+  <span class="tc">📶 目前離線 — 音頻正從緩存播放。</span>
+</div>
+
+<!-- CHAPTER PILLS -->
+<div class="chapter-pills" id="pillsRow"></div>
+
+<!-- JOURNEY CONTENT -->
+<main class="journey-content" id="journeyContent"></main>
+
+<!-- PLAYER BAR -->
+<div class="player-bar">
+  <div class="progress-track" id="progressTrack">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+  <div class="player-inner">
+    <button class="btn-play-main" id="btnPlayMain" onclick="togglePlayMain()">
+      <svg class="icon-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+    </button>
+    <div class="player-info">
+      <div class="player-ch" id="playerCh">Chapter 01</div>
+      <div class="player-title" id="playerTitle">The Beginning of Connection</div>
+      <div class="player-time"><span id="playerCur">0:00</span> / <span id="playerDur">–:––</span></div>
+    </div>
+    <button class="btn-next" onclick="nextChapter()" title="Next chapter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- HIDDEN AUDIO -->
+<audio id="mainAudio" preload="none"></audio>
+
+<script>
+// ═══════════════════════════════════════════════════
+// JOURNEY DATA — update this when new sets are added
+// ═══════════════════════════════════════════════════
+const JOURNEYS = {
+  'grounding-walk': {
+    title: { en: 'Grounding Walk', tc: '正念漫步' },
+    subtitle: { en: 'Lower Hillside of KFBG', tc: '嘉道理農場下山坡' },
+    chapters: [
+      {
+        id: 1,
+        audio: '/upload/audio-journey/01_Final_v01_20260211.mp3',
+        location: { en: 'The Plaza', tc: '廣場' },
+        title: { en: 'The Beginning of Connection', tc: '連結的起點' },
+        subtitle: { en: 'Entrance & Sensory Awareness', tc: '入口與感官覺察' },
+        desc: { en: 'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colours of the forest with curiosity, rebuilding your connection with nature in the present moment.', tc: '在入口的樹蔭下駐足，放下城市的喧囂。帶著好奇心觀察森林的紋理與色彩，在當下重建與自然的連結。' },
+        practice: { en: 'Observe the nearest tree, touch its bark, and feel its temperature.', tc: '觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。' },
+        transcript: { en: '[Transcript for Chapter 01 to be provided]', tc: '[第01章文字稿待提供]' },
+        image: 'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900',
+      },
+      {
+        id: 2,
+        audio: '/upload/audio-journey/02_Final_v01_20260211.mp3',
+        location: { en: 'Eco Garden', tc: '生態園' },
+        title: { en: 'Sensory Exploration', tc: '感官探索' },
+        subtitle: { en: 'Plant Observation at the Eco Garden', tc: '生態園植物觀察' },
+        desc: { en: 'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.', tc: '踏入生態園，收窄你的焦點。透過觸摸葉子的紋理、吸入泥土的芬芳，探索植物細膩而獨特的生命力。' },
+        practice: { en: 'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.', tc: '閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。' },
+        transcript: { en: '[Transcript for Chapter 02 to be provided]', tc: '[第02章文字稿待提供]' },
+        image: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900',
+      },
+      {
+        id: 3,
+        audio: '/upload/audio-journey/03_Final_v01_20260211.mp3',
+        location: { en: 'Walter Kerr Garden', tc: '華嘉烈園' },
+        title: { en: 'Between Far and Near', tc: '遠近之間' },
+        subtitle: { en: 'The Rocks of Walter Kerr Garden', tc: '華嘉烈園的岩石' },
+        desc: { en: 'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.', tc: '在巨岩前練習轉換視角。從微觀紋理到宏觀地景輪廓，探索自然堅實的存在。' },
+        practice: { en: 'Focus on the moss on the rock for one minute, then look up at the distant ridge.', tc: '專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。' },
+        transcript: { en: '[Transcript for Chapter 03 to be provided]', tc: '[第03章文字稿待提供]' },
+        image: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900',
+      },
+      {
+        id: 4,
+        audio: '/upload/audio-journey/04_Final_v01_20260211.mp3',
+        location: { en: 'Stone Bridge', tc: '石橋' },
+        title: { en: 'The Sound of Water', tc: '流水之聲' },
+        subtitle: { en: 'A Listening Journey at the Stone Bridge', tc: '石橋聆聽之旅' },
+        desc: { en: 'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.', tc: '靜靜坐在石橋旁，沉浸於流水之中。練習感受音調與距離的變化，在聲音與寂靜的空間中尋得內心平靜。' },
+        practice: { en: 'Identify three distinct water sounds: drips, splashes, and steady flow.', tc: '辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。' },
+        transcript: { en: '[Transcript for Chapter 04 to be provided]', tc: '[第04章文字稿待提供]' },
+        image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900',
+      },
+      {
+        id: 5,
+        audio: '/upload/audio-journey/05_Final_v01_20260211.mp3',
+        location: { en: 'Cascade Garden', tc: '瀑布園' },
+        title: { en: 'Expansion and Grounding', tc: '擴展與紮根' },
+        subtitle: { en: 'Reflection at the Cascade Garden', tc: '瀑布園的沉思' },
+        desc: { en: 'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.', tc: '在瀑布園練習專注與擴展覺知。透過輕柔的伸展和深呼吸感受大地的支撐，讓身心在自然中得到滋養。' },
+        practice: { en: 'Place your feet flat on the ground and imagine roots extending into the soil.', tc: '將雙腳平放於地面，想像根系延伸進入泥土。' },
+        transcript: { en: '[Transcript for Chapter 05 to be provided]', tc: '[第05章文字稿待提供]' },
+        image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900',
+      }
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let journey, chapters, currentIdx = 0, isPlaying = false, lang = 'en';
+const audio = document.getElementById('mainAudio');
+const CACHE = 'kfbg-audio-v1';
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+function init() {
+  const params = new URLSearchParams(location.search);
+  const setKey = params.get('set') || 'grounding-walk';
+  journey = JOURNEYS[setKey] || JOURNEYS['grounding-walk'];
+  chapters = journey.chapters;
+
+  // Resume position
+  const saved = parseInt(localStorage.getItem('kfbg-pos-' + setKey) || '0');
+  currentIdx = Math.min(saved, chapters.length - 1);
+
+  // Restore lang
+  const savedLang = localStorage.getItem('kfbg-lang') || 'en';
+  setLang(savedLang, false);
+
+  // Build UI
+  buildPills();
+  buildChapters();
+  loadChapter(currentIdx, false);
+
+  // Cache all audio silently
+  cacheAudio();
+
+  // Offline detection
+  window.addEventListener('offline', () => document.getElementById('offlineNotice').classList.add('show'));
+  window.addEventListener('online', () => document.getElementById('offlineNotice').classList.remove('show'));
+  if (!navigator.onLine) document.getElementById('offlineNotice').classList.add('show');
+
+  // Service worker
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD PILLS
+// ═══════════════════════════════════════════════════
+function buildPills() {
+  const row = document.getElementById('pillsRow');
+  row.innerHTML = chapters.map((ch, i) => `
+    <button class="ch-pill" id="pill-${i}" onclick="jumpToChapter(${i})">
+      <svg class="ch-pill-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      <span class="ch-pill-num">${String(ch.id).padStart(2,'0')}</span>
+      <span class="en">${ch.location.en}</span><span class="tc">${ch.location.tc}</span>
+    </button>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════
+// BUILD CHAPTERS
+// ═══════════════════════════════════════════════════
+function buildChapters() {
+  const container = document.getElementById('journeyContent');
+  container.innerHTML = chapters.map((ch, i) => `
+    <section class="chapter-section" id="ch-${i}">
+      <div class="ch-img-wrap">
+        <img src="${ch.image}" alt="${ch.location.en}" loading="lazy"/>
+        <div class="ch-img-badge"><span class="en">${ch.location.en}</span><span class="tc">${ch.location.tc}</span></div>
+        <div class="ch-img-num">${ch.id}</div>
+      </div>
+      <div class="ch-kicker">
+        <span class="en">Chapter 0${ch.id}</span><span class="tc">第0${ch.id}章</span>
+      </div>
+      <div class="ch-title en">${ch.title.en}: ${ch.subtitle.en}</div>
+      <div class="ch-title tc">${ch.title.tc}：${ch.subtitle.tc}</div>
+      <p class="ch-desc en">${ch.desc.en}</p>
+      <p class="ch-desc tc">${ch.desc.tc}</p>
+
+      <button class="ch-play-row" onclick="jumpToChapter(${i})" id="ch-play-${i}">
+        <div class="ch-play-btn">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+        <div class="ch-play-info">
+          <div class="ch-play-label"><span class="en">Chapter 0${ch.id} · ${ch.location.en}</span><span class="tc">第0${ch.id}章 · ${ch.location.tc}</span></div>
+          <div class="ch-play-name en">${ch.title.en}</div>
+          <div class="ch-play-name tc">${ch.title.tc}</div>
+          <div class="ch-play-dur en">Tap to play this chapter</div>
+          <div class="ch-play-dur tc">點擊播放此章節</div>
+        </div>
+      </button>
+
+      <div class="transcript-wrap">
+        <details>
+          <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
+          <div class="transcript-body">
+            <span class="en">${ch.transcript.en}</span>
+            <span class="tc">${ch.transcript.tc}</span>
+          </div>
+        </details>
+      </div>
+
+      <div class="practice-card">
+        <div class="practice-label"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div>
+        <div class="practice-text en">${ch.practice.en}</div>
+        <div class="practice-text tc">${ch.practice.tc}</div>
+      </div>
+
+      ${i < chapters.length - 1 ? '<div class="ch-divider"><div class="ch-divider-dot"></div></div>' : ''}
+    </section>
+  `).join('') + `
+    <div class="completion" id="completion">
+      <div class="completion-icon">🌿</div>
+      <h2 class="en">Journey Complete</h2>
+      <h2 class="tc">旅程完成</h2>
+      <p class="en">You've completed all five stops. Take a moment to sit with what you've noticed before returning.</p>
+      <p class="tc">你已完成全部五個站點。在回程前，請花一刻靜靜感受你的覺察。</p>
+      <a href="index.html" class="btn-home">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span>
+      </a>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════
+// LOAD CHAPTER (no transition)
+// ═══════════════════════════════════════════════════
+function loadChapter(idx, playAfter) {
+  currentIdx = idx;
+  const ch = chapters[idx];
+
+  // Update audio src
+  audio.src = ch.audio;
+  audio.load();
+
+  // Update player bar
+  document.getElementById('playerCh').textContent = `Chapter 0${ch.id} · ${ch.location[lang]}`;
+  document.getElementById('playerTitle').textContent = ch.title[lang];
+  document.getElementById('playerCur').textContent = '0:00';
+  document.getElementById('playerDur').textContent = '–:––';
+  document.getElementById('progressFill').style.width = '0%';
+
+  // Update pills
+  document.querySelectorAll('.ch-pill').forEach((p, i) => {
+    p.classList.remove('active');
+    if (i < idx) p.classList.add('done');
+    else p.classList.remove('done');
+  });
+  const activePill = document.getElementById('pill-' + idx);
+  if (activePill) {
+    activePill.classList.add('active');
+    activePill.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  }
+
+  // Save position
+  const params = new URLSearchParams(location.search);
+  localStorage.setItem('kfbg-pos-' + (params.get('set') || 'grounding-walk'), idx);
+
+  if (playAfter) {
+    audio.play().then(() => { isPlaying = true; updatePlayBtn(); }).catch(() => {});
+  } else {
+    isPlaying = false;
+    updatePlayBtn();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// JUMP WITH TRANSITION
+// ═══════════════════════════════════════════════════
+function jumpToChapter(idx) {
+  if (idx === currentIdx && isPlaying) return;
+  const ch = chapters[idx];
+
+  // Show overlay
+  const overlay = document.getElementById('transOverlay');
+  document.getElementById('tNum').textContent = String(ch.id).padStart(2,'0');
+  document.getElementById('tTitle').textContent = ch.title[lang];
+  document.getElementById('tLocation').textContent = ch.location[lang];
+  overlay.classList.add('show');
+
+  // Animate bar
+  const bar = document.getElementById('tBarFill');
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  requestAnimationFrame(() => {
+    bar.style.transition = 'width 2s linear';
+    bar.style.width = '100%';
+  });
+
+  // Pause current
+  audio.pause();
+  isPlaying = false;
+  updatePlayBtn();
+
+  // Scroll to chapter
+  const section = document.getElementById('ch-' + idx);
+  if (section) section.scrollIntoView({behavior:'smooth', block:'start'});
+
+  // Load + play after delay
+  setTimeout(() => {
+    overlay.classList.remove('show');
+    loadChapter(idx, true);
+  }, 2200);
+}
+
+// ═══════════════════════════════════════════════════
+// PLAYER CONTROLS
+// ═══════════════════════════════════════════════════
+function togglePlayMain() {
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+  } else {
+    audio.play().catch(() => {});
+    isPlaying = true;
+  }
+  updatePlayBtn();
+}
+
+function nextChapter() {
+  if (currentIdx < chapters.length - 1) {
+    jumpToChapter(currentIdx + 1);
+  }
+}
+
+function updatePlayBtn() {
+  const btn = document.getElementById('btnPlayMain');
+  btn.classList.toggle('playing', isPlaying);
+}
+
+// Progress bar
+audio.addEventListener('timeupdate', () => {
+  if (!audio.duration) return;
+  const pct = (audio.currentTime / audio.duration) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('playerCur').textContent = fmt(audio.currentTime);
+});
+
+audio.addEventListener('loadedmetadata', () => {
+  document.getElementById('playerDur').textContent = fmt(audio.duration);
+});
+
+// Auto-advance
+audio.addEventListener('ended', () => {
+  isPlaying = false;
+  updatePlayBtn();
+  if (currentIdx < chapters.length - 1) {
+    setTimeout(() => jumpToChapter(currentIdx + 1), 800);
+  } else {
+    // Show completion
+    document.getElementById('completion').classList.add('show');
+  }
+});
+
+// Seek on progress track click
+document.getElementById('progressTrack').addEventListener('click', e => {
+  if (!audio.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  audio.currentTime = pct * audio.duration;
+});
+
+function fmt(s) {
+  if (!isFinite(s)) return '–:––';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return m + ':' + (sec < 10 ? '0' : '') + sec;
+}
+
+// ═══════════════════════════════════════════════════
+// LANG
+// ═══════════════════════════════════════════════════
+function setLang(l, save = true) {
+  lang = l;
+  document.body.className = l;
+  document.documentElement.lang = l === 'zh' ? 'zh-Hant' : 'en';
+  if (save) localStorage.setItem('kfbg-lang', l);
+  // Refresh player bar text
+  if (chapters) {
+    const ch = chapters[currentIdx];
+    document.getElementById('playerCh').textContent = `Chapter 0${ch.id} · ${ch.location[lang]}`;
+    document.getElementById('playerTitle').textContent = ch.title[lang];
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// SILENT AUDIO CACHING
+// ═══════════════════════════════════════════════════
+async function cacheAudio() {
+  if (!('caches' in window)) return;
+  try {
+    const cache = await caches.open(CACHE);
+    for (const ch of chapters) {
+      const match = await cache.match(ch.audio).catch(() => null);
+      if (!match) {
+        fetch(ch.audio).then(r => { if (r.ok) cache.put(ch.audio, r); }).catch(() => {});
+      }
+    }
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════
+// START
+// ═══════════════════════════════════════════════════
+init();
+</script>
+</body>
+</html>
