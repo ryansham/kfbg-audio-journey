@@ -1,124 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant" data-lang="zh">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#4A5C3A"/>
-<meta name="description" content="Self-guided Audio Journey at KFBG — mindful walks through Kadoorie Farm & Botanic Garden"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="KFBG Audio Journey"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="icons/icon-192.png"/>
-<title>Audio Journey · KFBG</title>
+<link rel="apple-touch-icon" href="KFBG_Logo_Square.png"/>
+<link rel="icon" href="KFBG_Logo_Square.png"/>
+<title>自導式聆聽之旅 · KFBG</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-:root {
-  --olive: #4A5C3A;
-  --olive-mid: #3B4A2F;
-  --olive-light: #8A9A78;
-  --cream: #F7F3EC;
-  --sand: #EEEBE4;
-  --border: #D8D3CB;
-  --text: #1E2418;
-  --text-mid: #444;
-  --text-muted: #7A7A6A;
-  --gold: #C4A96A;
-}
+:root{--olive:#4A5C3A;--olive-mid:#3B4A2F;--olive-light:#8A9A78;--cream:#F7F3EC;--sand:#EEEBE4;--border:#D8D3CB;--text:#1E2418;--text-mid:#444;--text-muted:#7A7A6A;--gold:#C4A96A;--fs:1rem;}
 *{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth;font-size:var(--fs);}
 body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.6;overflow-x:hidden;}
 
-/* ── LANG TOGGLE ── */
-.lang-bar{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(247,243,236,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
-.lang-bar-logo{height:28px;display:block;}
-.lang-toggle{display:flex;gap:2px;background:var(--sand);border-radius:100px;padding:3px;}
-.lang-btn{border:none;background:transparent;padding:5px 14px;border-radius:100px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.04em;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
-.lang-btn.active{background:var(--olive);color:#fff;}
+/* LANG */
+[data-lang="en"] .tc{display:none!important;}
+[data-lang="zh"] .en{display:none!important;}
+.en,.tc{display:block;}
+span.en,span.tc{display:inline;}
+[data-lang="en"] span.tc{display:none!important;}
+[data-lang="zh"] span.en{display:none!important;}
+[data-lang="en"] .lang-btn[data-lang="en"]{background:var(--olive);color:#fff;}
+[data-lang="zh"] .lang-btn[data-lang="zh"]{background:var(--olive);color:#fff;}
+[data-lang="en"] .lang-btn[data-lang="zh"],[data-lang="zh"] .lang-btn[data-lang="en"]{background:transparent;color:rgba(247,243,236,0.5);}
+[data-lang="zh"] h1,[data-lang="zh"] .card-title,[data-lang="zh"] .about h2{font-family:'Noto Serif TC',serif;}
 
-/* ── HERO ── */
-.hero{padding:80px 24px 56px;text-align:center;position:relative;}
-.hero::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:1px;height:40px;background:var(--border);}
-.hero-eyebrow{font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--olive-light);margin-bottom:16px;}
-.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(32px,8vw,54px);font-weight:500;line-height:1.1;color:var(--text);letter-spacing:-0.02em;margin-bottom:20px;}
+/* FONT SIZE */
+.fs-ctrl{display:flex;align-items:center;gap:4px;}
+.fs-btn{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.15);color:rgba(247,243,236,0.7);border-radius:100px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;transition:all 0.18s;}
+.fs-btn:hover{background:rgba(255,255,255,0.22);color:#fff;}
+
+/* NAV */
+.lang-bar{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(42,58,32,0.95);backdrop-filter:blur(8px);border-bottom:1px solid rgba(255,255,255,0.07);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.lang-bar-logo{height:26px;display:block;flex-shrink:0;}
+.nav-right{display:flex;align-items:center;gap:8px;}
+.lang-toggle{display:flex;gap:2px;background:rgba(255,255,255,0.1);border-radius:100px;padding:3px;}
+.lang-btn{border:none;background:transparent;padding:5px 12px;border-radius:100px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;color:rgba(247,243,236,0.55);cursor:pointer;transition:all 0.2s;}
+
+/* HERO */
+.hero{padding:76px 20px 52px;text-align:center;position:relative;}
+.hero::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:1px;height:36px;background:var(--border);}
+.hero-eyebrow{font-size:0.62rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--olive-light);margin-bottom:14px;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,8vw,3.4rem);font-weight:500;line-height:1.1;color:var(--text);letter-spacing:-0.02em;margin-bottom:18px;}
 .hero h1 em{font-style:italic;color:var(--olive);}
-.hero-desc{font-size:14px;color:var(--text-muted);max-width:360px;margin:0 auto 32px;line-height:1.75;}
-.hero-meta{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--text-muted);letter-spacing:0.06em;}
+.hero-desc{font-size:0.88rem;color:var(--text-muted);max-width:340px;margin:0 auto 28px;line-height:1.75;}
+.hero-meta{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:0.7rem;color:var(--text-muted);letter-spacing:0.06em;}
 .hero-meta-dot{width:3px;height:3px;border-radius:50%;background:var(--border);}
 
-/* ── ABOUT STRIP ── */
-.about{background:var(--olive);padding:48px 24px;text-align:center;}
-.about-inner{max-width:560px;margin:0 auto;}
-.about h2{font-family:'Cormorant Garamond',serif;font-size:clamp(22px,5vw,30px);font-weight:500;color:#fff;margin-bottom:16px;line-height:1.25;}
-.about p{font-size:13.5px;color:rgba(247,243,236,0.78);line-height:1.8;}
+/* ABOUT */
+.about{background:var(--olive);padding:44px 24px;}
+.about-inner{max-width:560px;margin:0 auto;text-align:center;}
+.about h2{font-family:'Cormorant Garamond',serif;font-size:clamp(1.3rem,5vw,1.9rem);font-weight:500;color:#fff;margin-bottom:14px;line-height:1.25;}
+.about p{font-size:0.88rem;color:rgba(247,243,236,0.75);line-height:1.82;}
 
-/* ── LIBRARY ── */
-.library{padding:56px 20px 80px;max-width:680px;margin:0 auto;}
-.library-label{font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--olive-light);margin-bottom:28px;text-align:center;}
+/* LIBRARY */
+.library{padding:48px 16px 72px;max-width:640px;margin:0 auto;}
+.library-label{font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--olive-light);margin-bottom:24px;text-align:center;}
 
-.journey-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s;text-decoration:none;color:inherit;}
-.journey-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(74,92,58,0.12);}
-.journey-card.locked{opacity:0.55;pointer-events:none;}
-
+/* CARD */
+.journey-card{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:18px;text-decoration:none;color:inherit;display:block;transition:transform 0.2s,box-shadow 0.2s;}
+.journey-card:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(74,92,58,0.1);}
+.journey-card.locked{opacity:0.52;pointer-events:none;}
 .card-img{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;background:var(--sand);}
 .card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s;}
 .journey-card:hover .card-img img{transform:scale(1.03);}
-.card-badge{position:absolute;top:12px;left:12px;background:rgba(74,92,58,0.88);color:rgba(247,243,236,0.95);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 11px;border-radius:100px;}
-.card-num{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--olive);}
-.card-coming{position:absolute;inset:0;background:rgba(238,235,228,0.7);display:flex;align-items:center;justify-content:center;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
+.card-badge{position:absolute;top:11px;left:11px;background:rgba(59,74,47,0.86);color:rgba(247,243,236,0.94);font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 10px;border-radius:100px;}
+.card-num{position:absolute;bottom:11px;right:11px;width:28px;height:28px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:600;color:var(--olive);}
+.card-coming{position:absolute;inset:0;background:rgba(238,235,228,0.65);display:flex;align-items:center;justify-content:center;font-size:0.7rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);}
+/* card body — flex column, proper text wrapping */
+.card-body{padding:16px 18px 18px;}
+.card-kicker{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:5px;}
+.card-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.05rem,4vw,1.3rem);font-weight:500;color:var(--text);line-height:1.3;margin-bottom:8px;word-break:break-word;hyphens:auto;}
+.card-desc{font-size:0.82rem;color:var(--text-muted);line-height:1.72;margin-bottom:14px;}
+.card-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.card-meta{display:flex;align-items:center;gap:12px;font-size:0.7rem;color:var(--text-muted);flex-wrap:wrap;}
+.card-meta span{display:flex;align-items:center;gap:4px;}
+.card-cta{background:var(--olive);color:#fff;font-size:0.7rem;font-weight:500;letter-spacing:0.05em;padding:6px 14px;border-radius:100px;white-space:nowrap;flex-shrink:0;}
 
-.card-body{padding:20px 22px 22px;}
-.card-kicker{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:6px;}
-.card-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
-.card-desc{font-size:13px;color:var(--text-muted);line-height:1.7;margin-bottom:16px;}
-.card-meta{display:flex;align-items:center;gap:16px;font-size:11px;color:var(--text-muted);}
-.card-meta span{display:flex;align-items:center;gap:5px;}
-.card-cta{margin-left:auto;background:var(--olive);color:#fff;font-size:11px;font-weight:500;letter-spacing:0.06em;padding:8px 18px;border-radius:100px;font-family:'DM Sans',sans-serif;}
-
-/* ── LINKS / ABOUT ── */
-.links-section{background:var(--sand);border-top:1px solid var(--border);padding:48px 24px 56px;text-align:center;}
-.links-section h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:var(--text);margin-bottom:6px;}
-.links-section p{font-size:13px;color:var(--text-muted);margin-bottom:28px;}
-.links-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin-bottom:28px;}
-.link-pill{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid var(--border);border-radius:100px;text-decoration:none;font-size:12px;color:var(--text-mid);background:#fff;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+/* LINKS */
+.links-section{background:var(--sand);border-top:1px solid var(--border);padding:44px 20px 52px;text-align:center;}
+.links-section h3{font-family:'Cormorant Garamond',serif;font-size:1.35rem;font-weight:500;color:var(--text);margin-bottom:6px;}
+.links-section p{font-size:0.82rem;color:var(--text-muted);margin-bottom:24px;}
+.links-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
+.link-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);border-radius:100px;text-decoration:none;font-size:0.75rem;color:var(--text-mid);background:#fff;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
 .link-pill:hover{border-color:var(--olive);color:var(--olive);}
-.social-row{display:flex;align-items:center;justify-content:center;gap:12px;}
-.social-btn{width:38px;height:38px;border-radius:50%;background:var(--olive);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity 0.2s;}
-.social-btn:hover{opacity:0.8;}
-.social-btn svg{width:16px;height:16px;fill:#fff;}
+.social-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;}
+.social-btn{width:36px;height:36px;border-radius:50%;background:var(--olive);display:flex;align-items:center;justify-content:center;text-decoration:none;transition:opacity 0.2s;}
+.social-btn:hover{opacity:0.78;}
+.social-btn svg{width:15px;height:15px;fill:#fff;}
 
-/* ── INSTALL BANNER ── */
-.install-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--olive-mid);padding:14px 20px;border-top:1px solid rgba(255,255,255,0.1);}
-.install-banner.show{display:flex;align-items:center;gap:12px;}
-.install-banner p{font-size:12px;color:rgba(247,243,236,0.85);flex:1;line-height:1.4;}
+/* INSTALL BANNER */
+.install-banner{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:var(--olive-mid);padding:12px 16px 16px;border-top:1px solid rgba(255,255,255,0.08);}
+.install-banner.show{display:flex;align-items:flex-start;gap:10px;}
+.install-banner p{font-size:0.75rem;color:rgba(247,243,236,0.8);flex:1;line-height:1.5;}
 .install-banner p strong{color:#fff;}
-.btn-install{background:var(--gold);color:var(--olive-mid);font-size:11px;font-weight:600;padding:8px 16px;border-radius:100px;border:none;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;}
-.btn-dismiss{background:transparent;border:none;color:rgba(247,243,236,0.5);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;}
+.btn-install{background:var(--gold);color:var(--olive-mid);font-size:0.7rem;font-weight:600;padding:8px 14px;border-radius:100px;border:none;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.btn-dismiss{background:transparent;border:none;color:rgba(247,243,236,0.4);font-size:18px;cursor:pointer;padding:0 2px;line-height:1;}
 
-/* ── TC FONT ── */
-:lang(zh) .hero h1, :lang(zh) .card-title, :lang(zh) .about h2{font-family:'Noto Serif TC',serif;}
-.tc{display:none;} .en{display:block;}
-body.zh .tc{display:block;} body.zh .en{display:none;}
-body.zh .lang-btn[data-lang="zh"]{background:var(--olive);color:#fff;}
-body.zh .lang-btn[data-lang="en"]{background:transparent;color:var(--text-muted);}
-body.en .lang-btn[data-lang="en"]{background:var(--olive);color:#fff;}
-body.en .lang-btn[data-lang="zh"]{background:transparent;color:var(--text-muted);}
+@media(max-width:480px){
+  .hero{padding:72px 16px 48px;}
+  .card-body{padding:14px 16px 16px;}
+}
 </style>
 </head>
-<body class="en">
+<body>
 
-<!-- LANG BAR -->
+<!-- NAV -->
 <nav class="lang-bar">
-  <img src="https://kfbg.versostudios.com/images/Logo_KFBG_s.png" alt="KFBG" class="lang-bar-logo" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
-  <span style="display:none;font-size:13px;font-weight:500;color:var(--olive);">KFBG</span>
-  <div class="lang-toggle">
-    <button class="lang-btn active" data-lang="en" onclick="setLang('en')">EN</button>
-    <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">繁中</button>
+  <img src="KFBG_Logo_Square.png" alt="KFBG" class="lang-bar-logo" onerror="this.style.display='none'"/>
+  <div class="nav-right">
+    <div class="fs-ctrl">
+      <button class="fs-btn" onclick="adjustFS(-1)">A−</button>
+      <button class="fs-btn" onclick="adjustFS(1)">A+</button>
+    </div>
+    <div class="lang-toggle">
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">繁中</button>
+    </div>
   </div>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
   <div class="hero-eyebrow"><span class="en">Kadoorie Farm &amp; Botanic Garden</span><span class="tc">嘉道理農場暨植物園</span></div>
-  <h1 class="en">Self-guided<br><em>Audio Journey</em><br>at KFBG</h1>
-  <h1 class="tc">嘉道理農場<br><em>自導式聆聽之旅</em></h1>
+  <h1 class="en">Self-guided<br><em>Audio Journey</em></h1>
+  <h1 class="tc"><em>自導式聆聽之旅</em></h1>
   <p class="hero-desc en">Step off the path. Slow down. Let the forest speak. Five audio stops, one mindful walk — available for every trail at KFBG.</p>
   <p class="hero-desc tc">放慢腳步，讓自然引路。每條步道均設有五個聆聽站，帶領你與大地深連。</p>
   <div class="hero-meta">
@@ -148,31 +159,29 @@ body.en .lang-btn[data-lang="zh"]{background:transparent;color:var(--text-muted)
   <a href="journey.html?set=grounding-walk" class="journey-card">
     <div class="card-img">
       <img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900" alt="Lower Hillside" loading="lazy"/>
-      <div class="card-badge"><span class="en">Lower Hillside</span><span class="tc">下山坡</span></div>
+      <div class="card-badge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div>
       <div class="card-num">1</div>
     </div>
     <div class="card-body">
       <div class="card-kicker"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
       <div class="card-title en">Grounding Walk at the Lower Hillside of KFBG</div>
-      <div class="card-title tc">嘉道理農場下山坡正念漫步</div>
+      <div class="card-title tc">連結大地 — 嘉道理下山區靜心漫步</div>
       <p class="card-desc en">Five stops through the lower hillside. Touch bark, breathe soil, listen to water. A walk that returns you to yourself.</p>
-      <p class="card-desc tc">穿越下山坡的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。一段讓你回歸自我的旅程。</p>
-      <div class="card-meta">
-        <span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          <span class="en">~45 min · 5 stops</span><span class="tc">約45分鐘 · 5個站點</span>
-        </span>
-        <span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-          <span class="en">5 audio chapters</span><span class="tc">5個音頻章節</span>
-        </span>
-        <span class="card-cta en">Start journey →</span>
-        <span class="card-cta tc">開始旅程 →</span>
+      <p class="card-desc tc">穿越下山區的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。一段讓你回歸自我的旅程。</p>
+      <div class="card-footer">
+        <div class="card-meta">
+          <span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="en">~45 min · 5 stops</span><span class="tc">約45分鐘 · 5站</span>
+          </span>
+        </div>
+        <span class="card-cta en">Start →</span>
+        <span class="card-cta tc">開始 →</span>
       </div>
     </div>
   </a>
 
-  <!-- Journeys 2–5 — Coming soon -->
+  <!-- Journey 2 -->
   <a href="#" class="journey-card locked">
     <div class="card-img">
       <img src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900" alt="Coming soon" loading="lazy"/>
@@ -188,6 +197,7 @@ body.en .lang-btn[data-lang="zh"]{background:transparent;color:var(--text-muted)
     </div>
   </a>
 
+  <!-- Journey 3 -->
   <a href="#" class="journey-card locked">
     <div class="card-img">
       <img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900" alt="Coming soon" loading="lazy"/>
@@ -212,81 +222,89 @@ body.en .lang-btn[data-lang="zh"]{background:transparent;color:var(--text-muted)
   <p class="tc">節目、保育工作及參與方式。</p>
   <div class="links-row">
     <a href="https://www.kfbg.org" class="link-pill" target="_blank">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
       <span class="en">KFBG Website</span><span class="tc">嘉道理農場網站</span>
     </a>
     <a href="https://www.kfbg.org/programmes" class="link-pill" target="_blank">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span class="en">Programmes</span><span class="tc">節目</span>
     </a>
     <a href="https://www.kfbg.org/donation" class="link-pill" target="_blank">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
       <span class="en">Support Us</span><span class="tc">支持我們</span>
     </a>
   </div>
   <div class="social-row">
-    <!-- Facebook -->
     <a href="https://www.facebook.com/KadoorieFarmAndBotanicGarden/" class="social-btn" target="_blank" aria-label="Facebook">
       <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
     </a>
-    <!-- Instagram -->
     <a href="https://www.instagram.com/kfbg.official/" class="social-btn" target="_blank" aria-label="Instagram">
-      <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" fill="none" stroke="#fff" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="#fff" stroke-width="2"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" fill="var(--olive)"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
     </a>
-    <!-- YouTube -->
     <a href="https://www.youtube.com/@KadoorieFarm" class="social-btn" target="_blank" aria-label="YouTube">
       <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#4A5C3A"/></svg>
     </a>
-    <!-- LinkedIn -->
     <a href="https://www.linkedin.com/company/kfbg/" class="social-btn" target="_blank" aria-label="LinkedIn">
       <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
     </a>
-    <!-- Weibo -->
     <a href="https://weibo.com/kfbg" class="social-btn" target="_blank" aria-label="Weibo">
-      <svg viewBox="0 0 24 24"><path d="M10.098 20c-3.867 0-7-1.79-7-4s3.133-4 7-4 7 1.79 7 4-3.133 4-7 4zm0-6.5c-2.985 0-5.4 1.12-5.4 2.5s2.415 2.5 5.4 2.5 5.4-1.12 5.4-2.5-2.415-2.5-5.4-2.5zM8.5 16.5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm3 .5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM18.5 7c-.17 0-.34.01-.5.04A4.5 4.5 0 0 0 10 8.5c0 .17.01.34.03.5H9.5A3.5 3.5 0 0 0 6 12.5v.04A8.4 8.4 0 0 1 3.098 12C3.098 8.686 6.23 6 10.098 6c2.107 0 4.003.79 5.354 2.058A3.978 3.978 0 0 1 18.5 7z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M10.1 20c-3.87 0-7-1.79-7-4s3.13-4 7-4 7 1.79 7 4-3.14 4-7 4zm0-6.5c-2.98 0-5.4 1.12-5.4 2.5S7.12 18.5 10.1 18.5s5.4-1.12 5.4-2.5-2.42-2.5-5.4-2.5zM8.5 16.5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm3 .5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM18.5 7c-.17 0-.34.01-.5.04A4.5 4.5 0 0 0 10 8.5c0 .17.01.34.03.5H9.5A3.5 3.5 0 0 0 6 12.5v.04A8.4 8.4 0 0 1 3.1 12C3.1 8.69 6.23 6 10.1 6c2.11 0 4 .79 5.35 2.06A3.98 3.98 0 0 1 18.5 7z"/></svg>
     </a>
   </div>
-  <p style="margin-top:28px;font-size:11px;color:var(--text-muted);">© Kadoorie Farm &amp; Botanic Garden · <span class="en">All rights reserved</span><span class="tc">版權所有</span></p>
+  <p style="margin-top:24px;font-size:0.7rem;color:var(--text-muted);">© Kadoorie Farm &amp; Botanic Garden · <span class="en">All rights reserved</span><span class="tc">版權所有</span></p>
 </footer>
 
-<!-- PWA INSTALL BANNER -->
+<!-- INSTALL BANNER -->
 <div class="install-banner" id="installBanner">
-  <p class="en"><strong>Add to Home Screen</strong> for offline access in the forest — no signal needed.</p>
+  <p class="en"><strong>Add to Home Screen</strong> for offline access — no signal needed in the forest.</p>
   <p class="tc"><strong>加至主畫面</strong>，即可在森林中離線收聽，無需網絡。</p>
   <button class="btn-install" id="installBtn">Add</button>
   <button class="btn-dismiss" onclick="document.getElementById('installBanner').classList.remove('show')">×</button>
 </div>
 
 <script>
-// ── Language toggle
-function setLang(lang) {
-  document.body.className = lang;
-  document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
-  localStorage.setItem('kfbg-lang', lang);
-}
-const saved = localStorage.getItem('kfbg-lang');
-if (saved) setLang(saved);
+// DATA KEY mapping
+function dk(){return lang==='zh'?'tc':'en';}
 
-// ── PWA install prompt
+let lang='zh';
+let fsLevel=2;
+const FS_SIZES=['0.88rem','0.94rem','1rem','1.08rem','1.16rem','1.25rem'];
+
+function adjustFS(d){
+  fsLevel=Math.max(0,Math.min(FS_SIZES.length-1,fsLevel+d));
+  document.documentElement.style.setProperty('--fs',FS_SIZES[fsLevel]);
+  localStorage.setItem('kfbg-fs',fsLevel);
+}
+
+function applyLang(l){
+  lang=l;
+  document.documentElement.setAttribute('data-lang',l);
+  document.documentElement.lang=l==='zh'?'zh-Hant':'en';
+  localStorage.setItem('kfbg-lang',l);
+}
+function setLang(l){applyLang(l);}
+
+// Init
+(function(){
+  const savedFs=parseInt(localStorage.getItem('kfbg-fs')||'2');
+  fsLevel=savedFs;
+  document.documentElement.style.setProperty('--fs',FS_SIZES[fsLevel]);
+  const savedLang=localStorage.getItem('kfbg-lang')||'zh';
+  applyLang(savedLang);
+})();
+
+// PWA install (Android/Chrome)
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  setTimeout(() => document.getElementById('installBanner').classList.add('show'), 2000);
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  setTimeout(()=>document.getElementById('installBanner').classList.add('show'),2500);
 });
-document.getElementById('installBtn').addEventListener('click', () => {
-  if (!deferredPrompt) return;
+document.getElementById('installBtn').addEventListener('click',()=>{
+  if(!deferredPrompt)return;
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(() => {
-    deferredPrompt = null;
-    document.getElementById('installBanner').classList.remove('show');
-  });
+  deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('installBanner').classList.remove('show');});
 });
-
-// ── Register service worker
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
