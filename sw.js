@@ -8,11 +8,11 @@ const STATIC = [
   'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap',
 ];
 const AUDIO = [
-  '/upload/audio-journey/01_Final_v01_20260211.mp3',
-  '/upload/audio-journey/02_Final_v01_20260211.mp3',
-  '/upload/audio-journey/03_Final_v01_20260211.mp3',
-  '/upload/audio-journey/04_Final_v01_20260211.mp3',
-  '/upload/audio-journey/05_Final_v01_20260211.mp3',
+  'audio/01_Final_v01_20260211.mp3',
+  'audio/02_Final_v01_20260211.mp3',
+  'audio/03_Final_v01_20260211.mp3',
+  'audio/04_Final_v01_20260211.mp3',
+  'audio/05_Final_v01_20260211.mp3',
 ];
 
 self.addEventListener('install', e => {
