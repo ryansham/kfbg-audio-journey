@@ -1,24 +1,20 @@
-/* KFBG Audio Journey — Service Worker v1 */
-const CACHE = 'kfbg-v1';
-const STATIC = [
+/* KFBG Audio Journey — Service Worker v3 */
+const PAGE_CACHE = 'kfbg-pages-v1';
+const AUDIO_CACHE = 'kfbg-audio-v1';
+
+// Pages & assets to pre-cache on install (no audio — too large for auto)
+const PRECACHE = [
   './',
   './index.html',
   './journey.html',
   './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap',
-];
-const AUDIO = [
-  'audio/01_Final_v01_20260211.mp3',
-  'audio/02_Final_v01_20260211.mp3',
-  'audio/03_Final_v01_20260211.mp3',
-  'audio/04_Final_v01_20260211.mp3',
-  'audio/05_Final_v01_20260211.mp3',
+  './KFBG_Logo_Square.png',
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(STATIC))
+    caches.open(PAGE_CACHE)
+      .then(c => c.addAll(PRECACHE))
       .then(() => self.skipWaiting())
   );
 });
@@ -26,23 +22,26 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(
+        keys.filter(k => k !== PAGE_CACHE && k !== AUDIO_CACHE).map(k => caches.delete(k))
+      ))
       .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
-  const isAudio = AUDIO.some(a => url.pathname.includes(a));
-  const isStatic = STATIC.some(s => e.request.url.includes(s) || url.pathname === '/');
+  const isAudio = url.pathname.endsWith('.mp3');
+  const isPage = PRECACHE.some(p => url.pathname.endsWith(p.replace('./',''))) || url.pathname === '/';
+  const cacheName = isAudio ? AUDIO_CACHE : PAGE_CACHE;
 
-  if (isAudio || isStatic) {
+  if (isAudio || isPage) {
     e.respondWith(
       caches.match(e.request).then(cached => {
         if (cached) return cached;
         return fetch(e.request).then(res => {
           if (res && res.ok) {
-            caches.open(CACHE).then(c => c.put(e.request, res.clone()));
+            caches.open(cacheName).then(c => c.put(e.request, res.clone()));
           }
           return res;
         }).catch(() => cached);

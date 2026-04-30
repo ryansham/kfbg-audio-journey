@@ -13,200 +13,355 @@
 <title>語音旅程 · KFBG</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-/* ── BASE ── */
-:root{--olive:#4A5C3A;--olive-mid:#3B4A2F;--olive-light:#8A9A78;--cream:#F7F3EC;--sand:#EEEBE4;--border:#D8D3CB;--text:#1E2418;--text-mid:#444;--text-muted:#7A7A6A;--gold:#C4A96A;--bar-h:76px;--fs:1rem;}
+/* ── VARS ── */
+:root{
+  --olive:#4A5C3A;--olive-mid:#3B4A2F;--olive-light:#8A9A78;
+  --cream:#F7F3EC;--sand:#EEEBE4;--border:#D8D3CB;
+  --text:#1E2418;--text-mid:#444;--text-muted:#7A7A6A;--gold:#C4A96A;
+  --bar-h:80px;--nav-h:54px;--fs:1rem;
+}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;font-size:var(--fs);}
 body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.65;overflow-x:hidden;}
 
-/* ── LANG — data-lang on <html> ── */
+/* ── LANG ── */
 [data-lang="en"] .tc{display:none!important;}
 [data-lang="zh"] .en{display:none!important;}
-/* block elements */
-.en{display:block;}
-.tc{display:block;}
-/* inline spans */
+.en,.tc{display:block;}
 span.en,span.tc{display:inline;}
 [data-lang="en"] span.tc{display:none!important;}
 [data-lang="zh"] span.en{display:none!important;}
-/* Noto for TC */
-[data-lang="zh"] .ch-title,[data-lang="zh"] .completion h2,[data-lang="zh"] .practice-text,[data-lang="zh"] .pa-title{font-family:'Noto Serif TC',serif;}
-/* lang button highlight */
-[data-lang="en"] .lang-btn[data-lang="en"]{background:var(--olive);color:#fff;}
-[data-lang="zh"] .lang-btn[data-lang="zh"]{background:var(--olive);color:#fff;}
-[data-lang="en"] .lang-btn[data-lang="zh"],[data-lang="zh"] .lang-btn[data-lang="en"]{background:transparent;color:var(--text-muted);}
-
-/* ── FONT SIZE CONTROL ── */
-.fs-ctrl{display:flex;align-items:center;gap:4px;margin-left:8px;}
-.fs-btn{background:rgba(107,125,90,0.12);border:1px solid var(--border);color:var(--text-mid);border-radius:100px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;transition:all 0.18s;flex-shrink:0;}
-.fs-btn:hover{background:var(--olive);color:#fff;border-color:var(--olive);}
+[data-lang="zh"] .ch-title,[data-lang="zh"] .completion h2,[data-lang="zh"] .practice-text{font-family:'Noto Serif TC',serif;}
 
 /* ── SCROLL PROGRESS ── */
-#scrollBar{position:fixed;top:0;left:0;height:3px;background:var(--gold);width:0%;z-index:500;pointer-events:none;}
+#scrollBar{position:fixed;top:0;left:0;height:3px;background:var(--gold);width:0%;z-index:600;pointer-events:none;}
 
 /* ── TOP NAV ── */
-.top-nav{position:fixed;top:0;left:0;right:0;z-index:200;background:rgba(247,243,236,0.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);height:52px;padding:0 12px;display:flex;align-items:center;gap:8px;}
-.back-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--olive);text-decoration:none;font-weight:500;flex-shrink:0;}
-.back-btn svg{width:16px;height:16px;}
-.nav-title{font-size:12px;color:var(--text-muted);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-.lang-toggle{display:flex;gap:2px;background:var(--sand);border-radius:100px;padding:2px;flex-shrink:0;}
-.lang-btn{border:none;background:transparent;padding:4px 9px;border-radius:100px;font-size:10px;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.2s;}
+.top-nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav-h);background:rgba(247,243,236,0.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:0 14px;display:flex;align-items:center;gap:10px;}
+.back-btn{display:inline-flex;align-items:center;gap:5px;font-size:0.78rem;color:var(--olive);text-decoration:none;font-weight:500;flex-shrink:0;padding:6px 0;}
+.back-btn svg{width:18px;height:18px;}
+.nav-title{font-size:0.78rem;color:var(--text-muted);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+.btn-hamburger{width:40px;height:40px;border-radius:10px;background:var(--olive);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 0.2s;}
+.btn-hamburger:hover{opacity:0.85;}
+.btn-hamburger svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;}
 
-/* ── BOTTOM-SHEET TRANSITION (quarter screen) ── */
-.trans-sheet{position:fixed;left:0;right:0;bottom:0;height:26vh;min-height:160px;max-height:240px;z-index:500;background:var(--olive-mid);border-radius:20px 20px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);padding:20px 24px;}
-.trans-sheet.show{transform:translateY(0);}
-.ts-handle{width:32px;height:3px;border-radius:2px;background:rgba(255,255,255,0.12);position:absolute;top:10px;}
-.ts-num{font-family:'Cormorant Garamond',serif;font-size:36px;color:rgba(247,243,236,0.1);line-height:1;}
-.ts-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,243,236,0.35);margin:2px 0 6px;}
-.ts-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:500;color:var(--cream);text-align:center;line-height:1.3;}
-.ts-loc{font-size:10px;color:rgba(247,243,236,0.35);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;}
+/* ── HAMBURGER DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s;}
+.drawer-overlay.open{background:rgba(0,0,0,0.35);pointer-events:all;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(320px,85vw);z-index:500;background:var(--cream);box-shadow:-8px 0 32px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);display:flex;flex-direction:column;overflow-y:auto;}
+.drawer.open{transform:translateX(0);}
+.drawer-head{padding:20px 20px 16px;background:var(--olive);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.drawer-logo{height:28px;}
+.btn-close-drawer{background:rgba(255,255,255,0.12);border:none;color:rgba(247,243,236,0.7);width:32px;height:32px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.drawer-body{padding:20px;flex:1;}
+.drawer-section{margin-bottom:24px;}
+.drawer-section-label{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--olive-light);margin-bottom:12px;font-weight:600;}
 
-/* ── iOS INSTALL BANNER ── */
-.ios-banner{display:none;position:fixed;bottom:calc(var(--bar-h) + 12px);left:12px;right:12px;z-index:400;background:var(--olive-mid);border-radius:16px;padding:18px;box-shadow:0 8px 32px rgba(0,0,0,0.3);}
-.ios-banner.show{display:block;}
-.ios-banner-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
-.ios-app-icon{width:48px;height:48px;border-radius:11px;overflow:hidden;flex-shrink:0;border:1px solid rgba(196,169,106,0.25);}
-.ios-app-icon img{width:100%;height:100%;object-fit:cover;}
-.ios-app-info{flex:1;}
-.ios-app-name{font-size:14px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:2px;}
-.ios-app-sub{font-size:11px;color:rgba(247,243,236,0.45);}
-.ios-dismiss{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.5);font-size:12px;cursor:pointer;padding:4px 10px;border-radius:100px;font-family:'DM Sans',sans-serif;flex-shrink:0;}
-.ios-steps{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-.ios-step{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:rgba(247,243,236,0.75);line-height:1.5;}
-.ios-step-num{width:18px;height:18px;border-radius:50%;background:rgba(196,169,106,0.2);color:var(--gold);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.ios-add-btn{width:100%;background:rgba(255,255,255,0.08);color:rgba(247,243,236,0.45);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:default;}
+/* font slider */
+.fs-slider-wrap{display:flex;align-items:center;gap:10px;padding:4px 0;}
+.fs-icon{font-size:0.75rem;color:var(--text-muted);flex-shrink:0;}
+.fs-icon.big{font-size:1.1rem;}
+input[type=range].fs-slider{flex:1;height:4px;appearance:none;-webkit-appearance:none;background:var(--border);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range].fs-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--olive);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.15);}
+input[type=range].fs-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--olive);cursor:pointer;border:none;}
 
-/* ── DOWNLOAD BANNER ── */
-.dl-banner{background:var(--sand);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin:60px 16px 0;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-muted);}
-.dl-banner.hidden{display:none;}
-.btn-dl{background:var(--olive);color:#fff;border:none;border-radius:100px;padding:6px 14px;font-size:11px;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-.btn-dl:disabled{opacity:0.5;cursor:default;}
-.dl-prog{flex:1;height:3px;background:var(--border);border-radius:2px;display:none;overflow:hidden;}
-.dl-prog-fill{height:100%;background:var(--olive);width:0%;transition:width 0.3s;}
+/* lang toggle in drawer */
+.lang-row{display:flex;gap:8px;}
+.lang-opt{flex:1;padding:10px;border:2px solid var(--border);border-radius:10px;background:transparent;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;color:var(--text-muted);cursor:pointer;text-align:center;transition:all 0.2s;}
+.lang-opt.active{border-color:var(--olive);background:var(--olive);color:#fff;}
+
+/* download button */
+.btn-dl-drawer{width:100%;padding:13px 16px;background:var(--olive);color:#fff;border:none;border-radius:12px;font-size:0.85rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;transition:opacity 0.2s;}
+.btn-dl-drawer:hover{opacity:0.88;}
+.btn-dl-drawer:disabled{opacity:0.45;cursor:default;}
+.dl-prog-drawer{height:4px;background:var(--sand);border-radius:2px;overflow:hidden;margin-top:6px;display:none;}
+.dl-prog-fill-d{height:100%;background:var(--olive);width:0%;transition:width 0.3s;border-radius:2px;}
+.dl-status{font-size:0.72rem;color:var(--text-muted);margin-top:6px;display:none;}
+
+/* links */
+.drawer-link{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--sand);border-radius:10px;text-decoration:none;color:var(--text-mid);font-size:0.82rem;margin-bottom:8px;transition:background 0.18s;}
+.drawer-link:hover{background:var(--border);}
+.drawer-link svg{width:14px;height:14px;stroke:var(--text-muted);fill:none;stroke-width:2;}
+
+/* ── MAP ── */
+.map-section{margin:calc(var(--nav-h) + 4px) 0 0;position:relative;overflow:hidden;background:var(--sand);height:220px;touch-action:none;cursor:grab;user-select:none;}
+.map-section.grabbing{cursor:grabbing;}
+.map-section img{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;}
+.map-placeholder{height:220px;background:linear-gradient(135deg,#d6e4c8 0%,#e8f0de 50%,#c8d8b4 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--olive-light);}
+.map-placeholder svg{width:36px;height:36px;opacity:0.5;}
+.map-placeholder p{font-size:0.75rem;letter-spacing:0.06em;opacity:0.7;}
+.map-hint{position:absolute;bottom:8px;right:10px;font-size:0.62rem;background:rgba(255,255,255,0.75);padding:3px 8px;border-radius:100px;color:var(--text-muted);pointer-events:none;}
 
 /* ── PILLS ── */
-.ch-pills{display:flex;gap:8px;overflow-x:auto;padding:8px 16px;scrollbar-width:none;}
+.ch-pills-wrap{position:sticky;top:var(--nav-h);z-index:200;background:rgba(247,243,236,0.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);}
+.ch-pills{display:flex;gap:8px;overflow-x:auto;padding:8px 14px;scrollbar-width:none;}
 .ch-pills::-webkit-scrollbar{display:none;}
-.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:100px;border:1px solid var(--border);background:transparent;font-size:0.7rem;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;font-size:0.72rem;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;min-height:36px;}
 .ch-pill.active{background:var(--olive);border-color:var(--olive);color:#fff;}
 .ch-pill.done{border-color:var(--olive-light);color:var(--olive-light);}
-.ch-pill-num{font-size:0.6rem;opacity:0.55;}
+.ch-pill-num{font-size:0.6rem;opacity:0.5;}
 
 /* ── PLAY ALL ── */
-.play-all-bar{margin:4px 16px 0;background:var(--olive);border-radius:10px;padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;border:none;width:calc(100% - 32px);}
-.pa-icon{width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.pa-icon svg{width:13px;height:13px;fill:var(--olive-mid);}
-.pa-text{flex:1;min-width:0;text-align:left;}
-.pa-label{font-size:0.65rem;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
+.play-all-wrap{padding:8px 14px 4px;}
+.play-all-bar{background:var(--olive);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:none;width:100%;text-align:left;transition:opacity 0.18s;}
+.play-all-bar:hover{opacity:0.9;}
+.pa-icon{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pa-icon svg{width:13px;height:13px;fill:var(--olive-mid);margin-left:2px;}
+.pa-text{flex:1;min-width:0;}
+.pa-label{font-size:0.62rem;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
 .pa-title{font-size:0.85rem;font-weight:500;color:var(--cream);line-height:1.3;}
 
 /* ── CONTENT ── */
-.journey-content{max-width:640px;margin:0 auto;padding:0 16px;padding-bottom:calc(var(--bar-h) + 32px);}
-.ch-section{margin-top:36px;scroll-margin-top:160px;}
+.journey-content{max-width:640px;margin:0 auto;padding:0 14px;padding-bottom:calc(var(--bar-h) + 32px);}
+.ch-section{margin-top:32px;scroll-margin-top:calc(var(--nav-h) + 48px + 220px);}
 .ch-section.active-chapter .ch-img-wrap{box-shadow:0 0 0 3px var(--olive);}
-.ch-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;margin-bottom:16px;background:var(--sand);transition:box-shadow 0.3s;}
+.ch-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;margin-bottom:14px;background:var(--sand);transition:box-shadow 0.3s;}
 .ch-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-.ch-img-badge{position:absolute;top:12px;left:12px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.95);font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 11px;border-radius:100px;}
-.ch-img-num{position:absolute;bottom:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:600;color:var(--olive);}
-.ch-kicker{font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:5px;}
-.ch-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,4.5vw,1.5rem);font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
-.ch-desc{font-size:0.88rem;color:var(--text-muted);line-height:1.78;margin-bottom:16px;}
+.ch-img-badge{position:absolute;top:11px;left:11px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.94);font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 10px;border-radius:100px;}
+.ch-img-num{position:absolute;bottom:11px;right:11px;width:30px;height:30px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.82rem;font-weight:600;color:var(--olive);}
+.ch-kicker{font-size:0.62rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--olive-light);margin-bottom:4px;}
+.ch-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,4.5vw,1.45rem);font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
+.ch-desc{font-size:0.88rem;color:var(--text-muted);line-height:1.78;margin-bottom:14px;}
 
-/* ── CHAPTER PLAYER ── */
-.ch-player{background:var(--olive);border-radius:12px;padding:14px 16px;margin-bottom:12px;}
-.ch-player-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.ch-play-btn{width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.ch-play-btn svg{width:13px;height:13px;fill:var(--olive-mid);}
+/* ── CHAPTER PLAYER (play button RIGHT) ── */
+.ch-player{background:var(--olive);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
+.ch-player-main{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.ch-player-info{flex:1;min-width:0;}
+.ch-play-label{font-size:0.62rem;color:rgba(196,169,106,0.55);letter-spacing:0.06em;margin-bottom:2px;}
+.ch-play-name{font-size:0.9rem;font-weight:500;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ch-play-time{font-size:0.68rem;color:rgba(247,243,236,0.32);margin-top:2px;}
+.ch-play-btn{width:44px;height:44px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.15s,opacity 0.2s;}
+.ch-play-btn:hover{opacity:0.85;}
+.ch-play-btn:active{transform:scale(0.93);}
+.ch-play-btn svg{width:15px;height:15px;fill:var(--olive-mid);}
 .ch-play-btn .i-pause{display:none;}
 .ch-play-btn.playing .i-play{display:none;}
 .ch-play-btn.playing .i-pause{display:block;}
-.ch-play-info{flex:1;min-width:0;}
-.ch-play-label{font-size:0.65rem;color:rgba(196,169,106,0.55);letter-spacing:0.06em;margin-bottom:1px;}
-.ch-play-name{font-size:0.85rem;font-weight:500;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ch-play-time{font-size:0.7rem;color:rgba(247,243,236,0.32);margin-top:1px;}
-.ch-seek{height:3px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;margin-bottom:8px;}
+.ch-seek{height:4px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;margin-bottom:9px;position:relative;}
 .ch-seek-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;pointer-events:none;}
 .ch-speed{display:flex;align-items:center;gap:6px;}
-.spd-label{font-size:0.65rem;color:rgba(247,243,236,0.3);}
-.speed-btn{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.4);font-size:0.65rem;font-family:'DM Sans',sans-serif;padding:3px 9px;border-radius:100px;cursor:pointer;transition:all 0.18s;}
+.spd-label{font-size:0.62rem;color:rgba(247,243,236,0.3);}
+.speed-btn{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.42);font-size:0.68rem;font-family:'DM Sans',sans-serif;padding:5px 10px;border-radius:100px;cursor:pointer;transition:all 0.18s;min-height:30px;}
 .speed-btn.active{background:rgba(196,169,106,0.25);color:var(--gold);}
 
 /* ── TRANSCRIPT ── */
 details{margin-bottom:12px;}
-details summary{cursor:pointer;padding:10px 14px;background:var(--sand);border:1px solid var(--border);border-radius:8px;font-size:0.78rem;color:var(--text-muted);list-style:none;display:flex;align-items:center;justify-content:space-between;}
-details summary::after{content:'▸';font-size:10px;}
+details summary{cursor:pointer;padding:12px 15px;background:var(--sand);border:1px solid var(--border);border-radius:10px;font-size:0.82rem;color:var(--text-muted);list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:44px;}
+details summary::after{content:'▸';font-size:11px;flex-shrink:0;}
 details[open] summary::after{content:'▾';}
-.tr-body{padding:14px;background:#F9F7F3;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;font-size:0.8rem;color:var(--text-muted);line-height:1.9;white-space:pre-wrap;}
+.tr-body{padding:14px;background:#F9F7F3;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;font-size:0.8rem;color:var(--text-muted);line-height:1.9;white-space:pre-wrap;}
 
 /* ── PRACTICE ── */
-.practice-card{background:var(--sand);border-left:3px solid var(--olive);padding:14px 16px;}
+.practice-card{background:var(--sand);border-left:4px solid var(--olive);border-radius:0 10px 10px 0;padding:14px 16px;}
 .practice-label{font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--olive);margin-bottom:6px;font-weight:600;}
-.practice-text{font-family:'Cormorant Garamond',serif;font-size:1.08rem;font-style:italic;color:var(--text);line-height:1.55;}
+.practice-text{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;color:var(--text);line-height:1.55;}
 
 /* ── DIVIDER ── */
-.ch-divider{display:flex;align-items:center;gap:10px;margin:32px 0 0;opacity:0.18;}
+.ch-divider{display:flex;align-items:center;gap:10px;margin:28px 0 0;opacity:0.18;}
 .ch-divider::before,.ch-divider::after{content:'';flex:1;height:1px;background:var(--olive);}
 .ch-divider-dot{width:4px;height:4px;border-radius:50%;background:var(--olive);}
 
-/* ── COMPLETION ── */
-.completion{display:none;text-align:center;padding:40px 24px;background:var(--olive);border-radius:16px;margin-top:32px;}
+/* ── COMPLETION STAMP ── */
+.completion{display:none;text-align:center;padding:40px 24px;background:var(--olive);border-radius:16px;margin-top:28px;}
 .completion.show{display:block;}
 .cs{width:68px;height:68px;border-radius:50%;border:2px solid rgba(196,169,106,0.28);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;}
 .completion h2{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:500;color:var(--cream);margin-bottom:8px;}
 .completion p{font-size:0.85rem;color:rgba(247,243,236,0.65);line-height:1.7;margin-bottom:22px;max-width:260px;margin-left:auto;margin-right:auto;}
-.btn-home{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--olive-mid);padding:10px 20px;border-radius:100px;text-decoration:none;font-size:0.85rem;font-weight:600;}
+.btn-home{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--olive-mid);padding:12px 22px;border-radius:100px;text-decoration:none;font-size:0.85rem;font-weight:600;}
 
-/* ── PLAYER BAR ── */
+/* ── BOTTOM PLAYER BAR ── */
 .player-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olive-mid);border-top:1px solid rgba(255,255,255,0.07);}
 .pb-track{height:3px;background:rgba(255,255,255,0.1);cursor:pointer;}
 .pb-fill{height:100%;background:var(--gold);pointer-events:none;transition:width 0.1s linear;width:0%;}
-.pb-inner{padding:9px 16px 13px;display:flex;align-items:center;gap:11px;}
-.btn-play-main{width:42px;height:42px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pb-inner{padding:10px 14px 14px;display:flex;align-items:center;gap:10px;}
+/* info LEFT, play RIGHT */
+.pb-info{flex:1;min-width:0;cursor:pointer;}
+.pb-info:hover .pb-title{color:var(--gold);}
+.pb-ch{font-size:0.58rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;display:flex;align-items:center;gap:5px;}
+.pb-playlist-tag{background:rgba(196,169,106,0.15);color:var(--gold);font-size:0.5rem;letter-spacing:0.08em;padding:1px 6px;border-radius:100px;display:none;}
+.pb-playlist-tag.show{display:inline-block;}
+.pb-title{font-size:0.88rem;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color 0.2s;}
+.pb-seq{display:none;margin-top:3px;gap:3px;align-items:center;}
+.pb-seq.show{display:flex;}
+.pb-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.15);}
+.pb-dot.active{background:var(--gold);}
+.pb-dot.done{background:rgba(196,169,106,0.38);}
+.pb-time{font-size:0.65rem;color:rgba(247,243,236,0.3);margin-top:2px;}
+/* controls on right */
+.pb-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.btn-play-main{width:44px;height:44px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .btn-play-main svg{width:15px;height:15px;fill:var(--olive-mid);}
 .btn-play-main .i-pause{display:none;}
 .btn-play-main.playing .i-play{display:none;}
 .btn-play-main.playing .i-pause{display:block;}
-.pb-info{flex:1;min-width:0;}
-.pb-ch{font-size:0.6rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;display:flex;align-items:center;gap:6px;}
-.pb-playlist-tag{background:rgba(196,169,106,0.15);color:var(--gold);font-size:0.5rem;letter-spacing:0.08em;padding:1px 6px;border-radius:100px;display:none;}
-.pb-playlist-tag.show{display:inline-block;}
-.pb-title{font-size:0.85rem;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.pb-seq{display:none;margin-top:2px;}
-.pb-seq.show{display:flex;gap:3px;align-items:center;}
-.pb-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.15);}
-.pb-dot.active{background:var(--gold);}
-.pb-dot.done{background:rgba(196,169,106,0.38);}
-.pb-time{font-size:0.68rem;color:rgba(247,243,236,0.3);margin-top:1px;}
-.btn-next{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);}
+.btn-next{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);padding:4px;}
 .btn-next svg{width:20px;height:20px;}
 
+/* ── BOTTOM-SHEET TRANSITION ── */
+.trans-sheet{position:fixed;left:0;right:0;bottom:0;height:22vh;min-height:140px;max-height:200px;z-index:600;background:var(--olive-mid);border-radius:18px 18px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);padding:16px 24px;}
+.trans-sheet.show{transform:translateY(0);}
+.ts-handle{width:28px;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);position:absolute;top:9px;}
+.ts-num{font-family:'Cormorant Garamond',serif;font-size:32px;color:rgba(247,243,236,0.08);line-height:1;}
+.ts-label{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,243,236,0.32);margin:2px 0 5px;}
+.ts-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-weight:500;color:var(--cream);text-align:center;line-height:1.3;}
+.ts-loc{font-size:0.62rem;color:rgba(247,243,236,0.32);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;}
+
+/* ── iOS BANNER ── */
+.ios-banner{display:none;position:fixed;bottom:calc(var(--bar-h) + 10px);left:12px;right:12px;z-index:400;background:var(--olive-mid);border-radius:14px;padding:16px;box-shadow:0 6px 28px rgba(0,0,0,0.28);}
+.ios-banner.show{display:block;}
+.ios-top{display:flex;align-items:center;gap:11px;margin-bottom:12px;}
+.ios-icon{width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;}
+.ios-icon img{width:100%;height:100%;object-fit:cover;}
+.ios-info{flex:1;}
+.ios-name{font-size:0.88rem;font-weight:600;color:#fff;margin-bottom:1px;}
+.ios-sub{font-size:0.7rem;color:rgba(247,243,236,0.45);}
+.ios-dismiss{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.45);font-size:13px;cursor:pointer;padding:4px 9px;border-radius:100px;font-family:'DM Sans',sans-serif;}
+.ios-steps{display:flex;flex-direction:column;gap:7px;margin-bottom:12px;}
+.ios-step{display:flex;align-items:flex-start;gap:8px;font-size:0.75rem;color:rgba(247,243,236,0.75);line-height:1.5;}
+.ios-num{width:18px;height:18px;border-radius:50%;background:rgba(196,169,106,0.18);color:var(--gold);font-size:0.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.ios-add-btn{width:100%;background:rgba(255,255,255,0.07);color:rgba(247,243,236,0.38);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px;font-size:0.75rem;font-family:'DM Sans',sans-serif;cursor:default;}
+
 /* ── OFFLINE NOTICE ── */
-.offline-notice{background:rgba(196,169,106,0.1);border:1px solid rgba(196,169,106,0.22);border-radius:8px;padding:7px 14px;margin:6px 16px 0;font-size:0.72rem;color:var(--gold);text-align:center;display:none;}
+.offline-notice{background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:7px 14px;margin:4px 14px;font-size:0.72rem;color:var(--gold);text-align:center;display:none;}
 .offline-notice.show{display:block;}
 </style>
 </head>
 <body>
+
 <div id="scrollBar"></div>
 
+<!-- NAV -->
 <nav class="top-nav">
   <a href="index.html" class="back-btn">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
     <span class="en">Journeys</span><span class="tc">旅程</span>
   </a>
   <div class="nav-title"><span class="en">Grounding Walk</span><span class="tc">連結大地</span></div>
-  <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
-    <div class="fs-ctrl">
-      <button class="fs-btn" onclick="adjustFS(-1)" title="Smaller text">A−</button>
-      <button class="fs-btn" onclick="adjustFS(1)" title="Larger text">A+</button>
-    </div>
-    <div class="lang-toggle">
-      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
-      <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">繁中</button>
-    </div>
-  </div>
+  <button class="btn-hamburger" onclick="openDrawer()" aria-label="Menu">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
 </nav>
 
-<!-- BOTTOM-SHEET TRANSITION -->
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <img src="KFBG_Logo_Square.png" alt="KFBG" class="drawer-logo" onerror="this.style.display='none'"/>
+    <button class="btn-close-drawer" onclick="closeDrawer()">×</button>
+  </div>
+  <div class="drawer-body">
+
+    <!-- Language -->
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span class="en">Language</span><span class="tc">語言</span></div>
+      <div class="lang-row">
+        <button class="lang-opt" data-lang="en" onclick="setLang('en')">English</button>
+        <button class="lang-opt active" data-lang="zh" onclick="setLang('zh')">繁中</button>
+      </div>
+    </div>
+
+    <!-- Font size -->
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span class="en">Text size</span><span class="tc">文字大小</span></div>
+      <div class="fs-slider-wrap">
+        <span class="fs-icon">A</span>
+        <input type="range" class="fs-slider" id="fsSlider" min="0" max="5" step="1" value="2" oninput="setFontFromSlider(this.value)"/>
+        <span class="fs-icon big">A</span>
+      </div>
+    </div>
+
+    <!-- Download -->
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span class="en">Offline Access</span><span class="tc">離線使用</span></div>
+      <button class="btn-dl-drawer" id="btnDlDrawer" onclick="downloadOffline()">
+        <span class="en">Download all audio chapters</span>
+        <span class="tc">下載所有音頻章節</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+      <div class="dl-prog-drawer" id="dlProgDrawer"><div class="dl-prog-fill-d" id="dlFillDrawer"></div></div>
+      <div class="dl-status" id="dlStatus"></div>
+    </div>
+
+    <!-- Links -->
+    <div class="drawer-section">
+      <div class="drawer-section-label"><span class="en">KFBG Links</span><span class="tc">嘉道理農場連結</span></div>
+      <a href="#" id="linkHome" class="drawer-link" target="_blank">
+        <span class="en">KFBG Homepage</span><span class="tc">嘉道理農場主頁</span>
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+      <a href="#" id="linkEvents" class="drawer-link" target="_blank">
+        <span class="en">Events &amp; Programmes</span><span class="tc">活動與節目</span>
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+      <a href="#" id="linkDonate" class="drawer-link" target="_blank">
+        <span class="en">Donate</span><span class="tc">捐款</span>
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- MAP SECTION -->
+<div class="map-section" id="mapSection">
+  <div class="map-placeholder" id="mapPlaceholder">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg>
+    <p class="en">Trail map coming soon</p>
+    <p class="tc">步道地圖即將推出</p>
+  </div>
+  <div class="map-hint en">Pinch to zoom · Drag to pan</div>
+  <div class="map-hint tc" style="display:none">捏合縮放 · 拖動移動</div>
+</div>
+
+<!-- PILLS + PLAY ALL -->
+<div class="ch-pills-wrap">
+  <div class="ch-pills" id="pillsRow"></div>
+</div>
+<div class="play-all-wrap">
+  <button class="play-all-bar" onclick="playAll()">
+    <div class="pa-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
+    <div class="pa-text">
+      <div class="pa-label"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div>
+      <div class="pa-title en">Grounding Walk at Lower Hillside of KFBG</div>
+      <div class="pa-title tc">連結大地 — 嘉道理下山區靜心漫步</div>
+    </div>
+  </button>
+</div>
+
+<div class="offline-notice" id="offlineNotice">
+  <span class="en">Playing from cache — offline mode</span>
+  <span class="tc">離線模式 — 從緩存播放</span>
+</div>
+
+<!-- CONTENT -->
+<main class="journey-content" id="journeyContent"></main>
+
+<!-- PLAYER BAR -->
+<div class="player-bar">
+  <div class="pb-track" id="pbTrack"><div class="pb-fill" id="pbFill"></div></div>
+  <div class="pb-inner">
+    <div class="pb-info" onclick="jumpToCurrentSection()">
+      <div class="pb-ch">
+        <span id="pbChText"></span>
+        <span class="pb-playlist-tag" id="pbPlaylistTag"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span>
+      </div>
+      <div class="pb-title" id="pbTitle"></div>
+      <div class="pb-seq" id="pbSeq"></div>
+      <div class="pb-time" id="pbTime">0:00 / —:——</div>
+    </div>
+    <div class="pb-controls">
+      <button class="btn-next" onclick="nextChapter()" title="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+      <button class="btn-play-main" id="btnPlayMain" onclick="togglePlay()">
+        <svg class="i-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSITION SHEET -->
 <div class="trans-sheet" id="transSheet">
   <div class="ts-handle"></div>
   <div class="ts-num" id="tsNum">01</div>
@@ -215,75 +370,30 @@ details[open] summary::after{content:'▾';}
   <div class="ts-loc" id="tsLoc"></div>
 </div>
 
-<!-- iOS INSTALL BANNER -->
+<!-- iOS BANNER -->
 <div class="ios-banner" id="iosBanner">
-  <div class="ios-banner-top">
-    <div class="ios-app-icon"><img src="KFBG_Logo_Square.png" alt="KFBG"/></div>
-    <div class="ios-app-info">
-      <div class="ios-app-name en">KFBG Audio Journey</div>
-      <div class="ios-app-name tc">嘉道理農場暨植物園 語音旅程</div>
-      <div class="ios-app-sub en">Add to Home Screen for offline use</div>
-      <div class="ios-app-sub tc">加至主畫面，離線收聽</div>
+  <div class="ios-top">
+    <div class="ios-icon"><img src="KFBG_Logo_Square.png" alt="KFBG"/></div>
+    <div class="ios-info">
+      <div class="ios-name en">KFBG Audio Journey</div>
+      <div class="ios-name tc">嘉道理農場 語音旅程</div>
+      <div class="ios-sub en">Add for offline forest use</div>
+      <div class="ios-sub tc">加至主畫面，離線使用</div>
     </div>
     <button class="ios-dismiss" onclick="dismissIOS()">✕</button>
   </div>
   <div class="ios-steps">
-    <div class="ios-step"><div class="ios-step-num">1</div><span class="en">Tap the <strong style="color:#C4A96A">Share ↑</strong> icon at the bottom of Safari</span><span class="tc">點擊 Safari 底部的 <strong style="color:#C4A96A">分享 ↑</strong> 圖示</span></div>
-    <div class="ios-step"><div class="ios-step-num">2</div><span class="en">Scroll down and tap <strong style="color:#fff">"Add to Home Screen"</strong></span><span class="tc">向下捲動，點選 <strong style="color:#fff">「加至主畫面」</strong></span></div>
-    <div class="ios-step"><div class="ios-step-num">3</div><span class="en">Tap <strong style="color:#fff">"Add"</strong> — open anytime offline</span><span class="tc">點選 <strong style="color:#fff">「加入」</strong>，隨時離線開啟</span></div>
+    <div class="ios-step"><div class="ios-num">1</div><span class="en">Tap <strong style="color:#C4A96A">Share ↑</strong> in Safari's bottom bar</span><span class="tc">點擊 Safari 底部的<strong style="color:#C4A96A">分享 ↑</strong>圖示</span></div>
+    <div class="ios-step"><div class="ios-num">2</div><span class="en">Tap <strong style="color:#fff">"Add to Home Screen"</strong></span><span class="tc">點選<strong style="color:#fff">「加至主畫面」</strong></span></div>
+    <div class="ios-step"><div class="ios-num">3</div><span class="en">Tap <strong style="color:#fff">"Add"</strong> — works offline!</span><span class="tc">點選<strong style="color:#fff">「加入」</strong>，支援離線！</span></div>
   </div>
-  <button class="ios-add-btn"><span class="en">Available in Safari only</span><span class="tc">僅適用於 Safari</span></button>
-</div>
-
-<!-- DOWNLOAD BANNER -->
-<div class="dl-banner" id="dlBanner">
-  <span class="en" style="flex:1">📶 Download for offline use in the forest</span>
-  <span class="tc" style="flex:1">📶 下載音頻，在森林中離線收聽</span>
-  <div class="dl-prog" id="dlProg"><div class="dl-prog-fill" id="dlFill"></div></div>
-  <button class="btn-dl" id="btnDl" onclick="downloadOffline()"><span class="en">Download</span><span class="tc">下載</span></button>
-</div>
-<div class="offline-notice" id="offlineNotice"><span class="en">📶 Offline — playing from cache</span><span class="tc">📶 離線模式 — 從緩存播放</span></div>
-
-<!-- PILLS -->
-<div class="ch-pills" id="pillsRow"></div>
-
-<!-- PLAY ALL -->
-<button class="play-all-bar" onclick="playAll()">
-  <div class="pa-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
-  <div class="pa-text">
-    <div class="pa-label"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div>
-    <div class="pa-title en">Grounding Walk at Lower Hillside of KFBG</div>
-    <div class="pa-title tc">連結大地 — 嘉道理下山區靜心漫步</div>
-  </div>
-</button>
-
-<main class="journey-content" id="journeyContent"></main>
-
-<!-- PLAYER BAR -->
-<div class="player-bar">
-  <div class="pb-track" id="pbTrack"><div class="pb-fill" id="pbFill"></div></div>
-  <div class="pb-inner">
-    <button class="btn-play-main" id="btnPlayMain" onclick="togglePlay()">
-      <svg class="i-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-      <svg class="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-    </button>
-    <div class="pb-info">
-      <div class="pb-ch"><span id="pbChText"></span><span class="pb-playlist-tag" id="pbPlaylistTag"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span></div>
-      <div class="pb-title" id="pbTitle"></div>
-      <div class="pb-seq" id="pbSeq" id="pbDots"></div>
-      <div class="pb-time" id="pbTime">0:00 / –:––</div>
-    </div>
-    <button class="btn-next" onclick="nextChapter()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
-    </button>
-  </div>
+  <button class="ios-add-btn"><span class="en">Safari only — follow steps above</span><span class="tc">僅限 Safari — 請按上述步驟操作</span></button>
 </div>
 
 <audio id="mainAudio" preload="none"></audio>
 
 <script>
-// DATA KEY: lang var is 'en' or 'zh'; data objects use 'en' and 'tc'
-// dk() maps lang to the data key
+// ── dk() maps lang 'zh'->'tc' for data key lookup ──
 function dk(){return lang==='zh'?'tc':'en';}
 
 const CH=[
@@ -293,7 +403,23 @@ const CH=[
  short:{en:'The Beginning of Connection',tc:'連結之始'},
  desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},
  practice:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},
- tr:{en:`歡迎您嚟到嘉道理農場暨植物園。\n\n呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。\n\n喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。\n\n接住落嚟，我會陪您一步一步，用眼、耳、鼻、皮膚，同大自然連繫。`,tc:'（廣東話文字稿）'},
+ tr:`歡迎您嚟到嘉道理農場暨植物園。
+
+呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。
+
+喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。
+
+接住落嚟，我會陪您一步一步，用眼、耳、鼻、皮膚，同大自然連繫。
+
+先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。用眼睛去觀察見到嘅形狀、紋理、顏色……試吓帶住好奇心，睇真啲？
+
+宜家，細心聆聽四周圍嘅聲音。可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……帶住好奇心，聽真啲。
+
+可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……
+
+呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度。可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。
+
+接住落嚟，可以暫時放低呢段錄音，自由去用視覺、聽覺、嗅覺、觸覺去同廣場入面唔同嘅樹木連繫。當覺得合適嘅時候，行到去下一個停留點：「生機園」。`,
  img:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900'},
 {id:2,audio:'audio/02_Final_v01_20260211.mp3',
  loc:{en:'Eco Garden',tc:'生機園'},
@@ -301,7 +427,21 @@ const CH=[
  short:{en:'Sensory Exploration',tc:'感官探索'},
  desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},
  practice:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},
- tr:{en:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。\n\n今次我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。`,tc:'（廣東話文字稿）'},
+ tr:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。
+
+不過今次會有少少唔同。我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。
+
+依家，可以嘅話，慢慢行到生機園當中標示住「有氣味」嘅植物嗰度；同時間，一路行，一路觀察住四周圍嘅事物。
+
+到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。觀察佢唔同嘅部分，留心見到嘅形狀、紋理、顏色……放低頭腦嘅既有認知，好似您第一次接觸呢棵植物咁樣，帶住好奇心，望真啲佢。
+
+合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。帶住好奇心，用觸覺去探索佢嘅葉、莖同花。
+
+用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？放低要去介定您「喜歡」、定「唔喜歡」呢種氣味嘅意向，單純咁去觀察呢種氣味。
+
+而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。如果覺得合適，可以用一隻手觸模孕育呢棵植物嘅泥土，嗰感覺又係點架呢？乾既？濕既？
+
+接住落嚟，可以暫時放低呢段錄音，自由去用唔同嘅感官，去探索生機園入面唔同嘅植物。直到覺得合適嘅時候，行到去下一個停留點：「葛先生花園」。`,
  img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900'},
 {id:3,audio:'audio/03_Final_v01_20260211.mp3',
  loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},
@@ -309,7 +449,19 @@ const CH=[
  short:{en:'Between Far and Near',tc:'遠近之間'},
  desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},
  practice:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},
- tr:{en:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。\n\n慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色……`,tc:'（廣東話文字稿）'},
+ tr:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。
+
+依家，可以嘅話，慢慢行近花園入口處嘅幾塊大石，一路行，一路留意四周圍嘅景象，同身體嘅感覺。
+
+當行到其中一舊大石嘅前面，可以稍作停留。再行近啲、再拱埋啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色、同埋您所觀察到嘅形狀……亦都可以留意一下，大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走，睇真啲？
+
+呢一刻，可以嘅話，慢慢向後退幾步，行遠少少，再遠少少、直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離咁觀察同一件物件嘅時候，所留意到嘅，係一樣、定唔同嘅？帶住好奇心去觀察。
+
+合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。又用成個手掌去接觸佢，留心接觸時嘅感覺。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置，感覺係點嘅？
+
+接住落嚟，可以緣住河邊嘅小路，慢慢進入被植物包圍嘅葛先生花園。有冇邊棵植物特別吸引您注意？慢慢行近呢棵植物，帶住好奇心，用眼睛近距離觀察、遠距離觀察、然後又用手去探索佢。
+
+直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,
  img:'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900'},
 {id:4,audio:'audio/04_Final_v01_20260211.mp3',
  loc:{en:'Stone Bridge',tc:'石橋'},
@@ -317,7 +469,19 @@ const CH=[
  short:{en:'The Sound of Water',tc:'流水之聲'},
  desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},
  practice:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},
- tr:{en:`嚟到葛先生花園嘅石橋，眼前就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……`,tc:'（廣東話文字稿）'},
+ tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。
+
+宜家，可以嘅話，仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。
+
+呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。睇吓可唔可以帶住更多嘅好奇，去聽真啲呢刻嘅流水聲、去探索吓佢到底係點嘅？呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？聆聽住每一刻嘅流水聲，留心住佢每刻嘅變化。
+
+呢一刻，合適嘅話，慢慢將注意力嘅範圍擴展開去，喺呢個開闊嘅覺察之中，留心依一刻任何嘅聲音。唔需要刻意去找尋、製造任何嘅聲音，只係懷住好奇心、去聆聽、去接收任何進入聽覺範圍嘅聲音。
+
+由呢一刻到下一刻，完全用心去聆聽。可能會留意到，心會去為聲音命名：呢個係流水聲、嗰個係風聲、雞啼聲、樹葉聲咁……又或者去咗分辨佢係好聽定係唔好聽嘅聲音。
+
+呢個時候，睇吓可唔可以帶住好奇心，好似頭先咁，聽真啲呢啲聲音、去探索吓呢啲聲音到底係點嘅？留意佢嘅大細聲……高低音……觀察吓佢係清晰、定係模糊嘅？係持續、定係間斷嘅？係近嘅、定遠架？可以嘅話，同時都留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。
+
+接住落嚟，可以暫時放低呢段錄音，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，一路用五官觀察四周圍嘅事物嘅同時，亦請留意路面可能有行駛嘅車。`,
  img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
 {id:5,audio:'audio/05_Final_v01_20260211.mp3',
  loc:{en:'Cascade Garden',tc:'沁思園'},
@@ -325,68 +489,139 @@ const CH=[
  short:{en:'Expansion and Grounding',tc:'廣闊與扎根'},
  desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},
  practice:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},
- tr:{en:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,tc:'（廣東話文字稿）'},
+ tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。
+
+喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。
+
+而家，就喺呢個視野開闊嘅沁思園，一齊體驗一下，集中同擴展注意力之間嘅轉換。
+
+宜家，可以嘅話，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。無論揀選咗嘅位置係遠嘅、或者近嘅，都集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。留意見到嘅顏色、形狀等等……觀察住呢個位置，睇吓每一刻佢係一樣嘅、定係有變化嘅？
+
+呢一刻，合適嘅話，慢慢將注意力嘅範圍、由您揀選咗位置，擴展開去……將視野開闊，觀察眼前所有嘅事物……您剛才揀選嘅嗰一點，都依然喺視野之中，但同時，亦都留意埋整個天空、同埋當中所有嘅浮雲……觀察埋整座山，以及所有嘅樹木……留意埋眼前所有嘅設施、所有嘅物件……唔需要刻意去找尋，只係懷住好奇心、去接收任何喺視野入面嘅事物，觀察佢哋嘅顏色、形狀、移動……
+
+宜家，可以嘅話，進一步開闊注意力，除咗視覺之外，接收埋進入聽覺範圍嘅聲音……皮膚嘅感覺……聞到嘅氣味等等……帶住好奇心，用唔同嘅感官去觀察身處嘅呢個空間、呢個大自然嘅環境。
+
+可以嘅話，喺呢個開闊嘅覺察之中，用五官觀察四周圍嘅同時，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動、空氣進出身體嘅感覺……
+
+同時，留意一吓呢一刻，身體畀大地承托住，嗰份穩妥、安穩、實在嘅感覺……可以嘅話，感覺吓身體想您點樣嘅伸展吓佢，會令佢更加自在呢？慢慢、溫柔咁伸展……喺伸展嘅過程之中，留意肌肉、骨頭，隨住移動一路變化緊嘅感覺。一邊伸展，一邊聆聽住身體嘅聲音，身體嘅感覺。
+
+接住落嚟，可以慢慢咁按自己既感覺和步伐去到園區嘅唔同角落。
+
+讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。
+
+你可以放低呢一系列錄音，繼續你既旅程啦。`,
  img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'}
 ];
 
 // ── STATE ──
-let idx=0, playing=false, lang='zh', rate=1, playlistMode=false;
+let idx=0,playing=false,lang='zh',rate=1,playlistMode=false;
 const aud=document.getElementById('mainAudio');
 const CACHE_NAME='kfbg-audio-v1';
 const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
 
 // ── FONT SIZE ──
-let fsLevel=0;
-const FS_SIZES=['0.88rem','0.94rem','1rem','1.08rem','1.16rem','1.25rem'];
-function adjustFS(d){
-  fsLevel=Math.max(0,Math.min(FS_SIZES.length-1,fsLevel+d));
-  document.documentElement.style.setProperty('--fs',FS_SIZES[fsLevel]);
+const FS=['0.88rem','0.94rem','1rem','1.08rem','1.16rem','1.25rem'];
+let fsLevel=2;
+function setFontFromSlider(v){
+  fsLevel=parseInt(v);
+  document.documentElement.style.setProperty('--fs',FS[fsLevel]);
   localStorage.setItem('kfbg-fs',fsLevel);
 }
 
-// ── INIT ──
-function init(){
-  // Restore font size
-  const savedFs=parseInt(localStorage.getItem('kfbg-fs')||'2');
-  fsLevel=savedFs;
-  document.documentElement.style.setProperty('--fs',FS_SIZES[fsLevel]);
-  // Restore position
-  const savedIdx=parseInt(localStorage.getItem('kfbg-pos')||'0');
-  idx=Math.min(savedIdx,CH.length-1);
-  // Restore lang — default zh
-  const savedLang=localStorage.getItem('kfbg-lang')||'zh';
-  applyLang(savedLang);
-  buildPills();
-  buildChapters();
-  loadChapter(idx,false);
-  setupScroll();
-  setupOffline();
-  setupIOS();
-  cacheAudioSilently();
-  checkCacheStatus();
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
-// ── LANG — dk() maps 'zh' to 'tc' for data lookups ──
+// ── LANG ──
 function applyLang(l){
   lang=l;
   document.documentElement.setAttribute('data-lang',l);
   document.documentElement.lang=l==='zh'?'zh-Hant':'en';
   localStorage.setItem('kfbg-lang',l);
-  refreshPlayerBarText(); // safe: only updates text, never touches audio
+  // update drawer lang buttons
+  document.querySelectorAll('.lang-opt').forEach(b=>b.classList.toggle('active',b.getAttribute('data-lang')===l));
+  // update links
+  updateLinks();
+  // refresh player text
+  refreshPBText();
 }
-function setLang(l){ applyLang(l); }
+function setLang(l){applyLang(l);}
 
-// ── SCROLL + ACTIVE CHAPTER ──
+function updateLinks(){
+  const isZh=lang==='zh';
+  const lang_suffix=isZh?'zh-hant':'en';
+  document.getElementById('linkHome').href=`https://kfbg.org/${lang_suffix}/`;
+  document.getElementById('linkEvents').href=`https://kfbg.org/${lang_suffix}/event-calendar`;
+  document.getElementById('linkDonate').href=`https://kfbg.org/${lang_suffix}/donation`;
+}
+
+// ── DRAWER ──
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawerOverlay').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
+
+// ── MAP PAN/ZOOM ──
+(function(){
+  const wrap=document.getElementById('mapSection');
+  const ph=document.getElementById('mapPlaceholder');
+  let mapImg=null,scale=1,tx=0,ty=0,
+      dragging=false,lastX=0,lastY=0,
+      pinching=false,lastDist=0;
+  window.loadMapImage=function(src){
+    ph.style.display='none';
+    mapImg=document.createElement('img');
+    mapImg.src=src;
+    mapImg.onload=()=>{
+      wrap.appendChild(mapImg);
+      fitMap();
+    };
+  };
+  function fitMap(){
+    if(!mapImg)return;
+    scale=wrap.clientHeight/mapImg.naturalHeight;
+    tx=(wrap.clientWidth-mapImg.naturalWidth*scale)/2;
+    ty=0;applyT();
+  }
+  function applyT(){
+    if(!mapImg)return;
+    mapImg.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+  }
+  function clamp(){
+    if(!mapImg)return;
+    const iw=mapImg.naturalWidth*scale,ih=mapImg.naturalHeight*scale;
+    const mw=wrap.clientWidth,mh=wrap.clientHeight;
+    tx=Math.min(0,Math.max(mw-iw,tx));
+    ty=Math.min(0,Math.max(mh-ih,ty));
+  }
+  // touch
+  wrap.addEventListener('touchstart',e=>{
+    if(e.touches.length===1){dragging=true;lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;}
+    else if(e.touches.length===2){pinching=true;lastDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+  },{passive:true});
+  wrap.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(pinching&&e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      const ds=d/lastDist;lastDist=d;
+      scale=Math.max(0.5,Math.min(4,scale*ds));clamp();applyT();
+    } else if(dragging&&e.touches.length===1){
+      tx+=e.touches[0].clientX-lastX;ty+=e.touches[0].clientY-lastY;
+      lastX=e.touches[0].clientX;lastY=e.touches[0].clientY;
+      clamp();applyT();
+    }
+  },{passive:false});
+  wrap.addEventListener('touchend',()=>{dragging=false;pinching=false;});
+  // mouse
+  wrap.addEventListener('mousedown',e=>{dragging=true;lastX=e.clientX;lastY=e.clientY;wrap.classList.add('grabbing');});
+  window.addEventListener('mousemove',e=>{if(!dragging)return;tx+=e.clientX-lastX;ty+=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;clamp();applyT();});
+  window.addEventListener('mouseup',()=>{dragging=false;wrap.classList.remove('grabbing');});
+  wrap.addEventListener('wheel',e=>{e.preventDefault();scale=Math.max(0.5,Math.min(4,scale*(e.deltaY<0?1.1:0.9)));clamp();applyT();},{passive:false});
+})();
+
+// ── SCROLL PROGRESS + ACTIVE CHAPTER ──
 function setupScroll(){
   window.addEventListener('scroll',()=>{
     const tot=document.documentElement.scrollHeight-window.innerHeight;
     document.getElementById('scrollBar').style.width=(tot>0?(window.scrollY/tot)*100:0)+'%';
     CH.forEach((_,i)=>{
-      const s=document.getElementById('sec-'+i);
-      if(!s) return;
+      const s=document.getElementById('sec-'+i);if(!s)return;
       const r=s.getBoundingClientRect();
-      const on=r.top<=180&&r.bottom>=180;
+      const on=r.top<=220&&r.bottom>=220;
       s.classList.toggle('active-chapter',on);
       document.getElementById('pill-'+i)?.classList.toggle('active',on);
     });
@@ -416,17 +651,17 @@ function buildChapters(){
       <p class="ch-desc en">${c.desc.en}</p>
       <p class="ch-desc tc">${c.desc.tc}</p>
       <div class="ch-player">
-        <div class="ch-player-top">
-          <button class="ch-play-btn" id="cbtn-${i}" onclick="tapPlay(${i})">
-            <svg class="i-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-            <svg class="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          </button>
-          <div class="ch-play-info">
+        <div class="ch-player-main">
+          <div class="ch-player-info">
             <div class="ch-play-label"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc">第0${c.id}章 · ${c.loc.tc}</span></div>
             <div class="ch-play-name en">${c.short.en}</div>
             <div class="ch-play-name tc">${c.short.tc}</div>
             <div class="ch-play-time" id="ctime-${i}">0:00 / —:——</div>
           </div>
+          <button class="ch-play-btn" id="cbtn-${i}" onclick="tapPlay(${i})">
+            <svg class="i-play" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg class="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
         </div>
         <div class="ch-seek" id="cseek-${i}" onclick="seekCh(event,${i})"><div class="ch-seek-fill" id="cfill-${i}"></div></div>
         <div class="ch-speed">
@@ -438,8 +673,7 @@ function buildChapters(){
       </div>
       <details>
         <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
-        <div class="tr-body en">${c.tr.en}</div>
-        <div class="tr-body tc">${c.tr.tc}</div>
+        <div class="tr-body">${c.tr}</div>
       </details>
       <div class="practice-card">
         <div class="practice-label"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div>
@@ -451,8 +685,8 @@ function buildChapters(){
     <div class="completion" id="completion">
       <div class="cs">🌿</div>
       <h2 class="en">Journey Complete</h2><h2 class="tc">旅程完成</h2>
-      <p class="en">You have walked all five stops of the Grounding Walk. Take a breath before you return.</p>
-      <p class="tc">你已完成「連結大地」的全部五個站點。在回程前，靜靜感受此刻的覺察。</p>
+      <p class="en">You have walked all five stops. Take a breath before you return.</p>
+      <p class="tc">你已完成全部五個站點。在回程前，靜靜感受此刻的覺察。</p>
       <a href="index.html" class="btn-home">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span>
@@ -460,80 +694,60 @@ function buildChapters(){
     </div>`;
 }
 
-// ── PLAYER BAR TEXT — uses dk() to correctly map lang to data key ──
-function refreshPlayerBarText(){
-  const c=CH[idx];
-  const k=dk(); // 'en' or 'tc'
+// ── PLAYER BAR ──
+function refreshPBText(){
+  const c=CH[idx];const k=dk();
   document.getElementById('pbChText').textContent='Ch.0'+c.id+' · '+(c.loc[k]||c.loc.en);
   document.getElementById('pbTitle').textContent=c.short[k]||c.short.en;
-  if(playlistMode) updatePlaylistDots();
+  if(playlistMode)updateDots();
 }
-function refreshPlayerBarProgress(cur,dur){
-  const pct=dur>0?(cur/dur)*100:0;
-  document.getElementById('pbFill').style.width=pct+'%';
+function refreshPBProgress(cur,dur){
+  document.getElementById('pbFill').style.width=(dur>0?(cur/dur)*100:0)+'%';
   document.getElementById('pbTime').textContent=fmt(cur)+' / '+fmt(dur||0);
 }
-function updatePlaylistDots(){
-  const seq=document.getElementById('pbSeq');
-  seq.innerHTML=CH.map((_,i)=>`<div class="pb-dot${i===idx?' active':DONE.has(i)?' done':''}"></div>`).join('');
+function updateDots(){
+  document.getElementById('pbSeq').innerHTML=CH.map((_,i)=>`<div class="pb-dot${i===idx?' active':DONE.has(i)?' done':''}"></div>`).join('');
 }
 
-// ── LOAD CHAPTER ──
+// ── LOAD ──
 function loadChapter(i,play){
-  idx=i;
-  aud.src=CH[i].audio;
-  aud.load();
-  aud.playbackRate=rate;
+  idx=i;aud.src=CH[i].audio;aud.load();aud.playbackRate=rate;
   localStorage.setItem('kfbg-pos',i);
-  refreshPlayerBarText();
-  refreshPlayerBarProgress(0,0);
-  syncAllBtns(false);
-  if(play){
-    aud.play().then(()=>{playing=true;syncAllBtns(true);}).catch(()=>{playing=false;syncAllBtns(false);});
-  } else {
-    playing=false;syncAllBtns(false);
-  }
+  refreshPBText();refreshPBProgress(0,0);syncBtns(false);
+  if(play){aud.play().then(()=>{playing=true;syncBtns(true);}).catch(()=>{playing=false;syncBtns(false);});}
+  else{playing=false;syncBtns(false);}
 }
 
-// ── JUMP WITH SHEET TRANSITION ──
-function jump(i,asPlaylist){
-  if(asPlaylist!==undefined) playlistMode=asPlaylist;
-  const c=CH[i];
-  const k=dk();
+// ── JUMP WITH SHEET ──
+function jump(i,asPL){
+  if(asPL!==undefined)playlistMode=asPL;
+  const c=CH[i];const k=dk();
   const sheet=document.getElementById('transSheet');
   document.getElementById('tsNum').textContent=String(c.id).padStart(2,'0');
   document.getElementById('tsTitle').textContent=c.short[k]||c.short.en;
   document.getElementById('tsLoc').textContent=c.loc[k]||c.loc.en;
   sheet.classList.add('show');
-  aud.pause();playing=false;syncAllBtns(false);
+  aud.pause();playing=false;syncBtns(false);
   document.getElementById('sec-'+i)?.scrollIntoView({behavior:'smooth',block:'start'});
-  setTimeout(()=>{sheet.classList.remove('show');loadChapter(i,true);},950);
+  setTimeout(()=>{sheet.classList.remove('show');loadChapter(i,true);},900);
 }
-
-function playAll(){playlistMode=true;document.getElementById('pbPlaylistTag').classList.add('show');document.getElementById('pbSeq').classList.add('show');jump(0,true);}
+function playAll(){
+  playlistMode=true;
+  document.getElementById('pbPlaylistTag').classList.add('show');
+  document.getElementById('pbSeq').classList.add('show');
+  jump(0,true);
+}
+function jumpToCurrentSection(){
+  document.getElementById('sec-'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});
+}
 
 // ── CONTROLS ──
-function tapPlay(i){
-  if(i===idx){togglePlay();}
-  else{playlistMode=false;document.getElementById('pbPlaylistTag').classList.remove('show');document.getElementById('pbSeq').classList.remove('show');jump(i,false);}
-}
-function togglePlay(){
-  if(playing){aud.pause();playing=false;}
-  else{aud.play().catch(()=>{});playing=true;}
-  syncAllBtns(playing);
-}
+function tapPlay(i){if(i===idx){togglePlay();}else{playlistMode=false;document.getElementById('pbPlaylistTag').classList.remove('show');document.getElementById('pbSeq').classList.remove('show');jump(i,false);}}
+function togglePlay(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}syncBtns(playing);}
 function nextChapter(){if(idx<CH.length-1)jump(idx+1,playlistMode);}
-function seekCh(e,i){
-  if(i!==idx||!aud.duration)return;
-  const r=e.currentTarget.getBoundingClientRect();
-  aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;
-}
-function setSpd(r,btn){
-  rate=r;aud.playbackRate=r;
-  document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-function syncAllBtns(on){
+function seekCh(e,i){if(i!==idx||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;}
+function setSpd(r,btn){rate=r;aud.playbackRate=r;document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function syncBtns(on){
   document.getElementById('btnPlayMain').classList.toggle('playing',on);
   CH.forEach((_,i)=>document.getElementById('cbtn-'+i)?.classList.toggle('playing',i===idx&&on));
 }
@@ -541,74 +755,85 @@ function syncAllBtns(on){
 // ── AUDIO EVENTS ──
 aud.addEventListener('timeupdate',()=>{
   if(!aud.duration)return;
-  const pct=(aud.currentTime/aud.duration)*100;
-  refreshPlayerBarProgress(aud.currentTime,aud.duration);
-  document.getElementById('cfill-'+idx).style.width=pct+'%';
+  const p=(aud.currentTime/aud.duration)*100;
+  refreshPBProgress(aud.currentTime,aud.duration);
+  document.getElementById('cfill-'+idx).style.width=p+'%';
   document.getElementById('ctime-'+idx).textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
 });
-aud.addEventListener('loadedmetadata',()=>{
-  refreshPlayerBarProgress(0,aud.duration);
-  document.getElementById('ctime-'+idx).textContent='0:00 / '+fmt(aud.duration);
-});
+aud.addEventListener('loadedmetadata',()=>{refreshPBProgress(0,aud.duration);document.getElementById('ctime-'+idx).textContent='0:00 / '+fmt(aud.duration);});
 aud.addEventListener('ended',()=>{
   DONE.add(idx);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));
   document.getElementById('pill-'+idx)?.classList.add('done');
-  playing=false;syncAllBtns(false);
+  playing=false;syncBtns(false);
   if(idx<CH.length-1){setTimeout(()=>jump(idx+1,playlistMode),600);}
-  else{
-    playlistMode=false;
-    document.getElementById('pbPlaylistTag').classList.remove('show');
-    document.getElementById('pbSeq').classList.remove('show');
-    const c=document.getElementById('completion');
-    c.classList.add('show');
-    c.scrollIntoView({behavior:'smooth',block:'center'});
-  }
+  else{playlistMode=false;document.getElementById('pbPlaylistTag').classList.remove('show');document.getElementById('pbSeq').classList.remove('show');const c=document.getElementById('completion');c.classList.add('show');c.scrollIntoView({behavior:'smooth',block:'center'});}
 });
-aud.addEventListener('play',()=>{playing=true;syncAllBtns(true);});
-aud.addEventListener('pause',()=>{playing=false;syncAllBtns(false);});
-document.getElementById('pbTrack').addEventListener('click',e=>{
-  if(!aud.duration)return;
-  const r=e.currentTarget.getBoundingClientRect();
-  aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;
-});
-
-function fmt(s){
-  if(!isFinite(s)||s<0)return'0:00';
-  const m=Math.floor(s/60),sc=Math.floor(s%60);
-  return m+':'+(sc<10?'0':'')+sc;
-}
+aud.addEventListener('play',()=>{playing=true;syncBtns(true);});
+aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
+document.getElementById('pbTrack').addEventListener('click',e=>{if(!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;});
+function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;}
 
 // ── iOS ──
 function setupIOS(){
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   if(isIOS&&!window.navigator.standalone&&!sessionStorage.getItem('ios-ok'))
-    setTimeout(()=>document.getElementById('iosBanner').classList.add('show'),4000);
+    setTimeout(()=>document.getElementById('iosBanner').classList.add('show'),5000);
 }
 function dismissIOS(){document.getElementById('iosBanner').classList.remove('show');sessionStorage.setItem('ios-ok','1');}
 
 // ── OFFLINE ──
-function setupOffline(){
-  const n=document.getElementById('offlineNotice');
-  window.addEventListener('offline',()=>n.classList.add('show'));
-  window.addEventListener('online',()=>n.classList.remove('show'));
-  if(!navigator.onLine)n.classList.add('show');
-}
+window.addEventListener('offline',()=>document.getElementById('offlineNotice').classList.add('show'));
+window.addEventListener('online',()=>document.getElementById('offlineNotice').classList.remove('show'));
 async function checkCacheStatus(){
   if(!('caches'in window))return;
-  try{const c=await caches.open(CACHE_NAME);const all=await Promise.all(CH.map(x=>c.match(x.audio)));if(all.every(Boolean))document.getElementById('dlBanner').classList.add('hidden');}catch(e){}
+  try{const c=await caches.open(CACHE_NAME);const all=await Promise.all(CH.map(x=>c.match(x.audio)));
+  if(all.every(Boolean)){document.getElementById('btnDlDrawer').disabled=true;document.getElementById('btnDlDrawer').innerHTML='<span class="en">All chapters downloaded</span><span class="tc">所有章節已下載</span>';}}catch(e){}
 }
 async function downloadOffline(){
+  const btn=document.getElementById('btnDlDrawer');
+  const prog=document.getElementById('dlProgDrawer');
+  const fill=document.getElementById('dlFillDrawer');
+  const status=document.getElementById('dlStatus');
+  btn.disabled=true;prog.style.display='block';status.style.display='block';
+  try{
+    const c=await caches.open(CACHE_NAME);
+    for(let i=0;i<CH.length;i++){
+      status.textContent=(lang==='zh'?'下載第':'Downloading ch.')+' '+(i+1)+'/'+CH.length+'...';
+      const u=CH[i].audio;
+      if(!await c.match(u).catch(()=>null)){const r=await fetch(u);if(r.ok)await c.put(u,r);}
+      fill.style.width=Math.round(((i+1)/CH.length)*100)+'%';
+    }
+    btn.innerHTML='<span class="en">All chapters downloaded</span><span class="tc">所有章節已下載</span>';
+    status.textContent=lang==='zh'?'✓ 可離線使用':'✓ Ready for offline use';
+  }catch(e){btn.disabled=false;status.textContent='Error — please retry';}
+}
+async function cachePages(){
   if(!('caches'in window))return;
-  const btn=document.getElementById('btnDl');const prog=document.getElementById('dlProg');const fill=document.getElementById('dlFill');
-  btn.disabled=true;prog.style.display='block';
-  try{const c=await caches.open(CACHE_NAME);for(let i=0;i<CH.length;i++){const u=CH[i].audio;if(!await c.match(u).catch(()=>null)){const r=await fetch(u);if(r.ok)await c.put(u,r);}fill.style.width=Math.round(((i+1)/CH.length)*100)+'%';}document.getElementById('dlBanner').classList.add('hidden');}
-  catch(e){btn.disabled=false;}
+  try{const c=await caches.open('kfbg-pages-v1');await c.addAll(['index.html','journey.html','KFBG_Logo_Square.png','manifest.json']);}catch(e){}
 }
 async function cacheAudioSilently(){
   if(!('caches'in window))return;
   try{const c=await caches.open(CACHE_NAME);CH.forEach(x=>fetch(x.audio).then(r=>{if(r.ok)c.put(x.audio,r);}).catch(()=>{}));}catch(e){}
 }
 
+// ── INIT ──
+function init(){
+  // Font
+  const sf=parseInt(localStorage.getItem('kfbg-fs')||'2');
+  fsLevel=sf;
+  document.documentElement.style.setProperty('--fs',FS[fsLevel]);
+  document.getElementById('fsSlider').value=fsLevel;
+  // Lang
+  const sl=localStorage.getItem('kfbg-lang')||'zh';
+  applyLang(sl);
+  // Position
+  const si=parseInt(localStorage.getItem('kfbg-pos')||'0');
+  idx=Math.min(si,CH.length-1);
+  buildPills();buildChapters();loadChapter(idx,false);
+  setupScroll();setupIOS();
+  checkCacheStatus();cachePages();cacheAudioSilently();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
 init();
 </script>
 </body>
