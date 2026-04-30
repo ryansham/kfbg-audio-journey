@@ -8,13 +8,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="KFBG Audio Journey"/>
 <link rel="manifest" href="manifest.json"/>
-<link rel="apple-touch-icon" href="KFBG_Logo_Square.png"/>
-<link rel="icon" href="KFBG_Logo_Square.png"/>
+<link rel="apple-touch-icon" href="KFBG_Logo.png"/>
+<link rel="icon" href="KFBG_Logo.png"/>
 <title>語音旅程 · KFBG</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
 <script src="nav.js" defer></script>
 <style>
-:root{--olive:#4A5C3A;--olive-mid:#3B4A2F;--olive-light:#8A9A78;--cream:#F7F3EC;--sand:#EEEBE4;--border:#D8D3CB;--text:#1E2418;--text-mid:#444;--text-muted:#7A7A6A;--gold:#C4A96A;--bar-h:80px;--nav-h:54px;--pills-h:48px;--fs:1rem;}
+:root{--olive:#4A5C3A;--olive-mid:#3B4A2F;--olive-light:#8A9A78;--cream:#F7F3EC;--sand:#EEEBE4;--border:#D8D3CB;--text:#1E2418;--text-mid:#444;--text-muted:#7A7A6A;--gold:#C4A96A;--bar-h:116px;--nav-h:56px;--fs:1rem;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;font-size:var(--fs);}
 body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.65;overflow-x:hidden;}
@@ -22,40 +22,29 @@ body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;
 .en,.tc{display:block;}span.en,span.tc{display:inline;}
 [data-lang="en"] span.tc{display:none!important;}[data-lang="zh"] span.en{display:none!important;}
 [data-lang="zh"] .ch-title,[data-lang="zh"] .completion h2,[data-lang="zh"] .practice-text{font-family:'Noto Serif TC',serif;}
-
 #scrollBar{position:fixed;top:0;left:0;height:3px;background:var(--gold);width:0%;z-index:600;pointer-events:none;}
 
 /* MAP */
-.map-section{position:relative;overflow:hidden;background:var(--sand);height:200px;touch-action:none;cursor:grab;user-select:none;margin-top:var(--nav-h);}
-.map-section.grabbing{cursor:grabbing;}
-.map-section img.map-img{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;}
-.map-placeholder{height:200px;background:linear-gradient(135deg,#d6e4c8 0%,#e8f0de 50%,#c8d8b4 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--olive-light);}
-.map-placeholder svg{width:32px;height:32px;opacity:0.45;}
-.map-placeholder p{font-size:0.72rem;opacity:0.65;letter-spacing:0.06em;}
-.map-hint{position:absolute;bottom:8px;right:10px;font-size:0.58rem;background:rgba(255,255,255,0.78);padding:3px 8px;border-radius:100px;color:var(--text-muted);pointer-events:none;}
-
-/* PILLS */
-.ch-pills-wrap{position:sticky;top:var(--nav-h);z-index:200;background:rgba(247,243,236,0.97);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);}
-.ch-pills{display:flex;gap:8px;overflow-x:auto;padding:7px 14px;scrollbar-width:none;}
-.ch-pills::-webkit-scrollbar{display:none;}
-.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;font-size:0.72rem;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all 0.2s;min-height:38px;}
-.ch-pill.active{background:var(--olive);border-color:var(--olive);color:#fff;}
-.ch-pill.done{border-color:var(--olive-light);color:var(--olive-light);}
-.ch-pill-num{font-size:0.58rem;opacity:0.5;}
+.map-wrap{position:relative;overflow:hidden;background:var(--sand);height:190px;touch-action:none;cursor:grab;user-select:none;margin-top:var(--nav-h);}
+.map-wrap.grabbing{cursor:grabbing;}
+.map-wrap img.map-img{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;}
+.map-placeholder{height:190px;background:linear-gradient(135deg,#d6e4c8 0%,#e8f0de 50%,#c8d8b4 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--olive-light);}
+.map-placeholder svg{width:30px;height:30px;opacity:0.4;}
+.map-placeholder p{font-size:0.72rem;opacity:0.6;}
+.map-hint{position:absolute;bottom:8px;right:10px;font-size:0.58rem;background:rgba(255,255,255,0.75);padding:3px 8px;border-radius:100px;color:var(--text-muted);pointer-events:none;}
 
 /* PLAY ALL */
-.play-all-wrap{padding:8px 14px 4px;}
-.play-all-bar{background:var(--olive);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;border:none;width:100%;text-align:left;}
-.play-all-bar:hover{opacity:0.9;}
+.play-all-wrap{padding:8px 14px 6px;}
+.play-all-bar{background:var(--olive);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:none;width:100%;text-align:left;}
+.pa-text{flex:1;min-width:0;}
+.pa-label{font-size:0.6rem;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
+.pa-title{font-size:0.85rem;font-weight:500;color:var(--cream);line-height:1.3;}
 .pa-icon{width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .pa-icon svg{width:13px;height:13px;fill:var(--olive-mid);margin-left:2px;}
-.pa-text{flex:1;min-width:0;}
-.pa-label{font-size:0.62rem;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
-.pa-title{font-size:0.85rem;font-weight:500;color:var(--cream);line-height:1.3;}
 
 /* CONTENT */
-.journey-content{max-width:640px;margin:0 auto;padding:0 14px;padding-bottom:calc(var(--bar-h) + 32px);}
-.ch-section{margin-top:30px;scroll-margin-top:calc(var(--nav-h) + var(--pills-h) + 8px);}
+.journey-content{max-width:640px;margin:0 auto;padding:0 14px;padding-bottom:calc(var(--bar-h) + 24px);}
+.ch-section{margin-top:28px;scroll-margin-top:calc(var(--nav-h) + 8px);}
 .ch-section.active-chapter .ch-img-wrap{box-shadow:0 0 0 3px var(--olive);}
 .ch-img-wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;margin-bottom:14px;background:var(--sand);transition:box-shadow 0.3s;}
 .ch-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -65,53 +54,44 @@ body{background:var(--cream);color:var(--text);font-family:'DM Sans',sans-serif;
 .ch-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,4.5vw,1.45rem);font-weight:500;color:var(--text);line-height:1.25;margin-bottom:8px;}
 .ch-desc{font-size:0.88rem;color:var(--text-muted);line-height:1.78;margin-bottom:14px;}
 
-/* CHAPTER PLAYER — info left, play btn right */
+/* CHAPTER PLAYER — info left, play RIGHT */
 .ch-player{background:var(--olive);border-radius:14px;padding:14px 16px;margin-bottom:12px;}
 .ch-player-main{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
 .ch-player-info{flex:1;min-width:0;}
 .ch-play-label{font-size:0.62rem;color:rgba(196,169,106,0.55);letter-spacing:0.06em;margin-bottom:2px;}
 .ch-play-name{font-size:0.9rem;font-weight:500;color:var(--cream);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ch-play-time{font-size:0.68rem;color:rgba(247,243,236,0.32);margin-top:2px;}
-.ch-play-btn{width:46px;height:46px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.15s,opacity 0.2s;position:relative;}
+.ch-play-btn{width:46px;height:46px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;transition:transform 0.15s;}
 .ch-play-btn:active{transform:scale(0.92);}
 .ch-play-btn svg{width:15px;height:15px;fill:var(--olive-mid);}
 .ch-play-btn .i-pause{display:none;}
 .ch-play-btn.playing .i-play{display:none;}
 .ch-play-btn.playing .i-pause{display:block;}
-/* loading ring on play button */
-.ch-play-btn.loading::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(255,255,255,0.2);border-top-color:rgba(255,255,255,0.8);animation:spin 0.8s linear infinite;}
+.ch-play-btn.loading::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(255,255,255,0.18);border-top-color:rgba(255,255,255,0.8);animation:spin 0.8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-/* download progress overlay on player */
 .ch-dl-bar{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:9px;overflow:hidden;display:none;}
 .ch-dl-bar.show{display:block;}
-.ch-dl-fill{height:100%;background:rgba(255,255,255,0.5);border-radius:2px;width:0%;transition:width 0.3s;animation:pulse-dl 1.5s ease-in-out infinite;}
-@keyframes pulse-dl{0%,100%{opacity:0.5;}50%{opacity:1;}}
-.ch-dl-text{font-size:0.62rem;color:rgba(247,243,236,0.45);margin-bottom:8px;display:none;}
-.ch-dl-text.show{display:block;}
+.ch-dl-fill{height:100%;background:rgba(255,255,255,0.5);border-radius:2px;width:0%;animation:pulse-dl 1.5s ease-in-out infinite;}
+@keyframes pulse-dl{0%,100%{opacity:0.4;}50%{opacity:1;}}
+.ch-dl-txt{font-size:0.62rem;color:rgba(247,243,236,0.45);margin-bottom:8px;display:none;}
+.ch-dl-txt.show{display:block;}
 .ch-seek{height:4px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;margin-bottom:9px;}
 .ch-seek-fill{height:100%;background:var(--gold);border-radius:2px;width:0%;pointer-events:none;}
 .ch-speed{display:flex;align-items:center;gap:6px;}
 .spd-label{font-size:0.62rem;color:rgba(247,243,236,0.3);}
 .speed-btn{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.42);font-size:0.68rem;font-family:inherit;padding:6px 11px;border-radius:100px;cursor:pointer;min-height:32px;transition:all 0.18s;}
 .speed-btn.active{background:rgba(196,169,106,0.25);color:var(--gold);}
-
-/* TRANSCRIPT */
 details{margin-bottom:12px;}
 details summary{cursor:pointer;padding:12px 15px;background:var(--sand);border:1px solid var(--border);border-radius:10px;font-size:0.82rem;color:var(--text-muted);list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:46px;}
 details summary::after{content:'▸';font-size:11px;}
 details[open] summary::after{content:'▾';}
 .tr-body{padding:14px;background:#F9F7F3;border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;font-size:0.8rem;color:var(--text-muted);line-height:1.9;white-space:pre-wrap;}
-
-/* PRACTICE */
 .practice-card{background:var(--sand);border-left:4px solid var(--olive);border-radius:0 10px 10px 0;padding:14px 16px;}
 .practice-label{font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--olive);margin-bottom:6px;font-weight:600;}
 .practice-text{font-family:'Cormorant Garamond',serif;font-size:1.05rem;font-style:italic;color:var(--text);line-height:1.55;}
-
 .ch-divider{display:flex;align-items:center;gap:10px;margin:28px 0 0;opacity:0.18;}
 .ch-divider::before,.ch-divider::after{content:'';flex:1;height:1px;background:var(--olive);}
 .ch-divider-dot{width:4px;height:4px;border-radius:50%;background:var(--olive);}
-
-/* COMPLETION */
 .completion{display:none;text-align:center;padding:40px 24px;background:var(--olive);border-radius:16px;margin-top:28px;}
 .completion.show{display:block;}
 .cs{width:68px;height:68px;border-radius:50%;border:2px solid rgba(196,169,106,0.28);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;}
@@ -119,40 +99,50 @@ details[open] summary::after{content:'▾';}
 .completion p{font-size:0.85rem;color:rgba(247,243,236,0.65);line-height:1.7;margin-bottom:22px;max-width:260px;margin-left:auto;margin-right:auto;}
 .btn-home{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--olive-mid);padding:12px 22px;border-radius:100px;text-decoration:none;font-size:0.85rem;font-weight:600;}
 
-/* PLAYER BAR — info left, controls right */
-.player-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olive-mid);border-top:1px solid rgba(255,255,255,0.07);}
+/* ── BOTTOM BAR: player + pills together ── */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olive-mid);border-top:1px solid rgba(255,255,255,0.07);}
+/* progress track */
 .pb-track{height:3px;background:rgba(255,255,255,0.1);cursor:pointer;}
 .pb-fill{height:100%;background:var(--gold);pointer-events:none;transition:width 0.1s linear;width:0%;}
-.pb-inner{padding:10px 14px 14px;display:flex;align-items:center;gap:10px;}
+/* player row */
+.pb-inner{padding:9px 14px 8px;display:flex;align-items:center;gap:10px;}
 .pb-info{flex:1;min-width:0;cursor:pointer;}
 .pb-info:hover .pb-title{color:var(--gold);}
 .pb-ch{font-size:0.58rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;display:flex;align-items:center;gap:5px;}
 .pb-playlist-tag{background:rgba(196,169,106,0.15);color:var(--gold);font-size:0.5rem;letter-spacing:0.08em;padding:1px 6px;border-radius:100px;display:none;}
 .pb-playlist-tag.show{display:inline-block;}
-.pb-title{font-size:0.88rem;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color 0.2s;}
-.pb-seq{display:none;margin-top:3px;gap:3px;align-items:center;}
+.pb-title{font-size:0.85rem;font-weight:500;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color 0.2s;}
+.pb-time{font-size:0.62rem;color:rgba(247,243,236,0.3);margin-top:1px;}
+.pb-seq{display:none;margin-top:2px;gap:3px;align-items:center;}
 .pb-seq.show{display:flex;}
 .pb-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.15);}
 .pb-dot.active{background:var(--gold);}
 .pb-dot.done{background:rgba(196,169,106,0.38);}
-.pb-time{font-size:0.65rem;color:rgba(247,243,236,0.3);margin-top:2px;}
-.pb-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-.btn-play-main{width:46px;height:46px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pb-controls{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.btn-next{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);padding:4px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center;}
+.btn-next svg{width:18px;height:18px;}
+.btn-play-main{width:44px;height:44px;border-radius:50%;background:var(--gold);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .btn-play-main svg{width:15px;height:15px;fill:var(--olive-mid);}
 .btn-play-main .i-pause{display:none;}
 .btn-play-main.playing .i-play{display:none;}
 .btn-play-main.playing .i-pause{display:block;}
-.btn-next{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);padding:4px;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;}
-.btn-next svg{width:20px;height:20px;}
+/* pills row — IN bottom bar */
+.pb-pills{display:flex;gap:6px;overflow-x:auto;padding:0 14px 10px;scrollbar-width:none;margin-top:0;}
+.pb-pills::-webkit-scrollbar{display:none;}
+.ch-pill{flex-shrink:0;display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;font-size:0.7rem;color:rgba(247,243,236,0.55);cursor:pointer;font-family:inherit;transition:all 0.2s;min-height:34px;white-space:nowrap;}
+.ch-pill.active{background:var(--gold);border-color:var(--gold);color:var(--olive-mid);font-weight:500;}
+.ch-pill.done{border-color:rgba(196,169,106,0.35);color:rgba(196,169,106,0.65);}
+.ch-pill-num{font-size:0.58rem;opacity:0.5;}
+.ch-pill.pill-map{border-color:rgba(255,255,255,0.2);}
 
 /* TRANSITION SHEET */
-.trans-sheet{position:fixed;left:0;right:0;bottom:0;height:22vh;min-height:130px;max-height:190px;z-index:600;background:var(--olive-mid);border-radius:18px 18px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);padding:14px 24px;}
+.trans-sheet{position:fixed;left:0;right:0;bottom:0;height:20vh;min-height:120px;max-height:180px;z-index:600;background:var(--olive-mid);border-radius:18px 18px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);padding:12px 24px;}
 .trans-sheet.show{transform:translateY(0);}
 .ts-handle{width:28px;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);position:absolute;top:9px;}
-.ts-num{font-family:'Cormorant Garamond',serif;font-size:30px;color:rgba(247,243,236,0.08);line-height:1;}
-.ts-label{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,243,236,0.32);margin:2px 0 5px;}
+.ts-num{font-family:'Cormorant Garamond',serif;font-size:28px;color:rgba(247,243,236,0.08);line-height:1;}
+.ts-label{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,243,236,0.32);margin:2px 0 4px;}
 .ts-title{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:500;color:var(--cream);text-align:center;line-height:1.3;}
-.ts-loc{font-size:0.62rem;color:rgba(247,243,236,0.32);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;}
+.ts-loc{font-size:0.6rem;color:rgba(247,243,236,0.32);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px;}
 
 /* iOS BANNER */
 .ios-banner{display:none;position:fixed;bottom:calc(var(--bar-h) + 10px);left:12px;right:12px;z-index:400;background:var(--olive-mid);border-radius:14px;padding:16px;box-shadow:0 6px 28px rgba(0,0,0,0.28);}
@@ -168,7 +158,6 @@ details[open] summary::after{content:'▾';}
 .ios-step{display:flex;align-items:flex-start;gap:8px;font-size:0.75rem;color:rgba(247,243,236,0.75);line-height:1.5;}
 .ios-num{width:18px;height:18px;border-radius:50%;background:rgba(196,169,106,0.18);color:var(--gold);font-size:0.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
 .ios-add-btn{width:100%;background:rgba(255,255,255,0.07);color:rgba(247,243,236,0.38);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px;font-size:0.75rem;font-family:inherit;cursor:default;}
-
 .offline-notice{background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:7px 14px;margin:4px 14px;font-size:0.72rem;color:var(--gold);text-align:center;display:none;}
 .offline-notice.show{display:block;}
 </style>
@@ -177,7 +166,7 @@ details[open] summary::after{content:'▾';}
 <div id="scrollBar"></div>
 
 <!-- MAP -->
-<div class="map-section" id="mapSection">
+<div class="map-wrap" id="mapSection">
   <div class="map-placeholder" id="mapPlaceholder">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg>
     <p class="en">Trail map — coming soon</p><p class="tc">步道地圖 — 即將推出</p>
@@ -185,18 +174,15 @@ details[open] summary::after{content:'▾';}
   <div class="map-hint"><span class="en">Pinch · Drag</span><span class="tc">捏合 · 拖動</span></div>
 </div>
 
-<!-- PILLS + PLAY ALL -->
-<div class="ch-pills-wrap">
-  <div class="ch-pills" id="pillsRow"></div>
-</div>
+<!-- PLAY ALL -->
 <div class="play-all-wrap">
   <button class="play-all-bar" onclick="playAll()">
-    <div class="pa-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
     <div class="pa-text">
       <div class="pa-label"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div>
       <div class="pa-title en">Grounding Walk · Lower Hillside of KFBG</div>
       <div class="pa-title tc">連結大地 — 嘉道理下山區靜心漫步</div>
     </div>
+    <div class="pa-icon"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div>
   </button>
 </div>
 
@@ -206,8 +192,8 @@ details[open] summary::after{content:'▾';}
 
 <main class="journey-content" id="journeyContent"></main>
 
-<!-- PLAYER BAR -->
-<div class="player-bar">
+<!-- BOTTOM BAR: player + pills -->
+<div class="bottom-bar">
   <div class="pb-track" id="pbTrack"><div class="pb-fill" id="pbFill"></div></div>
   <div class="pb-inner">
     <div class="pb-info" onclick="jumpToCurrentSection()">
@@ -226,6 +212,8 @@ details[open] summary::after{content:'▾';}
       </button>
     </div>
   </div>
+  <!-- Pills in bottom bar — Map first + chapters, horizontal scroll -->
+  <div class="pb-pills" id="pillsRow"></div>
 </div>
 
 <!-- TRANSITION SHEET -->
@@ -240,10 +228,10 @@ details[open] summary::after{content:'▾';}
 <!-- iOS BANNER -->
 <div class="ios-banner" id="iosBanner">
   <div class="ios-top">
-    <div class="ios-icon"><img src="KFBG_Logo_Square.png" alt="KFBG"/></div>
+    <div class="ios-icon"><img src="KFBG_Logo.png" alt="KFBG" onerror="this.src='KFBG_Logo_Square.png'"/></div>
     <div class="ios-info">
       <div class="ios-name en">KFBG Audio Journey</div>
-      <div class="ios-name tc">嘉道理農場 語音旅程</div>
+      <div class="ios-name tc">嘉道理農場暨植物園 語音旅程</div>
       <div class="ios-sub en">Add for offline forest use</div>
       <div class="ios-sub tc">加至主畫面，離線使用</div>
     </div>
@@ -261,54 +249,102 @@ details[open] summary::after{content:'▾';}
 
 <script>
 function dk(){return document.documentElement.getAttribute('data-lang')==='zh'?'tc':'en';}
-// expose for nav.js download function
+
 window.CH=[
-{id:1,audio:'audio/01_Final_v01_20260211.mp3',loc:{en:'The Plaza',tc:'廣場'},title:{en:'The Beginning of Connection: Entrance of KFBG & Sensory Awareness',tc:'連結之始：進入園區與五感體驗'},short:{en:'The Beginning of Connection',tc:'連結之始'},desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},practice:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},tr:`歡迎您嚟到嘉道理農場暨植物園。\n\n呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。\n\n喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。\n\n接住落嚟，我會陪您一步一步，用眼、耳、鼻、皮膚，同大自然連繫。\n\n先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。試吓帶住好奇心，觀察顏色、形狀、紋理？\n\n宜家，細心聆聽四周圍嘅聲音。可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……\n\n可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……\n\n呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度。可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。\n\n接住落嚟，可以暫時放低呢段錄音，自由去用視覺、聽覺、嗅覺、觸覺去同廣場入面唔同嘅樹木連繫。當覺得合適嘅時候，行到去下一個停留點：「生機園」。`,img:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900'},
-{id:2,audio:'audio/02_Final_v01_20260211.mp3',loc:{en:'Eco Garden',tc:'生機園'},title:{en:'Sensory Exploration: Plant Observation at the Eco Garden',tc:'感官探索：生機園的植物觀察'},short:{en:'Sensory Exploration',tc:'感官探索'},desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},practice:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},tr:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。\n\n今次我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。\n\n慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。留心見到嘅形狀、紋理、顏色……帶住好奇心，望真啲佢。\n\n合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。用觸覺去探索佢嘅葉、莖同花。\n\n用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？嗰氣味係點架？放低要去介定您「喜歡」或「唔喜歡」嘅意向，單純咁去觀察呢種氣味。\n\n而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。如果覺得合適，可以用一隻手觸模泥土，嗰感覺又係點架呢？\n\n接住落嚟，可以暫時放低呢段錄音，自由去用唔同嘅感官，去探索生機園入面唔同嘅植物。直到覺得合適嘅時候，行到去下一個停留點：「葛先生花園」。`,img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900'},
-{id:3,audio:'audio/03_Final_v01_20260211.mp3',loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},title:{en:'Between Far and Near: The Rocks of Walter Kerr Garden',tc:'遠近之間：葛先生花園的磐石'},short:{en:'Between Far and Near',tc:'遠近之間'},desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},practice:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},tr:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。\n\n慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色……留意大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走？\n\n呢一刻，慢慢向後退幾步，行遠少少，直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離咁觀察同一件物件嘅時候，所留意到嘅，係一樣、定唔同嘅？帶住好奇心去觀察。\n\n合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置。\n\n接住落嚟，可以緣住河邊嘅小路，慢慢進入被植物包圍嘅葛先生花園。有冇邊棵植物特別吸引您注意？帶住好奇心，用眼睛近距離觀察、遠距離觀察、然後又用手去探索佢。\n\n直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,img:'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900'},
-{id:4,audio:'audio/04_Final_v01_20260211.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},short:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},practice:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？聆聽住每一刻嘅流水聲，留心住佢每刻嘅變化。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，喺呢個開闊嘅覺察之中，留心依一刻任何嘅聲音。唔需要刻意去找尋，只係懷住好奇心、去聆聽、去接收任何進入聽覺範圍嘅聲音。\n\n可能會留意到，心會去為聲音命名：呢個係流水聲、嗰個係風聲……呢個時候，聽真啲呢啲聲音、去探索吓呢啲聲音到底係點嘅？係持續、定係間斷嘅？係近嘅、定遠架？可以嘅話，同時都留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
-{id:5,audio:'audio/05_Final_v01_20260211.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},short:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},practice:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n而家，就喺呢個視野開闊嘅沁思園，一齊體驗一下，集中同擴展注意力之間嘅轉換。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。留意見到嘅顏色、形狀等等……\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、所有嘅浮雲……整座山，以及所有嘅樹木……\n\n進一步開闊注意力，除咗視覺之外，接收埋進入聽覺範圍嘅聲音……皮膚嘅感覺……聞到嘅氣味等等……帶住好奇心，用唔同嘅感官去觀察身處嘅呢個空間。\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動、空氣進出身體嘅感覺……\n\n同時，留意一吓呢一刻，身體畀大地承托住，嗰份穩妥、安穩、實在嘅感覺……慢慢、溫柔咁伸展……\n\n讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'}
+{id:1,audio:'audio/01_Final_v01_20260211.mp3',loc:{en:'The Plaza',tc:'廣場'},title:{en:'The Beginning of Connection: Entrance of KFBG & Sensory Awareness',tc:'連結之始：進入園區與五感體驗'},short:{en:'The Beginning of Connection',tc:'連結之始'},desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},practice:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},tr:`歡迎您嚟到嘉道理農場暨植物園。\n\n呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。\n\n喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。\n\n先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。用眼睛觀察見到嘅形狀、紋理、顏色……\n\n宜家，細心聆聽四周圍嘅聲音。可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……\n\n可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……\n\n呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度。可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。\n\n接住落嚟，可以暫時放低呢段錄音，行到去下一個停留點：「生機園」。`,img:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900'},
+{id:2,audio:'audio/02_Final_v01_20260211.mp3',loc:{en:'Eco Garden',tc:'生機園'},title:{en:'Sensory Exploration: Plant Observation at the Eco Garden',tc:'感官探索：生機園的植物觀察'},short:{en:'Sensory Exploration',tc:'感官探索'},desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},practice:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},tr:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。\n\n今次我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。\n\n慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。留心見到嘅形狀、紋理、顏色……帶住好奇心，望真啲佢。\n\n合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。用觸覺去探索佢嘅葉、莖同花。\n\n用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？放低要去介定「喜歡」或「唔喜歡」嘅意向，單純咁去觀察呢種氣味。\n\n而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。乾既？濕既？\n\n接住落嚟，行到去下一個停留點：「葛先生花園」。`,img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900'},
+{id:3,audio:'audio/03_Final_v01_20260211.mp3',loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},title:{en:'Between Far and Near: The Rocks of Walter Kerr Garden',tc:'遠近之間：葛先生花園的磐石'},short:{en:'Between Far and Near',tc:'遠近之間'},desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},practice:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},tr:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。\n\n慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色……留意大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走？\n\n呢一刻，慢慢向後退幾步，行遠少少，直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離同近距離觀察同一件物件，所留意到嘅係一樣、定唔同嘅？\n\n合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置。\n\n直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,img:'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900'},
+{id:4,audio:'audio/04_Final_v01_20260211.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},short:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},practice:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，喺呢個開闊嘅覺察之中，留心依一刻任何嘅聲音。留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
+{id:5,audio:'audio/05_Final_v01_20260211.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},short:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},practice:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動……\n\n慢慢、溫柔咁伸展……讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'}
 ];
 
 let idx=0,playing=false,lang='zh',rate=1,playlistMode=false;
 const aud=document.getElementById('mainAudio');
 const CACHE_NAME='kfbg-audio-v1';
 const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
+const JOURNEY_KEY='grounding-walk';
+
+// ── AUDIO STATE — write to sessionStorage for mini player on home page ──
+function writeAudioState(){
+  const c=CH[idx];const k=dk();
+  sessionStorage.setItem('kfbg-audio-state',JSON.stringify({
+    journeyKey:JOURNEY_KEY,
+    chLabel:'Ch.0'+c.id+' · '+(c.loc[k]||c.loc.en),
+    chTitle:c.short[k]||c.short.en,
+    cur:aud.currentTime||0,
+    dur:aud.duration||0,
+    playing,
+    idx
+  }));
+}
+// ── LISTEN FOR COMMANDS FROM HOME PAGE ──
+function pollCommands(){
+  const raw=sessionStorage.getItem('kfbg-audio-cmd');
+  if(!raw)return;
+  try{
+    const cmd=JSON.parse(raw);
+    if(cmd&&cmd.t&&Date.now()-cmd.t<2000){
+      sessionStorage.removeItem('kfbg-audio-cmd');
+      if(cmd.cmd==='toggle')togglePlay();
+      else if(cmd.cmd==='next')nextChapter();
+    }
+  }catch(e){}
+  const seekRaw=sessionStorage.getItem('kfbg-seek');
+  if(seekRaw){
+    try{
+      const sk=JSON.parse(seekRaw);
+      if(sk&&sk.t&&Date.now()-sk.t<2000&&aud.duration){
+        aud.currentTime=sk.pct*aud.duration;
+        sessionStorage.removeItem('kfbg-seek');
+      }
+    }catch(e){}
+  }
+}
+setInterval(pollCommands,300);
 
 // ── MAP ──
 (function(){
   const wrap=document.getElementById('mapSection');
-  let mapImg=null,scale=1,tx=0,ty=0,dragging=false,lx=0,ly=0,pinching=false,ld=0;
+  let mapImg=null,scale=1,tx=0,ty=0,dr=false,lx=0,ly=0,pi=false,ld=0;
   window.loadMapImage=function(src){
     document.getElementById('mapPlaceholder').style.display='none';
-    mapImg=document.createElement('img');
-    mapImg.className='map-img';mapImg.src=src;
-    mapImg.onload=()=>{wrap.appendChild(mapImg);fitMap();};
+    mapImg=document.createElement('img');mapImg.className='map-img';mapImg.src=src;
+    mapImg.onload=()=>{wrap.appendChild(mapImg);const s=wrap.clientHeight/mapImg.naturalHeight;scale=s;tx=(wrap.clientWidth-mapImg.naturalWidth*s)/2;ty=0;applyT();};
   };
-  function fitMap(){if(!mapImg)return;scale=wrap.clientHeight/mapImg.naturalHeight;tx=(wrap.clientWidth-mapImg.naturalWidth*scale)/2;ty=0;applyT();}
   function applyT(){if(!mapImg)return;mapImg.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;}
   function clamp(){if(!mapImg)return;const iw=mapImg.naturalWidth*scale,ih=mapImg.naturalHeight*scale,mw=wrap.clientWidth,mh=wrap.clientHeight;tx=Math.min(0,Math.max(mw-iw,tx));ty=Math.min(0,Math.max(mh-ih,ty));}
-  wrap.addEventListener('touchstart',e=>{if(e.touches.length===1){dragging=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pinching=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}},{passive:true});
-  wrap.addEventListener('touchmove',e=>{e.preventDefault();if(pinching&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);scale=Math.max(0.5,Math.min(4,scale*(d/ld)));ld=d;clamp();applyT();}else if(dragging&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;clamp();applyT();}},{passive:false});
-  wrap.addEventListener('touchend',()=>{dragging=false;pinching=false;});
-  wrap.addEventListener('mousedown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;wrap.classList.add('grabbing');});
-  window.addEventListener('mousemove',e=>{if(!dragging)return;tx+=e.clientX-lx;ty+=e.clientY-ly;lx=e.clientX;ly=e.clientY;clamp();applyT();});
-  window.addEventListener('mouseup',()=>{dragging=false;wrap.classList.remove('grabbing');});
+  wrap.addEventListener('touchstart',e=>{if(e.touches.length===1){dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pi=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}},{passive:true});
+  wrap.addEventListener('touchmove',e=>{e.preventDefault();if(pi&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);scale=Math.max(0.5,Math.min(4,scale*(d/ld)));ld=d;clamp();applyT();}else if(dr&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;clamp();applyT();}},{passive:false});
+  wrap.addEventListener('touchend',()=>{dr=false;pi=false;});
+  wrap.addEventListener('mousedown',e=>{dr=true;lx=e.clientX;ly=e.clientY;wrap.classList.add('grabbing');});
+  window.addEventListener('mousemove',e=>{if(!dr)return;tx+=e.clientX-lx;ty+=e.clientY-ly;lx=e.clientX;ly=e.clientY;clamp();applyT();});
+  window.addEventListener('mouseup',()=>{dr=false;wrap.classList.remove('grabbing');});
   wrap.addEventListener('wheel',e=>{e.preventDefault();scale=Math.max(0.5,Math.min(4,scale*(e.deltaY<0?1.1:0.9)));clamp();applyT();},{passive:false});
 })();
 
-// ── SCROLL ──
-function setupScroll(){
-  window.addEventListener('scroll',()=>{
-    const tot=document.documentElement.scrollHeight-window.innerHeight;
-    document.getElementById('scrollBar').style.width=(tot>0?(window.scrollY/tot)*100:0)+'%';
-    CH.forEach((_,i)=>{const s=document.getElementById('sec-'+i);if(!s)return;const r=s.getBoundingClientRect();const on=r.top<=200&&r.bottom>=200;s.classList.toggle('active-chapter',on);document.getElementById('pill-'+i)?.classList.toggle('active',on);});
-  },{passive:true});
+// ── SCROLL PROGRESS ──
+window.addEventListener('scroll',()=>{
+  const tot=document.documentElement.scrollHeight-window.innerHeight;
+  document.getElementById('scrollBar').style.width=(tot>0?(window.scrollY/tot)*100:0)+'%';
+  CH.forEach((_,i)=>{const s=document.getElementById('sec-'+i);if(!s)return;const r=s.getBoundingClientRect();const on=r.top<=200&&r.bottom>=200;s.classList.toggle('active-chapter',on);updatePillActive(i,on);});
+},{passive:true});
+function updatePillActive(i,on){
+  document.getElementById('pill-'+i)?.classList.toggle('active',on);
 }
 
-// ── BUILD ──
-function buildPills(){document.getElementById('pillsRow').innerHTML=CH.map((c,i)=>`<button class="ch-pill${DONE.has(i)?' done':''}" id="pill-${i}" onclick="tapPlay(${i})"><span class="ch-pill-num">${String(c.id).padStart(2,'0')}</span><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></button>`).join('');}
+// ── BUILD PILLS (in bottom bar) ──
+function buildPills(){
+  const row=document.getElementById('pillsRow');
+  row.innerHTML=`
+    <button class="ch-pill pill-map" onclick="scrollToMap()">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg>
+      <span class="en">Map</span><span class="tc">地圖</span>
+    </button>
+    ${CH.map((c,i)=>`<button class="ch-pill${DONE.has(i)?' done':''}" id="pill-${i}" onclick="tapPlay(${i})"><span class="ch-pill-num">${String(c.id).padStart(2,'0')}</span><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></button>`).join('')}`;
+}
+function scrollToMap(){document.getElementById('mapSection')?.scrollIntoView({behavior:'smooth',block:'start'});}
 
+// ── BUILD CHAPTERS ──
 function buildChapters(){
   document.getElementById('journeyContent').innerHTML=CH.map((c,i)=>`
     <section class="ch-section" id="sec-${i}">
@@ -330,8 +366,8 @@ function buildChapters(){
             <svg class="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
           </button>
         </div>
-        <div class="ch-dl-bar" id="cdlbar-${i}"><div class="ch-dl-fill" id="cdlfill-${i}"></div></div>
-        <div class="ch-dl-text" id="cdltext-${i}"></div>
+        <div class="ch-dl-bar" id="cdlbar-${i}"><div class="ch-dl-fill"></div></div>
+        <div class="ch-dl-txt" id="cdltxt-${i}"></div>
         <div class="ch-seek" id="cseek-${i}" onclick="seekCh(event,${i})"><div class="ch-seek-fill" id="cfill-${i}"></div></div>
         <div class="ch-speed">
           <span class="spd-label"><span class="en">Speed</span><span class="tc">速度</span></span>
@@ -356,68 +392,43 @@ function buildChapters(){
     </div>`;
 }
 
-// ── AUDIO LOADING INDICATOR ──
-function showLoadingIndicator(i){
-  document.getElementById('cbtn-'+i)?.classList.add('loading');
-  const bar=document.getElementById('cdlbar-'+i);
-  const text=document.getElementById('cdltext-'+i);
-  if(bar){bar.classList.add('show');document.getElementById('cdlfill-'+i).style.width='0%';}
-  if(text){text.classList.add('show');text.textContent=dk()==='tc'?'正在載入音頻…':'Loading audio…';}
-}
-function hideLoadingIndicator(i){
-  document.getElementById('cbtn-'+i)?.classList.remove('loading');
-  document.getElementById('cdlbar-'+i)?.classList.remove('show');
-  const t=document.getElementById('cdltext-'+i);if(t)t.classList.remove('show');
-}
-function updateLoadingProgress(i,pct){
-  const fill=document.getElementById('cdlfill-'+i);
-  if(fill) fill.style.width=pct+'%';
-  const text=document.getElementById('cdltext-'+i);
-  if(text) text.textContent=(dk()==='tc'?'載入中 ':'Loading ')+Math.round(pct)+'%';
-}
-
 // ── PLAYER BAR ──
 function refreshPBText(){
   const c=CH[idx];const k=dk();
   document.getElementById('pbChText').textContent='Ch.0'+c.id+' · '+(c.loc[k]||c.loc.en);
   document.getElementById('pbTitle').textContent=c.short[k]||c.short.en;
   if(playlistMode)updateDots();
+  writeAudioState();
 }
 function refreshPBProgress(cur,dur){
   document.getElementById('pbFill').style.width=(dur>0?(cur/dur)*100:0)+'%';
   document.getElementById('pbTime').textContent=fmt(cur)+' / '+fmt(dur||0);
+  writeAudioState();
 }
 function updateDots(){document.getElementById('pbSeq').innerHTML=CH.map((_,i)=>`<div class="pb-dot${i===idx?' active':DONE.has(i)?' done':''}"></div>`).join('');}
 
-// ── LOAD CHAPTER with loading indicator ──
+// ── LOAD CHAPTER ──
+function showLoading(i){
+  document.getElementById('cbtn-'+i)?.classList.add('loading');
+  const b=document.getElementById('cdlbar-'+i);const t=document.getElementById('cdltxt-'+i);
+  if(b){b.classList.add('show');b.querySelector('.ch-dl-fill').style.width='0%';}
+  if(t){t.classList.add('show');t.textContent=dk()==='tc'?'正在載入…':'Loading…';}
+}
+function hideLoading(i){
+  document.getElementById('cbtn-'+i)?.classList.remove('loading');
+  document.getElementById('cdlbar-'+i)?.classList.remove('show');
+  const t=document.getElementById('cdltxt-'+i);if(t)t.classList.remove('show');
+}
 function loadChapter(i,play){
-  idx=i;
-  aud.src=CH[i].audio;
-  aud.load();
-  aud.playbackRate=rate;
+  idx=i;aud.src=CH[i].audio;aud.load();aud.playbackRate=rate;
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProgress(0,0);syncBtns(false);
   if(play){
-    showLoadingIndicator(i);
-    // Simulate progress while buffering
-    let prog=0;
-    const progInterval=setInterval(()=>{
-      prog=Math.min(prog+Math.random()*15,90);
-      updateLoadingProgress(i,prog);
-    },200);
-    aud.play().then(()=>{
-      clearInterval(progInterval);
-      updateLoadingProgress(i,100);
-      setTimeout(()=>hideLoadingIndicator(i),400);
-      playing=true;syncBtns(true);
-    }).catch(()=>{
-      clearInterval(progInterval);
-      hideLoadingIndicator(i);
-      playing=false;syncBtns(false);
-    });
-  } else {
-    playing=false;syncBtns(false);
-  }
+    showLoading(i);
+    let p=0;
+    const iv=setInterval(()=>{p=Math.min(p+Math.random()*15,90);const b=document.getElementById('cdlbar-'+i);if(b)b.querySelector('.ch-dl-fill').style.width=p+'%';const t=document.getElementById('cdltxt-'+i);if(t)t.textContent=(dk()==='tc'?'載入中 ':'Loading ')+Math.round(p)+'%';},200);
+    aud.play().then(()=>{clearInterval(iv);setTimeout(()=>hideLoading(i),350);playing=true;syncBtns(true);writeAudioState();}).catch(()=>{clearInterval(iv);hideLoading(i);playing=false;syncBtns(false);});
+  } else{playing=false;syncBtns(false);}
 }
 
 // ── JUMP ──
@@ -438,20 +449,20 @@ function jumpToCurrentSection(){document.getElementById('sec-'+idx)?.scrollIntoV
 
 // ── CONTROLS ──
 function tapPlay(i){if(i===idx){togglePlay();}else{playlistMode=false;document.getElementById('pbPlaylistTag').classList.remove('show');document.getElementById('pbSeq').classList.remove('show');jump(i,false);}}
-function togglePlay(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}syncBtns(playing);}
+function togglePlay(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}syncBtns(playing);writeAudioState();}
 function nextChapter(){if(idx<CH.length-1)jump(idx+1,playlistMode);}
 function seekCh(e,i){if(i!==idx||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;}
 function setSpd(r,btn){rate=r;aud.playbackRate=r;document.querySelectorAll('.speed-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
 function syncBtns(on){document.getElementById('btnPlayMain').classList.toggle('playing',on);CH.forEach((_,i)=>document.getElementById('cbtn-'+i)?.classList.toggle('playing',i===idx&&on));}
 aud.addEventListener('timeupdate',()=>{if(!aud.duration)return;const p=(aud.currentTime/aud.duration)*100;refreshPBProgress(aud.currentTime,aud.duration);document.getElementById('cfill-'+idx).style.width=p+'%';document.getElementById('ctime-'+idx).textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);});
 aud.addEventListener('loadedmetadata',()=>{refreshPBProgress(0,aud.duration);document.getElementById('ctime-'+idx).textContent='0:00 / '+fmt(aud.duration);});
-aud.addEventListener('ended',()=>{DONE.add(idx);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pill-'+idx)?.classList.add('done');playing=false;syncBtns(false);if(idx<CH.length-1){setTimeout(()=>jump(idx+1,playlistMode),600);}else{playlistMode=false;document.getElementById('pbPlaylistTag').classList.remove('show');document.getElementById('pbSeq').classList.remove('show');const c=document.getElementById('completion');c.classList.add('show');c.scrollIntoView({behavior:'smooth',block:'center'});}});
-aud.addEventListener('play',()=>{playing=true;syncBtns(true);});
-aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
+aud.addEventListener('ended',()=>{DONE.add(idx);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pill-'+idx)?.classList.add('done');playing=false;syncBtns(false);writeAudioState();if(idx<CH.length-1){setTimeout(()=>jump(idx+1,playlistMode),600);}else{playlistMode=false;document.getElementById('pbPlaylistTag').classList.remove('show');document.getElementById('pbSeq').classList.remove('show');const c=document.getElementById('completion');c.classList.add('show');c.scrollIntoView({behavior:'smooth',block:'center'});}});
+aud.addEventListener('play',()=>{playing=true;syncBtns(true);writeAudioState();});
+aud.addEventListener('pause',()=>{playing=false;syncBtns(false);writeAudioState();});
 document.getElementById('pbTrack').addEventListener('click',e=>{if(!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;});
 function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;}
 
-// ── LANG sync with nav.js ──
+// ── LANG sync ──
 window.setLang=function(l){lang=l;refreshPBText();};
 
 // ── iOS ──
@@ -461,7 +472,6 @@ function dismissIOS(){document.getElementById('iosBanner').classList.remove('sho
 // ── OFFLINE ──
 window.addEventListener('offline',()=>document.getElementById('offlineNotice').classList.add('show'));
 window.addEventListener('online',()=>document.getElementById('offlineNotice').classList.remove('show'));
-async function cachePages(){if(!('caches'in window))return;try{const c=await caches.open('kfbg-pages-v4');await c.addAll(['index.html','journey.html','KFBG_Logo_Square.png','manifest.json','nav.js']);}catch(e){}}
 async function cacheAudioSilently(){if(!('caches'in window))return;try{const c=await caches.open(CACHE_NAME);CH.forEach(x=>fetch(x.audio).then(r=>{if(r.ok)c.put(x.audio,r);}).catch(()=>{}));}catch(e){}}
 
 // ── INIT ──
@@ -470,17 +480,11 @@ function init(){
   idx=Math.min(si,CH.length-1);
   lang=document.documentElement.getAttribute('data-lang')||'zh';
   buildPills();buildChapters();loadChapter(idx,false);
-  setupScroll();setupIOS();
-  cachePages();cacheAudioSilently();
-  // nav title
-  setTimeout(()=>{
-    window.kfbgSetNavTitle&&kfbgSetNavTitle(lang==='zh'?'連結大地':'Grounding Walk');
-  },100);
+  setupIOS();cacheAudioSilently();
+  setTimeout(()=>window.kfbgSetPageTitle&&kfbgSetPageTitle(lang==='zh'?'連結大地':'Grounding Walk'),100);
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(()=>{});
-    navigator.serviceWorker.addEventListener('message',e=>{
-      if(e.data&&e.data.type==='SW_UPDATED')document.getElementById('kfbgUpdateBanner')?.classList.add('show');
-    });
+    navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='SW_UPDATED')document.getElementById('knUpdate')?.classList.add('show');});
   }
 }
 document.addEventListener('DOMContentLoaded',init);
