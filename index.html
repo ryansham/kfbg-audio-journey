@@ -11,6 +11,15 @@
 <link rel="apple-touch-icon" href="KFBG_Logo.png"/>
 <link rel="icon" href="KFBG_Logo.png"/>
 <title>自助語音旅程 · KFBG</title>
+<meta property="og:title" content="KFBG Self-guided Audio Journey · 自助語音旅程"/>
+<meta property="og:description" content="A mindful audio walk through Kadoorie Farm and Botanic Garden. Five stops, five senses."/>
+<meta property="og:image" content="og-image.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:type" content="website"/>
+<meta property="og:site_name" content="Kadoorie Farm and Botanic Garden"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="og-image.jpg"/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 /* ══════════════════════════════════
@@ -382,7 +391,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <div class="drh"><button class="drclose" onclick="drClose()">×</button></div>
   <div class="drb">
     <div class="drs"><div class="drsl">Language / 語言</div><div class="drlang"><button class="drlopt" id="dlen" onclick="setLang('en')">English</button><button class="drlopt ac" id="dlzh" onclick="setLang('zh')">繁中</button></div></div>
-    <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="5" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
+    <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="6" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
     <div class="drs">
       <div class="drsl"><span class="en">Offline</span><span class="tc">離線使用</span></div>
       <button class="drdlbtn" id="drdlbtn" onclick="dlClick()"><span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
@@ -438,7 +447,7 @@ const CH=[
   {id:4,a:'audio/grounding-walk/ch04.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},sh:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},prac:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，留心任何嘅聲音。留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
   {id:5,a:'audio/grounding-walk/ch05.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},sh:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},prac:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、所有嘅浮雲……\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動……\n\n慢慢、溫柔咁伸展……讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'},
 ];
-const FS=['0.88rem','0.94rem','1rem','1.08rem','1.16rem','1.25rem'];
+const FS=['0.94rem','1rem','1.08rem','1.16rem','1.25rem','1.35rem','1.5rem'];
 const SPDS=[1,1.25,1.5];
 const CACHE='kfbg-audio-v1';
 const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
@@ -537,12 +546,7 @@ function buildChapters(){
         </div>
         <div class="cdlb" id="cdl${i}"><div class="cdlf" id="cdf${i}"></div></div>
         <div class="cseek" id="csk${i}"><div class="csf" id="csf${i}"></div></div>
-        <div class="cspd">
-          <span class="spdl"><span class="en">Speed</span><span class="tc">速度</span></span>
-          <button class="spdb ac" onclick="setSpdBtn(1,this)">1×</button>
-          <button class="spdb" onclick="setSpdBtn(1.25,this)">1.25×</button>
-          <button class="spdb" onclick="setSpdBtn(1.5,this)">1.5×</button>
-        </div>
+
       </div>
       <details><summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary><div class="trb">${c.tr}</div></details>
       <div class="prac"><div class="pracl"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div><div class="pract en">${c.prac.en}</div><div class="pract tc">${c.prac.tc}</div></div>
@@ -603,8 +607,8 @@ function jumpToCurrent(){
   else{document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'});}
 }
 function chSeek(e,i){if(i!==ai||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;}
-function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.querySelectorAll('.spdb').forEach(b=>b.classList.toggle('ac',parseFloat(b.textContent)===r));document.getElementById('pbspd').textContent=r+'×';}
-function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';document.querySelectorAll('.spdb').forEach(b=>b.classList.toggle('ac',parseFloat(b.textContent)===r));}
+function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
+function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
 function showLd(i){document.getElementById('cb'+i)?.classList.add('ld');document.getElementById('cdl'+i)?.classList.add('sh');}
 function hideLd(i){document.getElementById('cb'+i)?.classList.remove('ld');document.getElementById('cdl'+i)?.classList.remove('sh');}
 function syncBtns(on){document.getElementById('pbplay').classList.toggle('pl',on);CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));}
