@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#4A5C3A"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="KFBG Audio Journey"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="KFBG_Logo.png"/>
+<link rel="icon" href="KFBG_Logo.png"/>
+<title>自助語音旅程 · KFBG</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════
+   KFBG Self-guided Audio Journey
+   Single Page App — v6
+   ══════════════════════════════════ */
+:root{
+  --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
+  --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
+  --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
+  --nav:54px;--bar:110px;--fs:1rem;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:var(--fs);}
+body{background:var(--cr);color:var(--tx);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.65;overflow:hidden;height:100vh;}
+
+/* LANG */
+[data-lang="en"] .tc{display:none!important;}
+[data-lang="zh"] .en{display:none!important;}
+.en,.tc{display:block;}
+span.en,span.tc{display:inline;}
+[data-lang="en"] span.tc{display:none!important;}
+[data-lang="zh"] span.en{display:none!important;}
+[data-lang="zh"] .nst{font-family:'Noto Serif TC',serif!important;}
+
+/* ── NAV ── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav);background:rgba(247,243,236,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0 12px;display:flex;align-items:center;gap:10px;}
+#nav-logo{height:34px;cursor:pointer;flex-shrink:0;display:block;}
+#nav-back{display:none;align-items:center;gap:5px;font-size:0.78rem;color:var(--ol);font-weight:500;cursor:pointer;flex-shrink:0;background:none;border:none;font-family:inherit;}
+#nav-back svg{width:18px;height:18px;}
+#nav-title{font-size:0.78rem;color:var(--mu);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
+#nav-menu{width:40px;height:40px;border-radius:10px;background:var(--ol);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#nav-menu svg{width:18px;height:18px;stroke:#fff;stroke-width:2;fill:none;stroke-linecap:round;}
+
+/* ── SCROLL BAR ── */
+#sbar{position:fixed;top:0;left:0;height:3px;background:var(--gd);width:0%;z-index:500;pointer-events:none;}
+
+/* ── VIEWS ── */
+#views{position:fixed;top:var(--nav);left:0;right:0;bottom:var(--bar);overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+.view{display:none;}
+.view.on{display:block;}
+
+/* ════ HOME VIEW ════ */
+.hero{padding:40px 20px 44px;text-align:center;position:relative;}
+.hero::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:1px;height:28px;background:var(--bd);}
+.hero-ey{font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--oll);margin-bottom:12px;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.8rem,7vw,2.8rem);font-weight:500;line-height:1.1;color:var(--tx);letter-spacing:-0.02em;margin-bottom:14px;}
+.hero h1 em{font-style:italic;color:var(--ol);}
+[data-lang="zh"] .hero h1{font-family:'Noto Serif TC',serif;}
+.hero-desc{font-size:0.85rem;color:var(--mu);max-width:320px;margin:0 auto 22px;line-height:1.75;}
+.hero-meta{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:0.68rem;color:var(--mu);}
+.hdot{width:3px;height:3px;border-radius:50%;background:var(--bd);}
+.about{background:var(--ol);padding:36px 20px;}
+.about-in{max-width:540px;margin:0 auto;text-align:center;}
+.about h2{font-family:'Cormorant Garamond',serif;font-size:clamp(1.25rem,4vw,1.65rem);font-weight:500;color:#fff;margin-bottom:11px;line-height:1.25;}
+[data-lang="zh"] .about h2{font-family:'Noto Serif TC',serif;}
+.about p{font-size:0.85rem;color:rgba(247,243,236,0.75);line-height:1.8;}
+.lib{padding:36px 14px 20px;max-width:640px;margin:0 auto;}
+.lib-lbl{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--oll);margin-bottom:18px;text-align:center;}
+.jc{background:#fff;border:1px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:14px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;}
+.jc:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(74,92,58,0.1);}
+.jc.locked{opacity:0.5;pointer-events:none;}
+.ji{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--sa);}
+.ji img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s;}
+.jc:hover .ji img{transform:scale(1.03);}
+.jbadge{position:absolute;top:10px;left:10px;background:rgba(59,74,47,0.86);color:rgba(247,243,236,0.94);font-size:0.53rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 9px;border-radius:100px;}
+.jnum{position:absolute;bottom:10px;right:10px;width:26px;height:26px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.78rem;font-weight:600;color:var(--ol);}
+.jsoon{position:absolute;inset:0;background:rgba(238,235,228,0.65);display:flex;align-items:center;justify-content:center;font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--mu);}
+.jbody{padding:14px 16px 16px;}
+.jkick{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--oll);margin-bottom:4px;}
+.jtitle{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,4vw,1.25rem);font-weight:500;color:var(--tx);line-height:1.3;margin-bottom:7px;word-break:break-word;}
+[data-lang="zh"] .jtitle{font-family:'Noto Serif TC',serif;}
+.jdesc{font-size:0.8rem;color:var(--mu);line-height:1.72;margin-bottom:12px;}
+.jfoot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.jmeta{font-size:0.68rem;color:var(--mu);display:flex;align-items:center;gap:4px;}
+.jcta{background:var(--ol);color:#fff;font-size:0.68rem;font-weight:500;padding:6px 13px;border-radius:100px;white-space:nowrap;}
+
+/* ════ JOURNEY VIEW ════ */
+.mapw{position:relative;overflow:hidden;background:var(--sa);height:180px;touch-action:none;cursor:grab;user-select:none;}
+.mapw.gr{cursor:grabbing;}
+.mapw img.mimg{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;}
+.mapph{height:180px;background:linear-gradient(135deg,#d6e4c8,#e8f0de,#c8d8b4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--oll);}
+.mapph svg{width:28px;height:28px;opacity:0.38;}
+.mapph p{font-size:0.7rem;opacity:0.6;}
+.maphint{position:absolute;bottom:7px;right:9px;font-size:0.56rem;background:rgba(255,255,255,0.78);padding:3px 8px;border-radius:100px;color:var(--mu);pointer-events:none;}
+/* play all */
+.paw{padding:8px 14px 6px;}
+.pab{background:var(--ol);border-radius:12px;padding:11px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:none;width:100%;text-align:left;transition:opacity 0.18s;}
+.pab:hover{opacity:0.9;}
+.patxt{flex:1;min-width:0;}
+.palbl{font-size:0.58rem;color:rgba(196,169,106,0.6);letter-spacing:0.06em;margin-bottom:1px;}
+.pattl{font-size:0.82rem;font-weight:500;color:var(--cr);line-height:1.3;}
+[data-lang="zh"] .pattl{font-family:'Noto Serif TC',serif;}
+.paico{width:34px;height:34px;border-radius:50%;background:var(--gd);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.paico svg{width:12px;height:12px;fill:var(--olm);margin-left:2px;}
+/* chapters */
+.jcon{max-width:640px;margin:0 auto;padding:0 14px 20px;}
+.csec{margin-top:26px;scroll-margin-top:8px;}
+.csec.ca .cimg{box-shadow:0 0 0 3px var(--ol);}
+.cimg{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:11px;margin-bottom:13px;background:var(--sa);transition:box-shadow 0.3s;}
+.cimg img{width:100%;height:100%;object-fit:cover;display:block;}
+.cbadge{position:absolute;top:10px;left:10px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.94);font-size:0.53rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:4px 9px;border-radius:100px;}
+.cnum{position:absolute;bottom:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:600;color:var(--ol);}
+.ckick{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--oll);margin-bottom:4px;}
+.ctitle{font-family:'Cormorant Garamond',serif;font-size:clamp(1.05rem,4vw,1.38rem);font-weight:500;color:var(--tx);line-height:1.25;margin-bottom:8px;}
+[data-lang="zh"] .ctitle{font-family:'Noto Serif TC',serif;}
+.cdesc{font-size:0.86rem;color:var(--mu);line-height:1.78;margin-bottom:13px;}
+/* chapter player — info LEFT, play RIGHT */
+.cplayer{background:var(--ol);border-radius:13px;padding:13px 15px;margin-bottom:11px;}
+.cpm{display:flex;align-items:center;gap:11px;margin-bottom:10px;}
+.cpi{flex:1;min-width:0;}
+.cplbl{font-size:0.6rem;color:rgba(196,169,106,0.55);letter-spacing:0.06em;margin-bottom:2px;}
+.cpname{font-size:0.88rem;font-weight:500;color:var(--cr);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cptime{font-size:0.66rem;color:rgba(247,243,236,0.3);margin-top:2px;}
+.cpbtn{width:44px;height:44px;border-radius:50%;background:var(--gd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;transition:transform 0.15s;}
+.cpbtn:active{transform:scale(0.92);}
+.cpbtn svg{width:14px;height:14px;fill:var(--olm);}
+.cpbtn .ip{display:none;}
+.cpbtn.pl .ip2{display:none;}
+.cpbtn.pl .ip{display:block;}
+.cpbtn.ld::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(255,255,255,0.18);border-top-color:rgba(255,255,255,0.8);animation:sp 0.8s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.cdlb{height:3px;background:rgba(255,255,255,0.1);border-radius:2px;margin-bottom:8px;display:none;overflow:hidden;}
+.cdlb.sh{display:block;}
+.cdlf{height:100%;background:rgba(255,255,255,0.5);width:0%;animation:pld 1.5s ease-in-out infinite;}
+@keyframes pld{0%,100%{opacity:0.4;}50%{opacity:1;}}
+.cseek{height:4px;background:rgba(255,255,255,0.12);border-radius:2px;cursor:pointer;margin-bottom:8px;touch-action:none;}
+.csf{height:100%;background:var(--gd);border-radius:2px;width:0%;pointer-events:none;}
+.cspd{display:flex;align-items:center;gap:5px;}
+.spdl{font-size:0.6rem;color:rgba(247,243,236,0.3);}
+.spdb{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.42);font-size:0.66rem;font-family:inherit;padding:5px 10px;border-radius:100px;cursor:pointer;min-height:30px;transition:all 0.18s;}
+.spdb.ac{background:rgba(196,169,106,0.25);color:var(--gd);}
+details{margin-bottom:11px;}
+details summary{cursor:pointer;padding:11px 14px;background:var(--sa);border:1px solid var(--bd);border-radius:9px;font-size:0.8rem;color:var(--mu);list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:44px;}
+details summary::after{content:'▸';font-size:10px;}
+details[open] summary::after{content:'▾';}
+.trb{padding:13px;background:#F9F7F3;border:1px solid var(--bd);border-top:none;border-radius:0 0 9px 9px;font-size:0.78rem;color:var(--mu);line-height:1.9;white-space:pre-wrap;}
+.prac{background:var(--sa);border-left:4px solid var(--ol);border-radius:0 9px 9px 0;padding:13px 15px;}
+.pracl{font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--ol);margin-bottom:5px;font-weight:600;}
+.pract{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--tx);line-height:1.55;}
+[data-lang="zh"] .pract{font-family:'Noto Serif TC',serif;}
+.cdiv{display:flex;align-items:center;gap:10px;margin:26px 0 0;opacity:0.18;}
+.cdiv::before,.cdiv::after{content:'';flex:1;height:1px;background:var(--ol);}
+.cdivd{width:4px;height:4px;border-radius:50%;background:var(--ol);}
+.comp{display:none;text-align:center;padding:36px 22px;background:var(--ol);border-radius:15px;margin-top:26px;}
+.comp.sh{display:block;}
+.compst{width:64px;height:64px;border-radius:50%;border:2px solid rgba(196,169,106,0.28);display:flex;align-items:center;justify-content:center;margin:0 auto 13px;font-size:24px;}
+.comp h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:500;color:var(--cr);margin-bottom:7px;}
+[data-lang="zh"] .comp h2{font-family:'Noto Serif TC',serif;}
+.comp p{font-size:0.82rem;color:rgba(247,243,236,0.65);line-height:1.7;margin-bottom:20px;max-width:250px;margin-left:auto;margin-right:auto;}
+.btnhome{display:inline-flex;align-items:center;gap:7px;background:var(--gd);color:var(--olm);padding:11px 20px;border-radius:100px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
+/* offline */
+#offbar{display:none;background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:6px 13px;margin:4px 14px;font-size:0.7rem;color:var(--gd);text-align:center;}
+#offbar.sh{display:block;}
+
+/* ════ BOTTOM BAR ════ */
+#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);}
+#pbt{height:5px;background:rgba(255,255,255,0.1);cursor:pointer;touch-action:none;position:relative;}
+#pbf{height:100%;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;}
+#pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;}
+#pbt:hover #pbth,#pbt.sk #pbth{display:block;}
+.pbr{padding:8px 13px 6px;display:flex;align-items:center;gap:9px;}
+.pbinfo{flex:1;min-width:0;cursor:pointer;}
+.pbinfo:hover .pbttl{color:var(--gd);}
+.pbch{font-size:0.56rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;}
+.pbplt{background:rgba(196,169,106,0.15);color:var(--gd);font-size:0.5rem;letter-spacing:0.08em;padding:1px 5px;border-radius:100px;display:none;margin-left:4px;}
+.pbplt.sh{display:inline-block;}
+.pbttl{font-size:0.85rem;font-weight:500;color:var(--cr);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color 0.2s;}
+.pbseq{display:none;margin-top:2px;gap:3px;align-items:center;}
+.pbseq.sh{display:flex;}
+.pbd{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.15);}
+.pbd.ac{background:var(--gd);}
+.pbd.dn{background:rgba(196,169,106,0.38);}
+.pbt2{font-size:0.6rem;color:rgba(247,243,236,0.3);margin-top:1px;}
+.pbctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.pbspd{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:100px;font-size:0.66rem;color:rgba(247,243,236,0.55);padding:4px 9px;cursor:pointer;font-family:inherit;min-height:30px;min-width:36px;transition:all 0.18s;}
+.pbspd:hover{color:var(--gd);}
+.pbnxt{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);padding:3px;min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center;}
+.pbnxt svg{width:17px;height:17px;}
+.pbplay{width:42px;height:42px;border-radius:50%;background:var(--gd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.pbplay svg{width:14px;height:14px;fill:var(--olm);}
+.pbplay .ip{display:none;}
+.pbplay.pl .ip2{display:none;}
+.pbplay.pl .ip{display:block;}
+/* pills */
+#barpills{display:none;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:0 13px 9px;scrollbar-width:none;}
+#barpills::-webkit-scrollbar{display:none;}
+#barpills.sh{display:flex;}
+.pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;font-size:0.68rem;color:rgba(247,243,236,0.52);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;}
+.pill.ac{background:var(--gd);border-color:var(--gd);color:var(--olm);font-weight:500;}
+.pill.dn{border-color:rgba(196,169,106,0.35);color:rgba(196,169,106,0.62);}
+.pilln{font-size:0.56rem;opacity:0.5;}
+
+/* ════ DRAWER ════ */
+#drov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s;}
+#drov.op{background:rgba(0,0,0,0.35);pointer-events:all;}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(310px,88vw);z-index:500;background:var(--cr);box-shadow:-8px 0 32px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);display:flex;flex-direction:column;overflow-y:auto;}
+#dr.op{transform:translateX(0);}
+.drh{padding:13px 13px 11px;background:var(--ol);display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;}
+.drclose{background:rgba(255,255,255,0.12);border:none;color:rgba(247,243,236,0.7);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;}
+.drb{padding:14px;flex:1;}
+.drs{margin-bottom:18px;}
+.drsl{font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--oll);margin-bottom:9px;font-weight:600;}
+.drlang{display:flex;gap:7px;}
+.drlopt{flex:1;padding:10px;border:2px solid var(--bd);border-radius:9px;background:transparent;font-size:0.8rem;font-family:inherit;font-weight:500;color:var(--mu);cursor:pointer;text-align:center;transition:all 0.2s;}
+.drlopt.ac{border-color:var(--ol);background:var(--ol);color:#fff;}
+.drfs{display:flex;align-items:center;gap:9px;}
+.drfsa{font-size:0.72rem;color:var(--mu);font-family:inherit;}
+.drfsa.bg{font-size:1.05rem;}
+input.drsl2{flex:1;height:4px;-webkit-appearance:none;appearance:none;background:var(--bd);border-radius:2px;outline:none;cursor:pointer;}
+input.drsl2::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ol);cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.18);}
+input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ol);border:none;cursor:pointer;}
+.drdlbtn{width:100%;padding:12px 15px;background:var(--ol);color:#fff;border:none;border-radius:11px;font-size:0.82rem;font-family:inherit;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:7px;transition:opacity 0.2s;}
+.drdlbtn:disabled{opacity:0.45;cursor:default;}
+.drdel{display:none;font-size:0.73rem;color:#c0392b;text-decoration:underline;cursor:pointer;background:none;border:none;font-family:inherit;padding:1px 0;margin-top:3px;}
+.drprog{margin-top:5px;display:none;}
+.drpbar{height:3px;background:var(--sa);border-radius:2px;overflow:hidden;}
+.drpfill{height:100%;background:var(--ol);width:0%;transition:width 0.3s;border-radius:2px;}
+.drptxt{font-size:0.68rem;color:var(--mu);margin-top:4px;}
+.drlink{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--sa);border-radius:9px;text-decoration:none;color:var(--tm);font-size:0.8rem;margin-bottom:7px;min-height:44px;transition:background 0.18s;cursor:pointer;}
+.drlink:hover{background:var(--bd);}
+.drlink svg{width:12px;height:12px;stroke:var(--mu);fill:none;stroke-width:2;flex-shrink:0;}
+.drsoc{display:flex;gap:9px;flex-wrap:wrap;}
+.drsb{width:38px;height:38px;border-radius:50%;background:var(--ol);display:flex;align-items:center;justify-content:center;text-decoration:none;}
+.drsb svg{width:15px;height:15px;fill:#fff;}
+
+/* ════ DL MODAL ════ */
+#dlmod{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+#dlmod.op{opacity:1;pointer-events:all;}
+.dlbox{background:var(--cr);border-radius:17px 17px 0 0;padding:18px 15px 34px;width:100%;max-width:480px;}
+.dlbtit{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--mu);margin-bottom:13px;}
+.dljrow{display:flex;align-items:center;justify-content:space-between;padding:12px 13px;background:var(--sa);border-radius:9px;margin-bottom:7px;}
+.dljname{font-size:0.82rem;color:var(--tm);flex:1;line-height:1.3;}
+.dljbtn{background:var(--ol);color:#fff;border:none;padding:6px 13px;border-radius:100px;font-size:0.73rem;font-family:inherit;cursor:pointer;}
+.dlcancel{display:block;width:100%;margin-top:11px;padding:11px;background:transparent;border:1px solid var(--bd);border-radius:9px;font-size:0.82rem;font-family:inherit;color:var(--mu);cursor:pointer;}
+
+/* ════ INSTALL BANNER ════ */
+#ib{display:none;position:fixed;bottom:calc(var(--bar) + 8px);left:11px;right:11px;z-index:400;background:var(--olm);border-radius:13px;padding:15px;box-shadow:0 6px 28px rgba(0,0,0,0.28);}
+#ib.sh{display:block;}
+.ibtop{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
+.ibico{width:42px;height:42px;border-radius:9px;overflow:hidden;flex-shrink:0;background:var(--ol);}
+.ibico img{width:100%;height:100%;object-fit:contain;}
+.ibinfo{flex:1;}
+.ibname{font-size:0.85rem;font-weight:600;color:#fff;margin-bottom:1px;}
+.ibsub{font-size:0.68rem;color:rgba(247,243,236,0.45);}
+.ibx{background:rgba(255,255,255,0.08);border:none;color:rgba(247,243,236,0.45);font-size:12px;cursor:pointer;padding:4px 8px;border-radius:100px;font-family:inherit;}
+.ibsteps{display:flex;flex-direction:column;gap:6px;margin-bottom:11px;}
+.ibstep{display:flex;align-items:flex-start;gap:7px;font-size:0.72rem;color:rgba(247,243,236,0.75);line-height:1.5;}
+.ibn{width:17px;height:17px;border-radius:50%;background:rgba(196,169,106,0.18);color:var(--gd);font-size:0.58rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.ibaddbtn{width:100%;background:var(--gd);color:var(--olm);border:none;border-radius:9px;padding:10px;font-size:0.82rem;font-weight:600;font-family:inherit;cursor:pointer;}
+
+/* ════ MISC ════ */
+#trsh{position:fixed;left:0;right:0;bottom:0;height:19vh;min-height:115px;max-height:170px;z-index:600;background:var(--olm);border-radius:17px 17px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:translateY(100%);transition:transform 0.28s cubic-bezier(0.32,0.72,0,1);padding:11px 22px;}
+#trsh.sh{transform:translateY(0);}
+.trh{width:26px;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);position:absolute;top:8px;}
+.trnum{font-family:'Cormorant Garamond',serif;font-size:26px;color:rgba(247,243,236,0.07);line-height:1;}
+.trlbl{font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,243,236,0.3);margin:2px 0 4px;}
+.trttl{font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-weight:500;color:var(--cr);text-align:center;line-height:1.3;}
+.trloc{font-size:0.58rem;color:rgba(247,243,236,0.3);letter-spacing:0.1em;text-transform:uppercase;margin-top:3px;}
+#ubar{display:none;position:fixed;top:var(--nav);left:0;right:0;z-index:250;background:var(--olm);padding:9px 15px;align-items:center;gap:9px;}
+#ubar.sh{display:flex;}
+#ubar p{font-size:0.75rem;color:rgba(247,243,236,0.88);flex:1;}
+#ubar p strong{color:#fff;}
+.ubtn{background:var(--gd);color:var(--olm);border:none;padding:6px 13px;border-radius:100px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.ux{background:transparent;border:none;color:rgba(247,243,236,0.4);font-size:18px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div id="sbar"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <img id="nav-logo" src="KFBG_Logo.png" alt="KFBG" onerror="this.style.opacity='0.01'"/>
+  <button id="nav-back" onclick="goHome()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    <span class="en">Journeys</span><span class="tc">旅程</span>
+  </button>
+  <div id="nav-title"></div>
+  <button id="nav-menu" onclick="drOpen()">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</nav>
+
+<!-- VIEWS -->
+<div id="views">
+
+  <!-- HOME -->
+  <div id="vh" class="view on">
+    <div class="hero">
+      <div class="hero-ey"><span class="en">Kadoorie Farm and Botanic Garden</span><span class="tc">嘉道理農場暨植物園</span></div>
+      <h1 class="en">KFBG <em>Self-guided<br>Audio Journey</em></h1>
+      <h1 class="tc nst"><em>自助語音旅程</em></h1>
+      <p class="hero-desc en">Step off the path. Slow down. Let the forest speak.</p>
+      <p class="hero-desc tc">放慢腳步，讓自然引路。每條步道設有五個聆聽站，帶領你與大地深連。</p>
+      <div class="hero-meta">
+        <span class="en">Headphones recommended</span><span class="tc">建議佩戴耳機</span>
+        <div class="hdot"></div><span class="en">~45 min</span><span class="tc">約45分鐘</span>
+        <div class="hdot"></div><span class="en">Offline-ready</span><span class="tc">支援離線</span>
+      </div>
+    </div>
+    <div class="about">
+      <div class="about-in">
+        <h2 class="en">Why we created this journey</h2>
+        <h2 class="tc">我們為何創作這段旅程</h2>
+        <p class="en">In a city that never stops, KFBG is a place to remember what stillness feels like. These audio journeys guide visitors into a deeper relationship with nature — not through facts, but through presence.</p>
+        <p class="tc">在這個永不停歇的城市裡，嘉道理農場是讓人重拾寧靜的地方。這些聆聽之旅引領訪客與自然建立更深的聯繫——不是透過知識，而是透過當下的存在。</p>
+      </div>
+    </div>
+    <div class="lib">
+      <div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>
+      <div class="jc" onclick="goJourney()">
+        <div class="ji"><img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900" loading="lazy"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
+        <div class="jbody">
+          <div class="jkick"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
+          <div class="jtitle en">Grounding Walk at the Lower Hillside of KFBG</div>
+          <div class="jtitle tc">連結大地 — 嘉道理下山區靜心漫步</div>
+          <p class="jdesc en">Five stops through the lower hillside. Touch bark, breathe soil, listen to water.</p>
+          <p class="jdesc tc">穿越下山區的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。</p>
+          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">~45 min · 5 stops</span><span class="tc">約45分鐘 · 5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
+        </div>
+      </div>
+      <div class="jc locked"><div class="ji"><img src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc">上農場步道</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900" loading="lazy"/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc">林地靜境</div></div></div>
+    </div>
+  </div>
+
+  <!-- JOURNEY -->
+  <div id="vj" class="view">
+    <div class="mapw" id="mapw">
+      <div class="mapph" id="mapph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><p class="en">Trail map — coming soon</p><p class="tc">步道地圖 — 即將推出</p></div>
+      <div class="maphint"><span class="en">Pinch · Drag</span><span class="tc">捏合 · 拖動</span></div>
+    </div>
+    <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 嘉道理下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
+    <div id="offbar"><span class="en">Offline — playing from cache</span><span class="tc">離線模式 — 從緩存播放</span></div>
+    <div class="jcon" id="jcon"></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM BAR -->
+<div id="bar">
+  <div id="pbt"><div id="pbf"></div><div id="pbth"></div></div>
+  <div class="pbr">
+    <div class="pbinfo" onclick="jumpToCurrent()">
+      <div class="pbch"><span id="pbch-txt"></span><span class="pbplt" id="pbplt"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span></div>
+      <div class="pbttl" id="pbttl"></div>
+      <div class="pbseq" id="pbseq"></div>
+      <div class="pbt2" id="pbt2">0:00 / —:——</div>
+    </div>
+    <div class="pbctrl">
+      <button class="pbspd" id="pbspd" onclick="cycleSpd()">1×</button>
+      <button class="pbnxt" onclick="nextCh()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
+      <button class="pbplay" id="pbplay" onclick="togglePlay()">
+        <svg class="ip2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        <svg class="ip" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+    </div>
+  </div>
+  <div id="barpills"></div>
+</div>
+
+<!-- TRANSITION SHEET -->
+<div id="trsh"><div class="trh"></div><div class="trnum" id="trnum">01</div><div class="trlbl"><span class="en">Now playing</span><span class="tc">正在播放</span></div><div class="trttl" id="trttl"></div><div class="trloc" id="trloc"></div></div>
+
+<!-- DRAWER -->
+<div id="drov" onclick="drClose()"></div>
+<div id="dr">
+  <div class="drh"><button class="drclose" onclick="drClose()">×</button></div>
+  <div class="drb">
+    <div class="drs"><div class="drsl">Language / 語言</div><div class="drlang"><button class="drlopt" id="dlen" onclick="setLang('en')">English</button><button class="drlopt ac" id="dlzh" onclick="setLang('zh')">繁中</button></div></div>
+    <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="5" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
+    <div class="drs">
+      <div class="drsl"><span class="en">Offline</span><span class="tc">離線使用</span></div>
+      <button class="drdlbtn" id="drdlbtn" onclick="dlClick()"><span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+      <div class="drprog" id="drprog"><div class="drpbar"><div class="drpfill" id="drpfill"></div></div><div class="drptxt" id="drptxt"></div></div>
+      <button class="drdel" id="drdel" onclick="delCache()"><span class="en">Delete downloaded audio</span><span class="tc">刪除已下載音頻</span></button>
+    </div>
+    <div class="drs">
+      <div class="drsl"><span class="en">Kadoorie Farm and Botanic Garden</span><span class="tc">嘉道理農場暨植物園</span></div>
+      <div class="drlink" onclick="openLink('home')"><span class="en">Homepage</span><span class="tc">主頁</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="drlink" onclick="openLink('events')"><span class="en">Events &amp; Programmes</span><span class="tc">活動及課程</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="drlink" onclick="openLink('donate')"><span class="en">Donate</span><span class="tc">捐款</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+    </div>
+    <div class="drs"><div class="drsl"><span class="en">Follow us</span><span class="tc">關注我們</span></div><div class="drsoc" id="drsoc"></div></div>
+  </div>
+</div>
+
+<!-- DL MODAL -->
+<div id="dlmod" onclick="if(event.target===this)dlClose()">
+  <div class="dlbox">
+    <div class="dlbtit"><span class="en">Select journey to download</span><span class="tc">選擇要下載的旅程</span></div>
+    <div id="dljlist"></div>
+    <button class="dlcancel" onclick="dlClose()"><span class="en">Cancel</span><span class="tc">取消</span></button>
+  </div>
+</div>
+
+<!-- INSTALL BANNER -->
+<div id="ib">
+  <div class="ibtop"><div class="ibico"><img src="KFBG_Logo.png" alt="KFBG"/></div><div class="ibinfo"><div class="ibname en">KFBG Audio Journey</div><div class="ibname tc">自助語音旅程</div><div class="ibsub en">Add to Home Screen</div><div class="ibsub tc">加至主畫面</div></div><button class="ibx" onclick="ibDismiss()">✕</button></div>
+  <div class="ibsteps" id="ibsteps"></div>
+  <button class="ibaddbtn" id="ibaddbtn" onclick="ibInstall()"><span class="en">Add to Home Screen</span><span class="tc">加至主畫面</span></button>
+</div>
+
+<!-- UPDATE BAR -->
+<div id="ubar"><p class="en"><strong>New version available.</strong> Refresh to update.</p><p class="tc"><strong>有新版本。</strong>重新整理以更新。</p><button class="ubtn" onclick="location.reload(true)"><span class="en">Refresh</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
+
+<!-- SINGLE AUDIO ELEMENT — never destroyed -->
+<audio id="aud" preload="none"></audio>
+
+<script>
+// ════ DATA ════
+const LINKS={home:{en:'https://kfbg.org/en/',tc:'https://kfbg.org/tc/'},events:{en:'https://kfbg.org/en/event-calendar',tc:'https://kfbg.org/tc/event-calendar'},donate:{en:'https://kfbg.org/en/donation',tc:'https://kfbg.org/tc/donation'}};
+const SOC=[
+  {l:'Facebook',h:'https://www.facebook.com/KadoorieFarmAndBotanicGarden/',s:'<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>'},
+  {l:'Instagram',h:'https://www.instagram.com/kfbg.official/',s:'<rect x="2" y="2" width="20" height="20" rx="5" ry="5" style="fill:none;stroke:#fff;stroke-width:1.5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" style="fill:none;stroke:#fff;stroke-width:1.5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" style="stroke:#fff;stroke-width:2"/>'},
+  {l:'YouTube',h:'https://www.youtube.com/@KadoorieFarm',s:'<path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" style="fill:#4A5C3A"/>'},
+  {l:'LinkedIn',h:'https://www.linkedin.com/company/kfbg/',s:'<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>'},
+  {l:'Weibo',h:'https://weibo.com/kfbg',s:'<path d="M10.1 20c-3.87 0-7-1.79-7-4s3.13-4 7-4 7 1.79 7 4-3.14 4-7 4zm0-6.5c-2.98 0-5.4 1.12-5.4 2.5S7.12 18.5 10.1 18.5s5.4-1.12 5.4-2.5-2.42-2.5-5.4-2.5zM8.5 16.5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm3 .5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM18.5 7c-.17 0-.34.01-.5.04A4.5 4.5 0 0 0 10 8.5h-.5A3.5 3.5 0 0 0 6 12.5v.04A8.4 8.4 0 0 1 3.1 12C3.1 8.69 6.23 6 10.1 6c2.11 0 4 .79 5.35 2.06A3.98 3.98 0 0 1 18.5 7z"/>'},
+];
+const CH=[
+  {id:1,a:'audio/grounding-walk/ch01.mp3',loc:{en:'The Plaza',tc:'廣場'},title:{en:'The Beginning of Connection: Entrance of KFBG & Sensory Awareness',tc:'連結之始：進入園區與五感體驗'},sh:{en:'The Beginning of Connection',tc:'連結之始'},desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},prac:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},tr:`歡迎您嚟到嘉道理農場暨植物園。\n\n呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。\n\n喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。\n\n先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。\n\n宜家，細心聆聽四周圍嘅聲音。可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……\n\n可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……\n\n呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度。可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。\n\n接住落嚟，可以暫時放低呢段錄音，行到去下一個停留點：「生機園」。`,img:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900'},
+  {id:2,a:'audio/grounding-walk/ch02.mp3',loc:{en:'Eco Garden',tc:'生機園'},title:{en:'Sensory Exploration: Plant Observation at the Eco Garden',tc:'感官探索：生機園的植物觀察'},sh:{en:'Sensory Exploration',tc:'感官探索'},desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},prac:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},tr:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。\n\n今次我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。\n\n慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。留心見到嘅形狀、紋理、顏色……帶住好奇心，望真啲佢。\n\n合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。用觸覺去探索佢嘅葉、莖同花。\n\n用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？放低要去介定「喜歡」或「唔喜歡」嘅意向，單純咁去觀察呢種氣味。\n\n而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。乾既？濕既？\n\n接住落嚟，行到去下一個停留點：「葛先生花園」。`,img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900'},
+  {id:3,a:'audio/grounding-walk/ch03.mp3',loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},title:{en:'Between Far and Near: The Rocks of Walter Kerr Garden',tc:'遠近之間：葛先生花園的磐石'},sh:{en:'Between Far and Near',tc:'遠近之間'},desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},prac:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},tr:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。\n\n慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色……留意大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走？\n\n呢一刻，慢慢向後退幾步，行遠少少，直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離同近距離觀察同一件物件，所留意到嘅係一樣、定唔同嘅？\n\n合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置。\n\n直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,img:'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900'},
+  {id:4,a:'audio/grounding-walk/ch04.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},sh:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},prac:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，留心任何嘅聲音。留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
+  {id:5,a:'audio/grounding-walk/ch05.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},sh:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},prac:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、所有嘅浮雲……\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動……\n\n慢慢、溫柔咁伸展……讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'},
+];
+const FS=['0.88rem','0.94rem','1rem','1.08rem','1.16rem','1.25rem'];
+const SPDS=[1,1.25,1.5];
+const CACHE='kfbg-audio-v1';
+const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
+
+// ════ STATE ════
+let lang=localStorage.getItem('kfbg-lang')||'zh';
+let fs=parseInt(localStorage.getItem('kfbg-fs')||'2');
+let view='home'; // 'home' | 'journey'
+let ai=0, playing=false, plMode=false, si=0; // si=speed index
+const aud=document.getElementById('aud');
+
+// ════ INIT ════
+function init(){
+  applyLang(lang,false);
+  applyFont(fs);
+  buildSoc();
+  buildDlList();
+  buildChapters(); // BUILD CONTENT IMMEDIATELY
+  buildPills();
+  loadCh(parseInt(localStorage.getItem('kfbg-pos')||'0'),false);
+  initMap();
+  initSeekBar();
+  setupScroll();
+  setupOffline();
+  setupInstall();
+  setupSW();
+  checkDlState();
+}
+
+// ════ LANG ════
+function dk(){return lang==='zh'?'tc':'en';}
+function applyLang(l,save=true){
+  lang=l;
+  document.documentElement.setAttribute('data-lang',l);
+  document.documentElement.lang=l==='zh'?'zh-Hant':'en';
+  if(save)localStorage.setItem('kfbg-lang',l);
+  document.getElementById('dlen').classList.toggle('ac',l==='en');
+  document.getElementById('dlzh').classList.toggle('ac',l==='zh');
+  setNavTitle();
+  refreshPBText();
+}
+function setLang(l){applyLang(l);}
+function setNavTitle(){
+  const t=document.getElementById('nav-title');
+  t.textContent=view==='journey'?(lang==='zh'?'連結大地':'Grounding Walk'):'';
+}
+function openLink(k){window.open((LINKS[k][dk()]||LINKS[k].en),'_blank','noopener');}
+
+// ════ FONT ════
+function applyFont(v){fs=v;document.documentElement.style.setProperty('--fs',FS[v]||'1rem');document.getElementById('fssl').value=v;localStorage.setItem('kfbg-fs',v);}
+function setFont(v){applyFont(parseInt(v));}
+
+// ════ VIEW SWITCHING ════
+function goHome(){
+  view='home';
+  document.getElementById('vh').classList.add('on');
+  document.getElementById('vj').classList.remove('on');
+  document.getElementById('nav-back').style.display='none';
+  document.getElementById('barpills').classList.remove('sh');
+  document.getElementById('views').scrollTop=0;
+  setNavTitle();
+}
+function goJourney(){
+  view='journey';
+  document.getElementById('vj').classList.add('on');
+  document.getElementById('vh').classList.remove('on');
+  document.getElementById('nav-back').style.display='flex';
+  document.getElementById('barpills').classList.add('sh');
+  document.getElementById('views').scrollTop=0;
+  setNavTitle();
+}
+
+// ════ BUILD CHAPTER CONTENT ════
+function buildChapters(){
+  document.getElementById('jcon').innerHTML=CH.map((c,i)=>`
+    <section class="csec" id="s${i}">
+      <div class="cimg"><img src="${c.img}" loading="lazy"/>
+        <div class="cbadge"><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></div>
+        <div class="cnum">${c.id}</div></div>
+      <div class="ckick"><span class="en">Chapter 0${c.id}</span><span class="tc">第 0${c.id} 章</span></div>
+      <div class="ctitle en">${c.title.en}</div>
+      <div class="ctitle tc nst">${c.title.tc}</div>
+      <p class="cdesc en">${c.desc.en}</p>
+      <p class="cdesc tc">${c.desc.tc}</p>
+      <div class="cplayer">
+        <div class="cpm">
+          <div class="cpi">
+            <div class="cplbl"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc">第0${c.id}章 · ${c.loc.tc}</span></div>
+            <div class="cpname en">${c.sh.en}</div><div class="cpname tc">${c.sh.tc}</div>
+            <div class="cptime" id="ct${i}">0:00 / —:——</div>
+          </div>
+          <button class="cpbtn" id="cb${i}" onclick="tapPlay(${i})">
+            <svg class="ip2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+            <svg class="ip" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          </button>
+        </div>
+        <div class="cdlb" id="cdl${i}"><div class="cdlf" id="cdf${i}"></div></div>
+        <div class="cseek" id="csk${i}"><div class="csf" id="csf${i}"></div></div>
+        <div class="cspd">
+          <span class="spdl"><span class="en">Speed</span><span class="tc">速度</span></span>
+          <button class="spdb ac" onclick="setSpdBtn(1,this)">1×</button>
+          <button class="spdb" onclick="setSpdBtn(1.25,this)">1.25×</button>
+          <button class="spdb" onclick="setSpdBtn(1.5,this)">1.5×</button>
+        </div>
+      </div>
+      <details><summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary><div class="trb">${c.tr}</div></details>
+      <div class="prac"><div class="pracl"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div><div class="pract en">${c.prac.en}</div><div class="pract tc">${c.prac.tc}</div></div>
+      ${i<CH.length-1?'<div class="cdiv"><div class="cdivd"></div></div>':''}
+    </section>`).join('')+`
+    <div class="comp" id="comp">
+      <div class="compst">🌿</div>
+      <h2 class="en">Journey Complete</h2><h2 class="tc nst">旅程完成</h2>
+      <p class="en">You have walked all five stops. Take a breath before you return.</p>
+      <p class="tc">你已完成全部五個站點。在回程前，靜靜感受此刻的覺察。</p>
+      <button class="btnhome" onclick="goHome()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span></button>
+    </div>`;
+  // attach seek listeners
+  CH.forEach((_,i)=>{
+    const b=document.getElementById('csk'+i);
+    if(b)b.addEventListener('click',e=>chSeek(e,i));
+  });
+}
+
+// ════ PILLS ════
+function buildPills(){
+  document.getElementById('barpills').innerHTML=
+    `<button class="pill" onclick="scrollMap()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg><span class="en">Map</span><span class="tc">地圖</span></button>`+
+    CH.map((c,i)=>`<button class="pill${DONE.has(i)?' dn':''}" id="pl${i}" onclick="tapPlay(${i})"><span class="pilln">${String(c.id).padStart(2,'0')}</span><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></button>`).join('');
+}
+function scrollMap(){document.getElementById('mapw')?.scrollIntoView({behavior:'smooth',block:'start'});}
+
+// ════ AUDIO ════
+function loadCh(i,doPlay){
+  ai=i;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
+  localStorage.setItem('kfbg-pos',i);
+  refreshPBText();refreshPBProg(0,0);syncBtns(false);
+  if(doPlay){
+    showLd(i);
+    let p=0;
+    const iv=setInterval(()=>{p=Math.min(p+Math.random()*15,90);const f=document.getElementById('cdf'+i);if(f)f.style.width=p+'%';},180);
+    aud.play().then(()=>{clearInterval(iv);setTimeout(()=>hideLd(i),300);playing=true;syncBtns(true);}).catch(()=>{clearInterval(iv);hideLd(i);playing=false;syncBtns(false);});
+  }else{playing=false;syncBtns(false);}
+}
+function jump(i,asPL){
+  if(asPL!==undefined)plMode=asPL;
+  const c=CH[i];const k=dk();
+  const sh=document.getElementById('trsh');
+  document.getElementById('trnum').textContent=String(c.id).padStart(2,'0');
+  document.getElementById('trttl').textContent=c.sh[k]||c.sh.en;
+  document.getElementById('trloc').textContent=c.loc[k]||c.loc.en;
+  sh.classList.add('sh');
+  aud.pause();playing=false;syncBtns(false);
+  if(view==='journey')document.getElementById('s'+i)?.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(()=>{sh.classList.remove('sh');loadCh(i,true);},900);
+}
+function playAll(){plMode=true;document.getElementById('pbplt').classList.add('sh');document.getElementById('pbseq').classList.add('sh');jump(0,true);}
+function tapPlay(i){if(i===ai){togglePlay();}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');jump(i,false);}}
+function togglePlay(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}syncBtns(playing);}
+function nextCh(){if(ai<CH.length-1)jump(ai+1,plMode);}
+function jumpToCurrent(){
+  if(view==='home'){goJourney();setTimeout(()=>document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'}),100);}
+  else{document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'});}
+}
+function chSeek(e,i){if(i!==ai||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;}
+function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.querySelectorAll('.spdb').forEach(b=>b.classList.toggle('ac',parseFloat(b.textContent)===r));document.getElementById('pbspd').textContent=r+'×';}
+function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';document.querySelectorAll('.spdb').forEach(b=>b.classList.toggle('ac',parseFloat(b.textContent)===r));}
+function showLd(i){document.getElementById('cb'+i)?.classList.add('ld');document.getElementById('cdl'+i)?.classList.add('sh');}
+function hideLd(i){document.getElementById('cb'+i)?.classList.remove('ld');document.getElementById('cdl'+i)?.classList.remove('sh');}
+function syncBtns(on){document.getElementById('pbplay').classList.toggle('pl',on);CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));}
+aud.addEventListener('timeupdate',()=>{
+  if(!aud.duration)return;
+  const p=(aud.currentTime/aud.duration)*100;
+  refreshPBProg(aud.currentTime,aud.duration);
+  const sf=document.getElementById('csf'+ai);if(sf)sf.style.width=p+'%';
+  const ct=document.getElementById('ct'+ai);if(ct)ct.textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
+});
+aud.addEventListener('loadedmetadata',()=>{refreshPBProg(0,aud.duration);const ct=document.getElementById('ct'+ai);if(ct)ct.textContent='0:00 / '+fmt(aud.duration);});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');}});
+aud.addEventListener('play',()=>{playing=true;syncBtns(true);});
+aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
+function refreshPBText(){
+  const c=CH[ai];const k=dk();
+  document.getElementById('pbch-txt').textContent='Ch.0'+c.id+' · '+(c.loc[k]||c.loc.en);
+  document.getElementById('pbttl').textContent=c.sh[k]||c.sh.en;
+  if(plMode)updateDots();
+}
+function refreshPBProg(cur,dur){
+  const p=dur>0?(cur/dur)*100:0;
+  document.getElementById('pbf').style.width=p+'%';
+  document.getElementById('pbth').style.left=p+'%';
+  document.getElementById('pbt2').textContent=fmt(cur)+' / '+fmt(dur||0);
+}
+function updateDots(){const s=document.getElementById('pbseq');if(!s)return;s.innerHTML=CH.map((_,i)=>`<div class="pbd${i===ai?' ac':DONE.has(i)?' dn':''}"></div>`).join('');}
+function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;}
+
+// ════ DRAG SEEK BAR ════
+function initSeekBar(){
+  const t=document.getElementById('pbt');
+  let sk=false;
+  function seekTo(cx){if(!aud.duration)return;const r=t.getBoundingClientRect();const p=Math.max(0,Math.min(1,(cx-r.left)/r.width));aud.currentTime=p*aud.duration;document.getElementById('pbf').style.width=(p*100)+'%';document.getElementById('pbth').style.left=(p*100)+'%';}
+  t.addEventListener('touchstart',e=>{e.preventDefault();sk=true;t.classList.add('sk');seekTo(e.touches[0].clientX);},{passive:false});
+  window.addEventListener('touchmove',e=>{if(!sk)return;e.preventDefault();seekTo(e.touches[0].clientX);},{passive:false});
+  window.addEventListener('touchend',()=>{sk=false;t.classList.remove('sk');});
+  t.addEventListener('mousedown',e=>{sk=true;t.classList.add('sk');seekTo(e.clientX);});
+  window.addEventListener('mousemove',e=>{if(sk)seekTo(e.clientX);});
+  window.addEventListener('mouseup',()=>{sk=false;t.classList.remove('sk');});
+}
+
+// ════ MAP ════
+function initMap(){
+  const w=document.getElementById('mapw');
+  let mi=null,sc=1,tx=0,ty=0,dr=false,lx=0,ly=0,pi=false,ld=0;
+  window.loadMapImage=function(src){document.getElementById('mapph').style.display='none';mi=document.createElement('img');mi.className='mimg';mi.src=src;mi.onload=()=>{w.appendChild(mi);sc=w.clientHeight/mi.naturalHeight;tx=(w.clientWidth-mi.naturalWidth*sc)/2;ty=0;apT();};};
+  function apT(){if(!mi)return;mi.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;}
+  function cl(){if(!mi)return;const iw=mi.naturalWidth*sc,ih=mi.naturalHeight*sc,mw=w.clientWidth,mh=w.clientHeight;tx=Math.min(0,Math.max(mw-iw,tx));ty=Math.min(0,Math.max(mh-ih,ty));}
+  w.addEventListener('touchstart',e=>{if(e.touches.length===1){dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pi=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}},{passive:true});
+  w.addEventListener('touchmove',e=>{e.preventDefault();if(pi&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);sc=Math.max(0.5,Math.min(4,sc*(d/ld)));ld=d;cl();apT();}else if(dr&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();}},{passive:false});
+  w.addEventListener('touchend',()=>{dr=false;pi=false;});
+  w.addEventListener('mousedown',e=>{dr=true;lx=e.clientX;ly=e.clientY;w.classList.add('gr');});
+  window.addEventListener('mousemove',e=>{if(!dr)return;tx+=e.clientX-lx;ty+=e.clientY-ly;lx=e.clientX;ly=e.clientY;cl();apT();});
+  window.addEventListener('mouseup',()=>{dr=false;w.classList.remove('gr');});
+  w.addEventListener('wheel',e=>{e.preventDefault();sc=Math.max(0.5,Math.min(4,sc*(e.deltaY<0?1.1:0.9)));cl();apT();},{passive:false});
+}
+
+// ════ SCROLL PROGRESS ════
+function setupScroll(){
+  const v=document.getElementById('views');
+  v.addEventListener('scroll',()=>{
+    const tot=v.scrollHeight-v.clientHeight;
+    document.getElementById('sbar').style.width=(tot>0?(v.scrollTop/tot)*100:0)+'%';
+    if(view==='journey')CH.forEach((_,i)=>{const s=document.getElementById('s'+i);if(!s)return;const r=s.getBoundingClientRect();const on=r.top<=200&&r.bottom>=200;s.classList.toggle('ca',on);document.getElementById('pl'+i)?.classList.toggle('ac',on);});
+  },{passive:true});
+}
+
+// ════ SOCIALS ════
+function buildSoc(){document.getElementById('drsoc').innerHTML=SOC.map(s=>`<a href="${s.h}" class="drsb" target="_blank" rel="noopener" aria-label="${s.l}"><svg viewBox="0 0 24 24">${s.s}</svg></a>`).join('');}
+
+// ════ DRAWER ════
+function drOpen(){document.getElementById('dr').classList.add('op');document.getElementById('drov').classList.add('op');}
+function drClose(){document.getElementById('dr').classList.remove('op');document.getElementById('drov').classList.remove('op');}
+
+// ════ DOWNLOAD ════
+function buildDlList(){
+  document.getElementById('dljlist').innerHTML=`<div class="dljrow"><div class="dljname"><span class="en">Grounding Walk · Lower Hillside</span><span class="tc">連結大地 — 嘉道理下山區</span></div><button class="dljbtn" id="dljbtn" onclick="dlJourney()"><span class="en">Download</span><span class="tc">下載</span></button></div>`;
+}
+function dlClick(){if(view==='journey'){runDl(CH.map(c=>c.a));}else{document.getElementById('dlmod').classList.add('op');}}
+function dlClose(){document.getElementById('dlmod').classList.remove('op');}
+function dlJourney(){dlClose();runDl(CH.map(c=>c.a));}
+async function runDl(files){
+  if(!('caches' in window))return;
+  const btn=document.getElementById('drdlbtn');
+  const prog=document.getElementById('drprog');
+  const fill=document.getElementById('drpfill');
+  const txt=document.getElementById('drptxt');
+  btn.disabled=true;prog.style.display='block';
+  try{
+    const c=await caches.open(CACHE);
+    for(let i=0;i<files.length;i++){
+      txt.textContent=(lang==='zh'?'下載中 ':'Downloading ')+(i+1)+'/'+files.length+'...';
+      if(!await c.match(files[i]).catch(()=>null)){const r=await fetch(files[i]);if(r.ok)await c.put(files[i],r);}
+      fill.style.width=Math.round(((i+1)/files.length)*100)+'%';
+    }
+    btn.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';
+    txt.textContent=lang==='zh'?'✓ 可離線收聽':'✓ Ready for offline';
+    checkDlState();
+  }catch(e){btn.disabled=false;txt.textContent='Error — please retry';}
+}
+async function checkDlState(){
+  if(!('caches' in window))return;
+  try{const c=await caches.open(CACHE);const k=await c.keys();document.getElementById('drdel').style.display=k.some(r=>r.url.endsWith('.mp3'))?'inline-block':'none';}catch(e){}
+}
+async function delCache(){
+  if(!confirm(lang==='zh'?'確定要刪除所有已下載的音頻嗎？':'Delete all downloaded audio?'))return;
+  await caches.delete(CACHE);
+  document.getElementById('drdel').style.display='none';
+  const b=document.getElementById('drdlbtn');b.disabled=false;
+  b.innerHTML='<span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  document.getElementById('drprog').style.display='none';document.getElementById('drpfill').style.width='0%';
+}
+
+// ════ INSTALL ════
+let dPr=null;
+function setupInstall(){
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
+  if(isStandalone)return;
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dPr=e;buildIBSteps('android');setTimeout(()=>document.getElementById('ib').classList.add('sh'),4000);});
+  if(isIOS&&!sessionStorage.getItem('ib-ok')){buildIBSteps('ios');setTimeout(()=>document.getElementById('ib').classList.add('sh'),5000);}
+}
+function buildIBSteps(plat){
+  const ens=plat==='ios'
+    ?['Tap the <strong style="color:#C4A96A">Share ↑</strong> icon in your browser','Tap <strong style="color:#fff">"Add to Home Screen"</strong>','Tap <strong style="color:#fff">"Add"</strong> — works offline!']
+    :['Tap <strong style="color:#C4A96A">⋮</strong> menu in your browser','Tap <strong style="color:#fff">"Add to Home Screen"</strong> or <strong style="color:#fff">"Install"</strong>','Tap <strong style="color:#fff">"Add"</strong> — works offline!'];
+  const tcs=plat==='ios'
+    ?['點擊瀏覽器的<strong style="color:#C4A96A">分享 ↑</strong>圖示','點選<strong style="color:#fff">「加至主畫面」</strong>','點選<strong style="color:#fff">「加入」</strong>，可離線使用！']
+    :['點擊瀏覽器的<strong style="color:#C4A96A">⋮</strong>選單','點選<strong style="color:#fff">「加至主畫面」</strong>或<strong style="color:#fff">「安裝」</strong>','點選<strong style="color:#fff">「加入」</strong>，可離線使用！'];
+  document.getElementById('ibsteps').innerHTML=ens.map((s,i)=>`<div class="ibstep"><div class="ibn">${i+1}</div><span class="en">${s}</span><span class="tc">${tcs[i]}</span></div>`).join('');
+  if(plat==='ios')document.getElementById('ibaddbtn').style.display='none';
+}
+function ibInstall(){if(dPr){dPr.prompt();dPr.userChoice.then(()=>{dPr=null;ibDismiss();});}}
+function ibDismiss(){document.getElementById('ib').classList.remove('sh');sessionStorage.setItem('ib-ok','1');}
+
+// ════ OFFLINE ════
+function setupOffline(){
+  window.addEventListener('offline',()=>document.getElementById('offbar').classList.add('sh'));
+  window.addEventListener('online',()=>document.getElementById('offbar').classList.remove('sh'));
+  if(!navigator.onLine)document.getElementById('offbar').classList.add('sh');
+}
+
+// ════ SW ════
+function setupSW(){
+  if(!('serviceWorker' in navigator))return;
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+  navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='SW_UPDATED')document.getElementById('ubar').classList.add('sh');});
+}
+
+// ════ START ════
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

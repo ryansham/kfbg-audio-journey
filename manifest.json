@@ -2,14 +2,19 @@
   "name": "KFBG Self-guided Audio Journey",
   "short_name": "KFBG Audio Journey",
   "description": "Self-guided audio walks through Kadoorie Farm and Botanic Garden",
-  "start_url": "./app.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F7F3EC",
   "theme_color": "#4A5C3A",
   "lang": "zh-Hant",
   "icons": [
-    { "src": "KFBG_Logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {
+      "src": "KFBG_Logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ],
   "categories": ["lifestyle", "health", "education"]
 }
