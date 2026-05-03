@@ -30,7 +30,7 @@
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
-  --nav:54px;--bar:110px;--fs:1rem;
+  --nav:54px;--bar:78px;--fs:1rem;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -285,6 +285,17 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 #ubar p strong{color:#fff;}
 .ubtn{background:var(--gd);color:var(--olm);border:none;padding:6px 13px;border-radius:100px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:inherit;}
 .ux{background:transparent;border:none;color:rgba(247,243,236,0.4);font-size:18px;cursor:pointer;}
+
+/* MAP FULLSCREEN */
+#map-fs{position:fixed;inset:0;z-index:700;background:#000;display:none;flex-direction:column;}
+#map-fs.sh{display:flex;}
+#map-fs-inner{flex:1;overflow:hidden;touch-action:none;position:relative;cursor:grab;}
+#map-fs-inner.gr{cursor:grabbing;}
+#map-fs-inner img{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;}
+#map-fs-close{position:absolute;top:env(safe-area-inset-top,12px);right:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+#map-fs-close svg{stroke:#fff;}
+#map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
+#pills-bar-wrap::-webkit-scrollbar{display:none;}
 </style>
 </head>
 <body>
@@ -311,7 +322,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <div id="vh" class="view on">
     <div class="hero">
       <div class="hero-ey"><span class="en">Kadoorie Farm and Botanic Garden</span><span class="tc">嘉道理農場暨植物園</span></div>
-      <h1 class="en">KFBG <em>Self-guided<br>Audio Journey</em></h1>
+      <h1 class="en"><em>Self-guided<br>Audio Journey</em></h1>
       <h1 class="tc nst"><em>自助語音旅程</em></h1>
       <p class="hero-desc en">Step off the path. Slow down. Let the forest speak.</p>
       <p class="hero-desc tc">放慢腳步，讓自然引路。每條步道設有五個聆聽站，帶領你與大地深連。</p>
@@ -326,7 +337,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <h2 class="en">Why we created this journey</h2>
         <h2 class="tc">我們為何創作這段旅程</h2>
         <p class="en">In a city that never stops, KFBG is a place to remember what stillness feels like. These audio journeys guide visitors into a deeper relationship with nature — not through facts, but through presence.</p>
-        <p class="tc">在這個永不停歇的城市裡，嘉道理農場是讓人重拾寧靜的地方。這些聆聽之旅引領訪客與自然建立更深的聯繫——不是透過知識，而是透過當下的存在。</p>
+        <p class="tc">在這個永不停歇的城市裡，嘉道理農場暨植物園是讓人重拾寧靜的地方。這些聆聽之旅引領訪客與自然建立更深的聯繫——不是透過知識，而是透過當下的存在。</p>
       </div>
     </div>
     <div class="lib">
@@ -352,6 +363,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     <div class="mapw" id="mapw">
       <div class="mapph" id="mapph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><p class="en">Trail map — coming soon</p><p class="tc">步道地圖 — 即將推出</p></div>
       <div class="maphint"><span class="en">Pinch · Drag</span><span class="tc">捏合 · 拖動</span></div>
+      <button id="map-expand" onclick="mapFullscreen()" style="position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 1px 6px rgba(0,0,0,0.15);">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B4A2F" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      </button>
     </div>
     <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 嘉道理下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
     <div id="offbar"><span class="en">Offline — playing from cache</span><span class="tc">離線模式 — 從緩存播放</span></div>
@@ -361,6 +375,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 </div>
 
 <!-- BOTTOM BAR -->
+<div id="pills-bar" style="position:fixed;bottom:78px;left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:6px 13px 8px;display:none;overflow-x:auto;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;" id="pills-bar-wrap"></div>
 <div id="bar">
   <div id="pbt"><div id="pbf"></div><div id="pbth"></div></div>
   <div class="pbr">
@@ -379,7 +394,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       </button>
     </div>
   </div>
-  <div id="barpills"></div>
+  
 </div>
 
 <!-- TRANSITION SHEET -->
@@ -428,6 +443,13 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <div id="ubar"><p class="en"><strong>New version available.</strong> Refresh to update.</p><p class="tc"><strong>有新版本。</strong>重新整理以更新。</p><button class="ubtn" onclick="location.reload(true)"><span class="en">Refresh</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
 
 <!-- SINGLE AUDIO ELEMENT — never destroyed -->
+<!-- MAP FULLSCREEN OVERLAY -->
+<div id="map-fs">
+  <div id="map-fs-inner" id="mapFsInner">
+    <button id="map-fs-close" onclick="mapFsClose()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    <div id="map-fs-hint"><span class="en">Pinch to zoom · Drag to pan</span><span class="tc">捏合縮放 · 拖動移動</span></div>
+  </div>
+</div>
 <audio id="aud" preload="none"></audio>
 
 <script>
@@ -506,7 +528,7 @@ function goHome(){
   document.getElementById('vh').classList.add('on');
   document.getElementById('vj').classList.remove('on');
   document.getElementById('nav-back').style.display='none';
-  document.getElementById('barpills').classList.remove('sh');
+  document.getElementById('pills-bar-wrap').style.display='none';
   document.getElementById('views').scrollTop=0;
   setNavTitle();
 }
@@ -515,7 +537,7 @@ function goJourney(){
   document.getElementById('vj').classList.add('on');
   document.getElementById('vh').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
-  document.getElementById('barpills').classList.add('sh');
+  document.getElementById('pills-bar-wrap').style.display='flex';
   document.getElementById('views').scrollTop=0;
   setNavTitle();
 }
@@ -568,7 +590,7 @@ function buildChapters(){
 
 // ════ PILLS ════
 function buildPills(){
-  document.getElementById('barpills').innerHTML=
+  document.getElementById('pills-bar-wrap').innerHTML=
     `<button class="pill" onclick="scrollMap()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg><span class="en">Map</span><span class="tc">地圖</span></button>`+
     CH.map((c,i)=>`<button class="pill${DONE.has(i)?' dn':''}" id="pl${i}" onclick="tapPlay(${i})"><span class="pilln">${String(c.id).padStart(2,'0')}</span><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></button>`).join('');
 }
@@ -668,6 +690,56 @@ function initMap(){
 }
 
 // ════ SCROLL PROGRESS ════
+function mapFullscreen(){
+  const fs=document.getElementById('map-fs');
+  const inner=document.getElementById('map-fs-inner');
+  const src=document.querySelector('#mapw img.mimg');
+  if(!src){return;}
+  // clone image into fullscreen
+  let fimg=inner.querySelector('img');
+  if(!fimg){fimg=document.createElement('img');fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;';inner.insertBefore(fimg,inner.firstChild);}
+  fimg.src=src.src;
+  fimg.onload=()=>{
+    let sc2=Math.min(window.innerWidth/fimg.naturalWidth, window.innerHeight/fimg.naturalHeight);
+    let tx2=(window.innerWidth-fimg.naturalWidth*sc2)/2;
+    let ty2=(window.innerHeight-fimg.naturalHeight*sc2)/2;
+    fimg.style.transform=`translate(${tx2}px,${ty2}px) scale(${sc2})`;
+    // setup pan/zoom on fs
+    let s=sc2,tx=tx2,ty=ty2,dr=false,lx=0,ly=0,pi=false,ld=0;
+    function apT(){fimg.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
+    function cl(){const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s,mw=window.innerWidth,mh=window.innerHeight;if(iw>mw){tx=Math.min(0,Math.max(mw-iw,tx));}else{tx=(mw-iw)/2;}if(ih>mh){ty=Math.min(0,Math.max(mh-ih,ty));}else{ty=(mh-ih)/2;}}
+    inner.ontouchstart=e=>{if(e.touches.length===1){dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pi=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
+    inner.ontouchmove=e=>{e.preventDefault();if(pi&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);s=Math.max(0.5,Math.min(6,s*(d/ld)));ld=d;cl();apT();}else if(dr&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();}};
+    inner.ontouchend=()=>{dr=false;pi=false;};
+  };
+  fs.classList.add('sh');
+  document.body.style.overflow='hidden';
+}
+function mapFsClose(){
+  document.getElementById('map-fs').classList.remove('sh');
+  document.body.style.overflow='';
+}
+// QR CODE DEEP LINK
+function handleDeepLink(){
+  const hash=window.location.hash;
+  if(!hash)return;
+  const params=new URLSearchParams(hash.replace('#',''));
+  const journey=params.get('journey');
+  const chapter=parseInt(params.get('chapter'));
+  if(journey&&chapter>=1&&chapter<=5){
+    // go to journey view and jump to that chapter
+    setTimeout(()=>{
+      goJourney();
+      const idx=chapter-1;
+      // scroll to chapter and play
+      setTimeout(()=>{
+        document.getElementById('s'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});
+        // auto-play after brief delay
+        setTimeout(()=>tapPlay(idx),400);
+      },100);
+    },300);
+  }
+}
 function setupScroll(){
   const v=document.getElementById('views');
   v.addEventListener('scroll',()=>{
@@ -760,7 +832,7 @@ function setupSW(){
 }
 
 // ════ START ════
-document.addEventListener('DOMContentLoaded',init);
+document.addEventListener('DOMContentLoaded',()=>{init();handleDeepLink();});
 </script>
 </body>
 </html>
