@@ -24,13 +24,13 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v13
+   Single Page App — v14
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
-  --nav:54px;--bar:94px;--pills:44px;--fs:1rem;
+  --nav:54px;--bar:124px;--pills:44px;--fs:1rem;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -58,7 +58,7 @@ span.en,span.tc{display:inline;}
 #sbar{position:fixed;top:0;left:0;height:3px;background:var(--gd);width:0%;z-index:500;pointer-events:none;}
 
 /* ── VIEWS ── */
-#views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) + var(--pills) + env(safe-area-inset-bottom,0px));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
+#views{position:fixed;top:var(--nav);left:0;right:0;bottom:var(--bar);overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
 .view{display:none;}
 .view.on{display:block;}
 
@@ -100,7 +100,7 @@ span.en,span.tc{display:inline;}
 /* ════ JOURNEY VIEW ════ */
 .mapw{position:relative;overflow:hidden;background:var(--sa);height:180px;touch-action:none;cursor:grab;user-select:none;}
 .mapw.gr{cursor:grabbing;}
-.mapw img.mimg{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;}
+.mapw img.mimg{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;}
 .mapph{height:180px;background:linear-gradient(135deg,#d6e4c8,#e8f0de,#c8d8b4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--oll);}
 .mapph svg{width:28px;height:28px;opacity:0.38;}
 .mapph p{font-size:0.7rem;opacity:0.6;}
@@ -175,37 +175,43 @@ details[open] summary::after{content:'▾';}
 #offbar{display:none;background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:6px 13px;margin:4px 14px;font-size:0.7rem;color:var(--gd);text-align:center;}
 #offbar.sh{display:block;}
 
-/* ════ BOTTOM BAR ════ */
-#bar{position:fixed;bottom:calc(var(--pills) + env(safe-area-inset-bottom,0px));left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);}
-#pbt{height:16px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;}
-#pbt-track{position:absolute;left:0;right:0;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;pointer-events:none;}#pbf{position:absolute;left:0;height:4px;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;top:0;}
-#pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;z-index:1;}
+/* ════ BOTTOM BAR — Audible-style ════ */
+#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);}
+/* seek track — tall touch target, thin visual */
+#pbt{height:22px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;padding:0 13px;}
+#pbt-track{position:absolute;left:13px;right:13px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;pointer-events:none;}
+#pbf{position:absolute;left:13px;height:3px;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;}
+#pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;z-index:1;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
-.pbr{padding:7px 13px 9px;display:flex;align-items:center;gap:9px;}
-.pbinfo{flex:1;min-width:0;cursor:pointer;}
-.pbinfo:hover .pbttl{color:var(--gd);}
-.pbch{font-size:0.56rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;}
-.pbplt{background:rgba(196,169,106,0.15);color:var(--gd);font-size:0.5rem;letter-spacing:0.08em;padding:1px 5px;border-radius:100px;display:none;margin-left:4px;}
+/* time row — both sides like Audible */
+#pb-time-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px 2px;font-size:0.62rem;color:rgba(247,243,236,0.4);font-variant-numeric:tabular-nums;line-height:1.2;}
+/* track info row — centred, tappable */
+#pb-info-row{padding:2px 14px 0;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
+#pb-info-row:hover #pbttl{color:var(--gd);}
+.pbch{font-size:0.58rem;color:rgba(196,169,106,0.5);letter-spacing:0.08em;white-space:nowrap;}
+.pbplt{background:rgba(196,169,106,0.15);color:var(--gd);font-size:0.5rem;letter-spacing:0.08em;padding:1px 5px;border-radius:100px;display:none;}
 .pbplt.sh{display:inline-block;}
-.pbttl{font-size:0.85rem;font-weight:500;color:var(--cr);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color 0.2s;}
-.pbseq{display:none;margin-top:2px;gap:3px;align-items:center;}
-.pbseq.sh{display:flex;}
+.pbttl{font-size:0.88rem;font-weight:500;color:var(--cr);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw;transition:color 0.2s;}
+.pbseq{display:none;gap:3px;align-items:center;padding:2px 0;}
+.pbseq.sh{display:flex;justify-content:center;}
 .pbd{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.15);}
 .pbd.ac{background:var(--gd);}
 .pbd.dn{background:rgba(196,169,106,0.38);}
-.pbt2{font-size:0.6rem;color:rgba(247,243,236,0.3);margin-top:1px;}
-#pb-time-row{padding:2px 13px 3px;display:flex;align-items:center;font-size:0.6rem;color:rgba(247,243,236,0.38);line-height:1;font-variant-numeric:tabular-nums;}
-#pb-time-row span{font-variant-numeric:tabular-nums;}
-.pbctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-.pbspd{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:100px;font-size:0.66rem;color:rgba(247,243,236,0.55);padding:4px 9px;cursor:pointer;font-family:inherit;min-height:30px;min-width:36px;transition:all 0.18s;}
-.pbspd:hover{color:var(--gd);}
-.pbnxt{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.4);padding:3px;min-width:30px;min-height:30px;display:flex;align-items:center;justify-content:center;}
-.pbnxt svg{width:17px;height:17px;}
-.pbplay{width:42px;height:42px;border-radius:50%;background:var(--gd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.pbplay svg{width:14px;height:14px;fill:var(--olm);}
+/* controls row — centred like Audible */
+#pb-ctrl-row{display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 14px 6px;}
+.pbspd{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.7rem;color:rgba(247,243,236,0.6);padding:5px 9px;cursor:pointer;font-family:inherit;min-height:34px;min-width:44px;transition:all 0.18s;font-weight:500;}
+.pbspd:hover{color:var(--gd);border-color:rgba(196,169,106,0.3);}
+.pbprev,.pbnxt{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.55);padding:4px;min-width:38px;min-height:38px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;}
+.pbprev:hover,.pbnxt:hover{color:var(--cr);}
+.pbprev svg,.pbnxt svg{width:20px;height:20px;}
+.pbplay{width:52px;height:52px;border-radius:50%;background:var(--gd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform 0.12s,opacity 0.2s;box-shadow:0 2px 12px rgba(196,169,106,0.35);}
+.pbplay:active{transform:scale(0.93);}
+.pbplay svg{width:17px;height:17px;fill:var(--olm);}
 .pbplay .ip{display:none;}
 .pbplay.pl .ip2{display:none;}
 .pbplay.pl .ip{display:block;}
+/* pills — at very bottom */
+#pills-bar-wrap{border-top:1px solid rgba(255,255,255,0.07);}
 /* pills */
 #barpills{display:none;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:0 13px 9px;scrollbar-width:none;}
 #barpills::-webkit-scrollbar{display:none;}
@@ -377,25 +383,41 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 </div>
 
 <!-- BOTTOM BAR -->
-<div id="pills-bar-wrap" style="position:fixed;bottom:0;padding-bottom:env(safe-area-inset-bottom,8px);left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.08);padding-top:7px;padding-left:13px;padding-right:13px;display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;gap:6px;"></div>
+
 <div id="bar">
+  <!-- Seek track -->
   <div id="pbt"><div id="pbt-track"></div><div id="pbf"></div><div id="pbth"></div></div>
-  <div id="pb-time-row"><span id="pbt2">0:00</span><span id="pbt2-dur"> / —:——</span></div>
-  <div class="pbr">
-    <div class="pbinfo" onclick="jumpToCurrent()">
-      <div class="pbch"><span id="pbch-txt"></span><span class="pbplt" id="pbplt"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span></div>
-      <div class="pbttl" id="pbttl"></div>
-      <div class="pbseq" id="pbseq"></div>
-    </div>
-    <div class="pbctrl">
-      <button class="pbspd" id="pbspd" onclick="cycleSpd()">1×</button>
-      <button class="pbnxt" onclick="nextCh()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg></button>
-      <button class="pbplay" id="pbplay" onclick="togglePlay()">
-        <svg class="ip2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
-        <svg class="ip" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-      </button>
-    </div>
+  <!-- Times: left=current, right=total -->
+  <div id="pb-time-row">
+    <span id="pbt2">0:00</span>
+    <span id="pbt2-dur">—:——</span>
   </div>
+  <!-- Track info — centred, tap to jump to section -->
+  <div id="pb-info-row" onclick="jumpToCurrent()">
+    <span class="pbch" id="pbch-txt"></span>
+    <span class="pbplt" id="pbplt"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span>
+    <span class="pbttl" id="pbttl"></span>
+  </div>
+  <!-- Playlist dots -->
+  <div class="pbseq" id="pbseq"></div>
+  <!-- Controls row — centred like Audible -->
+  <div id="pb-ctrl-row">
+    <button class="pbspd" id="pbspd" onclick="cycleSpd()">1×</button>
+    <button class="pbprev" onclick="prevCh()" aria-label="Previous">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="5" y1="19" x2="5" y2="5"/><polygon points="19 19 9 12 19 5"/></svg>
+    </button>
+    <button class="pbplay" id="pbplay" onclick="togglePlay()">
+      <svg class="ip2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+      <svg class="ip" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+    </button>
+    <button class="pbnxt" onclick="nextCh()" aria-label="Next">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+    </button>
+  </div>
+  <!-- pills row inside bar -->
+  <div id="pills-bar-wrap" style="display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;padding:4px 13px 6px;gap:6px;border-top:1px solid rgba(255,255,255,0.07);"></div>
+  <!-- safe area spacer -->
+  <div style="height:env(safe-area-inset-bottom,0px);min-height:4px;"></div>
 </div>
 
 <!-- TRANSITION SHEET -->
@@ -554,7 +576,7 @@ function goJourney(){
   document.getElementById('vj').classList.add('on');
   document.getElementById('vh').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
-  const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';pb.style.flexWrap='nowrap';}
+  const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';}
   document.getElementById('views').scrollTop=0;
   setNavTitle();
 }
@@ -652,6 +674,7 @@ function tapPlay(i){
 }
 function togglePlay(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}syncBtns(playing);}
 function nextCh(){if(ai<CH.length-1)jump(ai+1,plMode);}
+function prevCh(){if(ai>0)jump(ai-1,plMode);}
 function jumpToCurrent(){
   if(view==='home'){goJourney();setTimeout(()=>document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'}),100);}
   else{document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'});}
@@ -681,8 +704,8 @@ function refreshPBText(){
 }
 function refreshPBProg(cur,dur){
   const p=dur>0?(cur/dur)*100:0;
-  document.getElementById('pbf').style.width=p+'%';
-  document.getElementById('pbth').style.left=p+'%';
+  document.getElementById('pbf').style.width=p.toFixed(2)+'%';
+  document.getElementById('pbth').style.left='calc(13px + '+p.toFixed(2)+'% * ((100% - 26px) / 100%))';
   document.getElementById('pbt2').textContent=fmt(cur);
   document.getElementById('pbt2-dur').textContent=' / '+fmt(dur||0);
 }
@@ -696,10 +719,12 @@ function initSeekBar(){
   function seekTo(cx){
     if(!aud.duration)return;
     const r=t.getBoundingClientRect();
-    const p=Math.max(0,Math.min(1,(cx-r.left)/r.width));
+    const pad=13; // left/right padding in pbt
+    const p=Math.max(0,Math.min(1,(cx-r.left-pad)/(r.width-pad*2)));
     aud.currentTime=p*aud.duration;
-    document.getElementById('pbf').style.width=(p*100)+'%';
-    document.getElementById('pbth').style.left=(p*100)+'%';
+    const pct=(p*100).toFixed(2)+'%';
+    document.getElementById('pbf').style.width=pct;
+    document.getElementById('pbth').style.left='calc(13px + '+pct+' * ((100% - 26px) / 100%))';
   }
   // Touch — use capture phase for reliable iOS handling
   t.addEventListener('touchstart',e=>{
@@ -732,21 +757,27 @@ function initMap(){
   let mi=null,sc=1,tx=0,ty=0,dr=false,lx=0,ly=0,pi=false,pMid={x:0,y:0},ld=0;
 
   window.loadMapImage=function(src){
-    const ph=document.getElementById('mapph');
-    if(ph)ph.style.display='none';
-    // Remove old map if exists
+    // Remove old map first
     w.querySelectorAll('img.mimg').forEach(el=>el.remove());
     mi=document.createElement('img');
     mi.className='mimg';
-    mi.src=src;
+    mi.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;transition:opacity 0.3s;';
+    // Assign onload BEFORE setting src (critical for cached images)
     mi.onload=()=>{
-      w.appendChild(mi);
-      // Fit: scale so image fills the container width
+      const ph=document.getElementById('mapph');
+      if(ph)ph.style.display='none';
+      // Fit: fill container width, centre vertically
       sc=w.clientWidth/mi.naturalWidth;
       tx=0;
-      ty=(w.clientHeight-mi.naturalHeight*sc)/2;
+      ty=Math.max(0,(w.clientHeight-mi.naturalHeight*sc)/2);
       apT();
+      mi.style.opacity='1';
     };
+    mi.onerror=()=>{
+      console.warn('Map image failed to load:',src);
+    };
+    w.appendChild(mi); // append before setting src so browser tracks it
+    mi.src=src;
   };
 
   function apT(){
