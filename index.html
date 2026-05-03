@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v10
+   Single Page App — v11
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -58,7 +58,7 @@ span.en,span.tc{display:inline;}
 #sbar{position:fixed;top:0;left:0;height:3px;background:var(--gd);width:0%;z-index:500;pointer-events:none;}
 
 /* ── VIEWS ── */
-#views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) + var(--pills));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
+#views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) + var(--pills) + var(--safe));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
 .view{display:none;}
 .view.on{display:block;}
 
@@ -181,7 +181,7 @@ details[open] summary::after{content:'▾';}
 #pbt-track{position:absolute;left:0;right:0;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;pointer-events:none;}#pbf{position:absolute;left:0;height:4px;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;top:0;}
 #pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;z-index:1;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
-.pbr{padding:8px 13px calc(6px + var(--safe));display:flex;align-items:center;gap:9px;}
+.pbr{padding:8px 13px calc(10px + var(--safe));display:flex;align-items:center;gap:9px;}
 .pbinfo{flex:1;min-width:0;cursor:pointer;}
 .pbinfo:hover .pbttl{color:var(--gd);}
 .pbch{font-size:0.56rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;}
@@ -209,9 +209,9 @@ details[open] summary::after{content:'▾';}
 #barpills::-webkit-scrollbar{display:none;}
 #barpills.sh{display:flex;}
 .pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);font-size:0.68rem;color:rgba(247,243,236,0.6);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;-webkit-tap-highlight-color:transparent;}
-.pill.ac{background:var(--gd);border-color:var(--gd);color:var(--olm);font-weight:500;}
+.pill.ac{background:var(--gd);border-color:var(--gd);color:#fff;font-weight:600;}
 .pill.dn{border-color:rgba(196,169,106,0.35);color:rgba(196,169,106,0.62);}
-.pilln{font-size:0.56rem;opacity:0.5;}
+.pilln{font-size:0.56rem;opacity:0.65;}
 
 /* ════ DRAWER ════ */
 #drov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s;}
@@ -474,6 +474,20 @@ const SPDS=[1,1.25,1.5];
 const CACHE='kfbg-audio-v1';
 const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
 
+// ════ DEEP LINK PARAMS — capture immediately before any redirects ════
+const _DL=(function(){
+  const s=window.location.search;
+  const h=window.location.hash;
+  let p=null;
+  if(s&&s.includes('journey='))p=new URLSearchParams(s.slice(1));
+  else if(h&&h.includes('journey='))p=new URLSearchParams(h.slice(1));
+  if(!p)return null;
+  const j=p.get('journey');
+  const c=parseInt(p.get('chapter'));
+  if(j&&c>=1&&c<=5)return{journey:j,chapter:c};
+  return null;
+})();
+
 // ════ STATE ════
 let lang=localStorage.getItem('kfbg-lang')||'zh';
 let fs=parseInt(localStorage.getItem('kfbg-fs')||'2');
@@ -497,6 +511,8 @@ function init(){
   setupInstall();
   setupSW();
   checkDlState();
+  // Apply deep link AFTER all setup is done
+  setTimeout(handleDeepLink,0);
 }
 
 // ════ LANG ════
@@ -772,32 +788,17 @@ function mapFsClose(){
 }
 // QR CODE DEEP LINK
 function handleDeepLink(){
-  // Support both formats:
-  // Hash:  index.html#journey=grounding-walk&chapter=2
-  // Query: index.html?journey=grounding-walk&chapter=2
-  let params=null;
-  const search=window.location.search;
-  const hash=window.location.hash;
-  if(search&&search.includes('journey=')){
-    params=new URLSearchParams(search.slice(1));
-  } else if(hash&&hash.includes('journey=')){
-    params=new URLSearchParams(hash.slice(1));
-  }
-  if(!params)return;
-  const journey=params.get('journey');
-  const chapter=parseInt(params.get('chapter'));
-  if(!journey||!(chapter>=1&&chapter<=5))return;
-  const idx=chapter-1;
-  // Run after DOM is ready — use rAF after init
-  setTimeout(()=>{
-    goJourney();
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{
-        document.getElementById('s'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});
-        setTimeout(()=>loadCh(idx,true),500);
-      });
-    });
-  },300);
+  if(!_DL)return;
+  const idx=_DL.chapter-1;
+  // At this point init() has already run — DOM is ready
+  goJourney();
+  // Use two rAFs to ensure layout is complete before scroll
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const sec=document.getElementById('s'+idx);
+    if(sec)sec.scrollIntoView({behavior:'auto',block:'start'});
+    // Load and play the chapter
+    setTimeout(()=>loadCh(idx,true),400);
+  }));
 }
 function setupScroll(){
   const v=document.getElementById('views');
@@ -891,7 +892,7 @@ function setupSW(){
 }
 
 // ════ START ════
-document.addEventListener('DOMContentLoaded',()=>{init();handleDeepLink();});
+document.addEventListener('DOMContentLoaded',()=>{init();});
 </script>
 </body>
 </html>
