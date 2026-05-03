@@ -24,13 +24,13 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v6
+   Single Page App — v9
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
-  --nav:54px;--bar:78px;--fs:1rem;
+  --nav:54px;--bar:78px;--pills:42px;--safe:env(safe-area-inset-bottom,0px);--fs:1rem;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -58,7 +58,7 @@ span.en,span.tc{display:inline;}
 #sbar{position:fixed;top:0;left:0;height:3px;background:var(--gd);width:0%;z-index:500;pointer-events:none;}
 
 /* ── VIEWS ── */
-#views{position:fixed;top:var(--nav);left:0;right:0;bottom:var(--bar);overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;}
+#views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) + var(--pills));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
 .view{display:none;}
 .view.on{display:block;}
 
@@ -176,8 +176,8 @@ details[open] summary::after{content:'▾';}
 #offbar.sh{display:block;}
 
 /* ════ BOTTOM BAR ════ */
-#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);}
-#pbt{height:5px;background:rgba(255,255,255,0.1);cursor:pointer;touch-action:none;position:relative;}
+#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);padding-bottom:var(--safe);}
+#pbt{height:14px;background:transparent;cursor:pointer;touch-action:none;position:relative;margin:0;}#pbt::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:4px;background:rgba(255,255,255,0.1);border-radius:2px;pointer-events:none;}
 #pbf{height:100%;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;}
 #pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
@@ -208,7 +208,7 @@ details[open] summary::after{content:'▾';}
 #barpills{display:none;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:0 13px 9px;scrollbar-width:none;}
 #barpills::-webkit-scrollbar{display:none;}
 #barpills.sh{display:flex;}
-.pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border-radius:100px;border:1px solid rgba(255,255,255,0.15);background:transparent;font-size:0.68rem;color:rgba(247,243,236,0.52);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;}
+.pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);font-size:0.68rem;color:rgba(247,243,236,0.6);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;-webkit-tap-highlight-color:transparent;}
 .pill.ac{background:var(--gd);border-color:var(--gd);color:var(--olm);font-weight:500;}
 .pill.dn{border-color:rgba(196,169,106,0.35);color:rgba(196,169,106,0.62);}
 .pilln{font-size:0.56rem;opacity:0.5;}
@@ -289,13 +289,13 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 /* MAP FULLSCREEN */
 #map-fs{position:fixed;inset:0;z-index:700;background:#000;display:none;flex-direction:column;}
 #map-fs.sh{display:flex;}
-#map-fs-inner{flex:1;overflow:hidden;touch-action:none;position:relative;cursor:grab;}
+#map-fs-inner{flex:1;overflow:hidden;touch-action:none;position:relative;cursor:grab;background:#111;}
 #map-fs-inner.gr{cursor:grabbing;}
 #map-fs-inner img{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;}
 #map-fs-close{position:absolute;top:env(safe-area-inset-top,12px);right:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
 #map-fs-close svg{stroke:#fff;}
 #map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
-#pills-bar-wrap::-webkit-scrollbar{display:none;}
+#pills-bar-wrap::-webkit-scrollbar{display:none;height:0;}
 </style>
 </head>
 <body>
@@ -347,7 +347,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <div class="jbody">
           <div class="jkick"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
           <div class="jtitle en">Grounding Walk at the Lower Hillside of KFBG</div>
-          <div class="jtitle tc">連結大地 — 嘉道理下山區靜心漫步</div>
+          <div class="jtitle tc">連結大地 — 下山區靜心漫步</div>
           <p class="jdesc en">Five stops through the lower hillside. Touch bark, breathe soil, listen to water.</p>
           <p class="jdesc tc">穿越下山區的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。</p>
           <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">~45 min · 5 stops</span><span class="tc">約45分鐘 · 5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
@@ -367,7 +367,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B4A2F" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
     </div>
-    <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 嘉道理下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
+    <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
     <div id="offbar"><span class="en">Offline — playing from cache</span><span class="tc">離線模式 — 從緩存播放</span></div>
     <div class="jcon" id="jcon"></div>
   </div>
@@ -375,7 +375,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 </div>
 
 <!-- BOTTOM BAR -->
-<div id="pills-bar" style="position:fixed;bottom:78px;left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:6px 13px 8px;display:none;overflow-x:auto;white-space:nowrap;scrollbar-width:none;-webkit-overflow-scrolling:touch;" id="pills-bar-wrap"></div>
+<div id="pills-bar" style="position:fixed;bottom:calc(var(--bar) + var(--safe));left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:6px 13px 8px;display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;white-space:nowrap;" id="pills-bar-wrap"></div>
 <div id="bar">
   <div id="pbt"><div id="pbf"></div><div id="pbth"></div></div>
   <div class="pbr">
@@ -445,7 +445,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <!-- SINGLE AUDIO ELEMENT — never destroyed -->
 <!-- MAP FULLSCREEN OVERLAY -->
 <div id="map-fs">
-  <div id="map-fs-inner" id="mapFsInner">
+  <div id="map-fs-inner">
     <button id="map-fs-close" onclick="mapFsClose()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div id="map-fs-hint"><span class="en">Pinch to zoom · Drag to pan</span><span class="tc">捏合縮放 · 拖動移動</span></div>
   </div>
@@ -537,7 +537,7 @@ function goJourney(){
   document.getElementById('vj').classList.add('on');
   document.getElementById('vh').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
-  document.getElementById('pills-bar-wrap').style.display='flex';
+  const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';pb.style.flexWrap='nowrap';}
   document.getElementById('views').scrollTop=0;
   setNavTitle();
 }
@@ -694,7 +694,23 @@ function mapFullscreen(){
   const fs=document.getElementById('map-fs');
   const inner=document.getElementById('map-fs-inner');
   const src=document.querySelector('#mapw img.mimg');
-  if(!src){return;}
+  // If no map loaded yet, show a message instead of silently failing
+  if(!src){
+    // Show FS overlay with placeholder message
+    let msg=inner.querySelector('.fs-no-map');
+    if(!msg){
+      msg=document.createElement('div');
+      msg.className='fs-no-map';
+      msg.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:rgba(247,243,236,0.55);font-family:inherit;';
+      msg.innerHTML='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><span style="font-size:0.82rem">'+(lang==='zh'?'地圖即將推出':'Trail map coming soon')+'</span>';
+      inner.appendChild(msg);
+    }
+    fs.classList.add('sh');
+    document.body.style.overflow='hidden';
+    return;
+  }
+  // Remove placeholder if exists
+  inner.querySelector('.fs-no-map')?.remove();
   // clone image into fullscreen
   let fimg=inner.querySelector('img');
   if(!fimg){fimg=document.createElement('img');fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;';inner.insertBefore(fimg,inner.firstChild);}
@@ -722,22 +738,30 @@ function mapFsClose(){
 // QR CODE DEEP LINK
 function handleDeepLink(){
   const hash=window.location.hash;
-  if(!hash)return;
-  const params=new URLSearchParams(hash.replace('#',''));
+  if(!hash||!hash.includes('='))return;
+  // Support both #journey=x&chapter=2 and ?journey=x&chapter=2 formats
+  const qs=hash.startsWith('#')?hash.slice(1):hash;
+  const params=new URLSearchParams(qs);
   const journey=params.get('journey');
   const chapter=parseInt(params.get('chapter'));
   if(journey&&chapter>=1&&chapter<=5){
-    // go to journey view and jump to that chapter
+    const idx=chapter-1;
+    // Must run after init() has built the DOM — use longer delay + rAF chain
     setTimeout(()=>{
       goJourney();
-      const idx=chapter-1;
-      // scroll to chapter and play
-      setTimeout(()=>{
-        document.getElementById('s'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});
-        // auto-play after brief delay
-        setTimeout(()=>tapPlay(idx),400);
-      },100);
-    },300);
+      // Wait for journey view DOM to be visible, then scroll and play
+      requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+          const sec=document.getElementById('s'+idx);
+          if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
+          // Play after scroll settles
+          setTimeout(()=>{
+            if(idx!==ai){loadCh(idx,true);}
+            else{togglePlay();}
+          },600);
+        });
+      });
+    },400);
   }
 }
 function setupScroll(){
@@ -758,7 +782,7 @@ function drClose(){document.getElementById('dr').classList.remove('op');document
 
 // ════ DOWNLOAD ════
 function buildDlList(){
-  document.getElementById('dljlist').innerHTML=`<div class="dljrow"><div class="dljname"><span class="en">Grounding Walk · Lower Hillside</span><span class="tc">連結大地 — 嘉道理下山區</span></div><button class="dljbtn" id="dljbtn" onclick="dlJourney()"><span class="en">Download</span><span class="tc">下載</span></button></div>`;
+  document.getElementById('dljlist').innerHTML=`<div class="dljrow"><div class="dljname"><span class="en">Grounding Walk · Lower Hillside</span><span class="tc">連結大地 — 下山區</span></div><button class="dljbtn" id="dljbtn" onclick="dlJourney()"><span class="en">Download</span><span class="tc">下載</span></button></div>`;
 }
 function dlClick(){if(view==='journey'){runDl(CH.map(c=>c.a));}else{document.getElementById('dlmod').classList.add('op');}}
 function dlClose(){document.getElementById('dlmod').classList.remove('op');}
