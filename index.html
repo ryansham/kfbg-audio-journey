@@ -24,13 +24,13 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v9
+   Single Page App — v10
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
-  --nav:54px;--bar:78px;--pills:42px;--safe:env(safe-area-inset-bottom,0px);--fs:1rem;
+  --nav:54px;--bar:78px;--pills:44px;--safe:env(safe-area-inset-bottom,16px);--fs:1rem;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -177,11 +177,11 @@ details[open] summary::after{content:'▾';}
 
 /* ════ BOTTOM BAR ════ */
 #bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);padding-bottom:var(--safe);}
-#pbt{height:14px;background:transparent;cursor:pointer;touch-action:none;position:relative;margin:0;}#pbt::after{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:4px;background:rgba(255,255,255,0.1);border-radius:2px;pointer-events:none;}
-#pbf{height:100%;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;}
-#pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;}
+#pbt{height:16px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;}
+#pbt-track{position:absolute;left:0;right:0;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;pointer-events:none;}#pbf{position:absolute;left:0;height:4px;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;top:0;}
+#pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;z-index:1;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
-.pbr{padding:8px 13px 6px;display:flex;align-items:center;gap:9px;}
+.pbr{padding:8px 13px calc(6px + var(--safe));display:flex;align-items:center;gap:9px;}
 .pbinfo{flex:1;min-width:0;cursor:pointer;}
 .pbinfo:hover .pbttl{color:var(--gd);}
 .pbch{font-size:0.56rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;}
@@ -375,9 +375,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 </div>
 
 <!-- BOTTOM BAR -->
-<div id="pills-bar" style="position:fixed;bottom:calc(var(--bar) + var(--safe));left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:6px 13px 8px;display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;flex-wrap:nowrap;white-space:nowrap;" id="pills-bar-wrap"></div>
+<div id="pills-bar-wrap" style="position:fixed;bottom:calc(var(--bar) + var(--safe));left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:6px 13px 8px;display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;gap:6px;"></div>
 <div id="bar">
-  <div id="pbt"><div id="pbf"></div><div id="pbth"></div></div>
+  <div id="pbt"><div id="pbt-track"></div><div id="pbf"></div><div id="pbth"></div></div>
   <div class="pbr">
     <div class="pbinfo" onclick="jumpToCurrent()">
       <div class="pbch"><span id="pbch-txt"></span><span class="pbplt" id="pbplt"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span></div>
@@ -621,7 +621,18 @@ function jump(i,asPL){
   setTimeout(()=>{sh.classList.remove('sh');loadCh(i,true);},900);
 }
 function playAll(){plMode=true;document.getElementById('pbplt').classList.add('sh');document.getElementById('pbseq').classList.add('sh');jump(0,true);}
-function tapPlay(i){if(i===ai){togglePlay();}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');jump(i,false);}}
+function tapPlay(i){
+  if(i===ai){
+    // If audio not yet loaded (readyState 0 = HAVE_NOTHING), reload and play
+    if(aud.readyState===0||aud.src===''){loadCh(i,true);}
+    else{togglePlay();}
+  }else{
+    plMode=false;
+    document.getElementById('pbplt').classList.remove('sh');
+    document.getElementById('pbseq').classList.remove('sh');
+    jump(i,false);
+  }
+}
 function togglePlay(){if(playing){aud.pause();playing=false;}else{aud.play().catch(()=>{});playing=true;}syncBtns(playing);}
 function nextCh(){if(ai<CH.length-1)jump(ai+1,plMode);}
 function jumpToCurrent(){
@@ -664,13 +675,37 @@ function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Ma
 function initSeekBar(){
   const t=document.getElementById('pbt');
   let sk=false;
-  function seekTo(cx){if(!aud.duration)return;const r=t.getBoundingClientRect();const p=Math.max(0,Math.min(1,(cx-r.left)/r.width));aud.currentTime=p*aud.duration;document.getElementById('pbf').style.width=(p*100)+'%';document.getElementById('pbth').style.left=(p*100)+'%';}
-  t.addEventListener('touchstart',e=>{e.preventDefault();sk=true;t.classList.add('sk');seekTo(e.touches[0].clientX);},{passive:false});
-  window.addEventListener('touchmove',e=>{if(!sk)return;e.preventDefault();seekTo(e.touches[0].clientX);},{passive:false});
-  window.addEventListener('touchend',()=>{sk=false;t.classList.remove('sk');});
-  t.addEventListener('mousedown',e=>{sk=true;t.classList.add('sk');seekTo(e.clientX);});
-  window.addEventListener('mousemove',e=>{if(sk)seekTo(e.clientX);});
-  window.addEventListener('mouseup',()=>{sk=false;t.classList.remove('sk');});
+  function seekTo(cx){
+    if(!aud.duration)return;
+    const r=t.getBoundingClientRect();
+    const p=Math.max(0,Math.min(1,(cx-r.left)/r.width));
+    aud.currentTime=p*aud.duration;
+    document.getElementById('pbf').style.width=(p*100)+'%';
+    document.getElementById('pbth').style.left=(p*100)+'%';
+  }
+  // Touch — use capture phase for reliable iOS handling
+  t.addEventListener('touchstart',e=>{
+    e.stopPropagation();
+    sk=true;
+    t.classList.add('sk');
+    document.getElementById('pbth').style.display='block';
+    seekTo(e.touches[0].clientX);
+  },{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!sk)return;
+    seekTo(e.touches[0].clientX);
+  },{passive:true});
+  document.addEventListener('touchend',()=>{
+    if(sk){sk=false;t.classList.remove('sk');}
+  },{passive:true});
+  // Mouse
+  t.addEventListener('mousedown',e=>{
+    sk=true;t.classList.add('sk');
+    document.getElementById('pbth').style.display='block';
+    seekTo(e.clientX);
+  });
+  document.addEventListener('mousemove',e=>{if(sk)seekTo(e.clientX);});
+  document.addEventListener('mouseup',()=>{if(sk){sk=false;t.classList.remove('sk');}});
 }
 
 // ════ MAP ════
@@ -737,32 +772,32 @@ function mapFsClose(){
 }
 // QR CODE DEEP LINK
 function handleDeepLink(){
+  // Support both formats:
+  // Hash:  index.html#journey=grounding-walk&chapter=2
+  // Query: index.html?journey=grounding-walk&chapter=2
+  let params=null;
+  const search=window.location.search;
   const hash=window.location.hash;
-  if(!hash||!hash.includes('='))return;
-  // Support both #journey=x&chapter=2 and ?journey=x&chapter=2 formats
-  const qs=hash.startsWith('#')?hash.slice(1):hash;
-  const params=new URLSearchParams(qs);
+  if(search&&search.includes('journey=')){
+    params=new URLSearchParams(search.slice(1));
+  } else if(hash&&hash.includes('journey=')){
+    params=new URLSearchParams(hash.slice(1));
+  }
+  if(!params)return;
   const journey=params.get('journey');
   const chapter=parseInt(params.get('chapter'));
-  if(journey&&chapter>=1&&chapter<=5){
-    const idx=chapter-1;
-    // Must run after init() has built the DOM — use longer delay + rAF chain
-    setTimeout(()=>{
-      goJourney();
-      // Wait for journey view DOM to be visible, then scroll and play
+  if(!journey||!(chapter>=1&&chapter<=5))return;
+  const idx=chapter-1;
+  // Run after DOM is ready — use rAF after init
+  setTimeout(()=>{
+    goJourney();
+    requestAnimationFrame(()=>{
       requestAnimationFrame(()=>{
-        requestAnimationFrame(()=>{
-          const sec=document.getElementById('s'+idx);
-          if(sec)sec.scrollIntoView({behavior:'smooth',block:'start'});
-          // Play after scroll settles
-          setTimeout(()=>{
-            if(idx!==ai){loadCh(idx,true);}
-            else{togglePlay();}
-          },600);
-        });
+        document.getElementById('s'+idx)?.scrollIntoView({behavior:'smooth',block:'start'});
+        setTimeout(()=>loadCh(idx,true),500);
       });
-    },400);
-  }
+    });
+  },300);
 }
 function setupScroll(){
   const v=document.getElementById('views');

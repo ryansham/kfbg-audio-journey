@@ -1,4 +1,4 @@
-const PAGE_CACHE='kfbg-pages-v9';
+const PAGE_CACHE='kfbg-pages-v10';
 const AUDIO_CACHE='kfbg-audio-v1';
 const PRECACHE=['./', './index.html', './manifest.json', './KFBG_Logo.png', './og-image.jpg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting()));});
