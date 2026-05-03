@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v11
+   Single Page App — v12
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -181,7 +181,7 @@ details[open] summary::after{content:'▾';}
 #pbt-track{position:absolute;left:0;right:0;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;pointer-events:none;}#pbf{position:absolute;left:0;height:4px;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;top:0;}
 #pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;transition:left 0.1s linear;z-index:1;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
-.pbr{padding:8px 13px calc(10px + var(--safe));display:flex;align-items:center;gap:9px;}
+.pbr{padding:8px 13px 10px;display:flex;align-items:center;gap:9px;}
 .pbinfo{flex:1;min-width:0;cursor:pointer;}
 .pbinfo:hover .pbttl{color:var(--gd);}
 .pbch{font-size:0.56rem;color:rgba(196,169,106,0.52);letter-spacing:0.1em;margin-bottom:1px;}
@@ -361,7 +361,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <!-- JOURNEY -->
   <div id="vj" class="view">
     <div class="mapw" id="mapw">
-      <div class="mapph" id="mapph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><p class="en">Trail map — coming soon</p><p class="tc">步道地圖 — 即將推出</p></div>
+      <div class="mapph" id="mapph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><p class="en">Loading map…</p><p class="tc">地圖載入中…</p></div>
       <div class="maphint"><span class="en">Pinch · Drag</span><span class="tc">捏合 · 拖動</span></div>
       <button id="map-expand" onclick="mapFullscreen()" style="position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 1px 6px rgba(0,0,0,0.15);">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B4A2F" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
@@ -375,7 +375,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 </div>
 
 <!-- BOTTOM BAR -->
-<div id="pills-bar-wrap" style="position:fixed;bottom:calc(var(--bar) + var(--safe));left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:6px 13px 8px;display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;gap:6px;"></div>
+<div id="pills-bar-wrap" style="position:fixed;bottom:calc(var(--bar) + var(--safe));left:0;right:0;z-index:199;background:var(--olm);border-top:1px solid rgba(255,255,255,0.06);padding:7px 13px 9px;display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;gap:6px;"></div>
 <div id="bar">
   <div id="pbt"><div id="pbt-track"></div><div id="pbf"></div><div id="pbth"></div></div>
   <div class="pbr">
@@ -395,6 +395,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
   </div>
   
+  <div style="height:max(20px,env(safe-area-inset-bottom,20px));background:var(--olm);"></div>
 </div>
 
 <!-- TRANSITION SHEET -->
@@ -738,49 +739,39 @@ function initMap(){
   window.addEventListener('mousemove',e=>{if(!dr)return;tx+=e.clientX-lx;ty+=e.clientY-ly;lx=e.clientX;ly=e.clientY;cl();apT();});
   window.addEventListener('mouseup',()=>{dr=false;w.classList.remove('gr');});
   w.addEventListener('wheel',e=>{e.preventDefault();sc=Math.max(0.5,Math.min(4,sc*(e.deltaY<0?1.1:0.9)));cl();apT();},{passive:false});
+  // Auto-load the KFBG lower hillside map
+  loadMapImage('kfbg_map_lower.jpg');
 }
 
 // ════ SCROLL PROGRESS ════
 function mapFullscreen(){
   const fs=document.getElementById('map-fs');
   const inner=document.getElementById('map-fs-inner');
+  // Always load full map in fullscreen regardless of thumbnail
   const src=document.querySelector('#mapw img.mimg');
-  // If no map loaded yet, show a message instead of silently failing
-  if(!src){
-    // Show FS overlay with placeholder message
-    let msg=inner.querySelector('.fs-no-map');
-    if(!msg){
-      msg=document.createElement('div');
-      msg.className='fs-no-map';
-      msg.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:rgba(247,243,236,0.55);font-family:inherit;';
-      msg.innerHTML='<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><span style="font-size:0.82rem">'+(lang==='zh'?'地圖即將推出':'Trail map coming soon')+'</span>';
-      inner.appendChild(msg);
-    }
-    fs.classList.add('sh');
-    document.body.style.overflow='hidden';
-    return;
-  }
-  // Remove placeholder if exists
-  inner.querySelector('.fs-no-map')?.remove();
-  // clone image into fullscreen
-  let fimg=inner.querySelector('img');
-  if(!fimg){fimg=document.createElement('img');fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;';inner.insertBefore(fimg,inner.firstChild);}
-  fimg.src=src.src;
+  // Remove old content
+  inner.querySelectorAll('img,.fs-no-map').forEach(el=>el.remove());
+  // Load full map image
+  const fimg=document.createElement('img');
+  fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;';
+  inner.insertBefore(fimg,inner.firstChild);
   fimg.onload=()=>{
-    let sc2=Math.min(window.innerWidth/fimg.naturalWidth, window.innerHeight/fimg.naturalHeight);
+    let sc2=Math.min(window.innerWidth/fimg.naturalWidth,window.innerHeight/fimg.naturalHeight);
     let tx2=(window.innerWidth-fimg.naturalWidth*sc2)/2;
     let ty2=(window.innerHeight-fimg.naturalHeight*sc2)/2;
     fimg.style.transform=`translate(${tx2}px,${ty2}px) scale(${sc2})`;
-    // setup pan/zoom on fs
     let s=sc2,tx=tx2,ty=ty2,dr=false,lx=0,ly=0,pi=false,ld=0;
     function apT(){fimg.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
     function cl(){const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s,mw=window.innerWidth,mh=window.innerHeight;if(iw>mw){tx=Math.min(0,Math.max(mw-iw,tx));}else{tx=(mw-iw)/2;}if(ih>mh){ty=Math.min(0,Math.max(mh-ih,ty));}else{ty=(mh-ih)/2;}}
-    inner.ontouchstart=e=>{if(e.touches.length===1){dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pi=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    inner.ontouchmove=e=>{e.preventDefault();if(pi&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);s=Math.max(0.5,Math.min(6,s*(d/ld)));ld=d;cl();apT();}else if(dr&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();}};
+    inner.ontouchstart=e=>{e.preventDefault();if(e.touches.length===1){dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pi=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
+    inner.ontouchmove=e=>{e.preventDefault();if(pi&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);s=Math.max(0.5,Math.min(8,s*(d/ld)));ld=d;cl();apT();}else if(dr&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();}};
     inner.ontouchend=()=>{dr=false;pi=false;};
   };
+  fimg.src='kfbg_map.jpg';  // Full resolution map in fullscreen
   fs.classList.add('sh');
   document.body.style.overflow='hidden';
+  return;
+  // dead code below kept for reference
 }
 function mapFsClose(){
   document.getElementById('map-fs').classList.remove('sh');
