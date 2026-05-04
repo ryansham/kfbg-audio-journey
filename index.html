@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v17
+   Single Page App — v18
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -300,7 +300,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 #map-fs-inner{flex:1;overflow:hidden;touch-action:none;position:relative;cursor:grab;background:#111;}
 #map-fs-inner.gr{cursor:grabbing;}
 #map-fs-inner img{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;}
-#map-fs-close{position:absolute;top:env(safe-area-inset-top,12px);right:12px;width:38px;height:38px;border-radius:50%;background:rgba(0,0,0,0.6);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;}
+#map-fs-close{position:fixed;top:max(env(safe-area-inset-top,0px),16px);right:16px;width:46px;height:46px;border-radius:50%;background:rgba(30,30,30,0.85);border:2px solid rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:800;flex-shrink:0;}
 #map-fs-close svg{stroke:#fff;}
 #map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
 #pills-bar-wrap::-webkit-scrollbar{display:none;height:0;}
@@ -472,10 +472,13 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <!-- SINGLE AUDIO ELEMENT — never destroyed -->
 <!-- MAP FULLSCREEN OVERLAY -->
 <div id="map-fs">
-  <div id="map-fs-inner"><div id="map-fs-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(247,243,236,0.4);font-family:'DM Sans',sans-serif;font-size:0.82rem;pointer-events:none;"><span class='en'>Loading map…</span><span class='tc'>地圖載入中…</span></div>
-    <button id="map-fs-close" style="-webkit-tap-highlight-color:transparent;touch-action:manipulation;" onclick="mapFsClose()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  <!-- inner: touch-action:none for pan/zoom — NO children with tap targets -->
+  <div id="map-fs-inner">
+    <div id="map-fs-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(247,243,236,0.4);font-family:'DM Sans',sans-serif;font-size:0.82rem;pointer-events:none;z-index:1;"><span class='en'>Loading map…</span><span class='tc'>地圖載入中…</span></div>
     <div id="map-fs-hint"><span class="en">Pinch to zoom · Drag to pan</span><span class="tc">捏合縮放 · 拖動移動</span></div>
   </div>
+  <!-- close button is SIBLING of inner — NOT inside touch-action:none zone -->
+  <button id="map-fs-close" style="-webkit-tap-highlight-color:transparent;touch-action:manipulation;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
 <audio id="aud" preload="none"></audio>
 
@@ -538,6 +541,7 @@ function init(){
   setupInstall();
   setupSW();
   checkDlState();
+  _fsSetup(); // wire fullscreen touch/close handlers once
   // Apply deep link AFTER all setup is done
   setTimeout(handleDeepLink,0);
 }
@@ -991,105 +995,164 @@ function initMap(){
 }
 
 // ════ MAP FULLSCREEN ════
-function mapFullscreen(){
-  const fs=document.getElementById('map-fs');
+// State lives outside function so it persists across open/close
+let _fsState={s:1,tx:0,ty:0,dr:false,lx:0,ly:0,pi:false,pMid:{x:0,y:0},ld:0,vx:0,vy:0,rafId:null,img:null,ready:false};
+
+function _fsSetup(){
+  // Called once to wire up all touch/mouse events on #map-fs-inner
+  // and close button. Uses addEventListener so it stacks correctly.
   const inner=document.getElementById('map-fs-inner');
-
-  // Show overlay immediately — full black bg visible while image loads
-  fs.classList.add('sh');
-
-  // Clear previous image
-  inner.querySelectorAll('img').forEach(el=>el.remove());
-
-  const fimg=document.createElement('img');
-  fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;';
-  inner.appendChild(fimg);
-
-  // Full momentum state for fullscreen
-  let s=1,tx=0,ty=0,dr=false,lx=0,ly=0;
-  let pi=false,pMid={x:0,y:0},ld=0;
-  let vx=0,vy=0,rafId=null;
+  const st=_fsState;
   const FRIC=0.91, MIN_V=0.15;
   const mw=()=>window.innerWidth, mh=()=>window.innerHeight;
 
-  function apT(){fimg.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
-  function cl(){
-    const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s;
-    if(iw>mw()){tx=Math.min(0,Math.max(mw()-iw,tx));}else{tx=(mw()-iw)/2;}
-    if(ih>mh()){ty=Math.min(0,Math.max(mh()-ih,ty));}else{ty=(mh()-ih)/2;}
+  function apT(){
+    if(!st.img)return;
+    st.img.style.transform=`translate(${st.tx}px,${st.ty}px) scale(${st.s})`;
   }
-  function stopM(){if(rafId){cancelAnimationFrame(rafId);rafId=null;}vx=0;vy=0;}
+  function cl(){
+    if(!st.img)return;
+    const iw=st.img.naturalWidth*st.s, ih=st.img.naturalHeight*st.s;
+    if(iw>mw()){st.tx=Math.min(0,Math.max(mw()-iw,st.tx));}else{st.tx=(mw()-iw)/2;}
+    if(ih>mh()){st.ty=Math.min(0,Math.max(mh()-ih,st.ty));}else{st.ty=(mh()-ih)/2;}
+  }
+  function stopM(){
+    if(st.rafId){cancelAnimationFrame(st.rafId);st.rafId=null;}
+    st.vx=0;st.vy=0;
+  }
   function startM(){
-    if(rafId)cancelAnimationFrame(rafId);
-    function tick(){
-      if(Math.abs(vx)<MIN_V&&Math.abs(vy)<MIN_V){stopM();cl();apT();return;}
-      tx+=vx;ty+=vy;vx*=FRIC;vy*=FRIC;
-      const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s;
-      const mnX=iw>mw()?mw()-iw:(mw()-iw)/2;
-      const mxX=iw>mw()?0:(mw()-iw)/2;
-      const mnY=ih>mh()?mh()-ih:(mh()-ih)/2;
-      const mxY=ih>mh()?0:(mh()-ih)/2;
-      if(tx<mnX){tx+=(mnX-tx)*0.2;vx*=0.4;}
-      if(tx>mxX){tx+=(mxX-tx)*0.2;vx*=0.4;}
-      if(ty<mnY){ty+=(mnY-ty)*0.2;vy*=0.4;}
-      if(ty>mxY){ty+=(mxY-ty)*0.2;vy*=0.4;}
-      apT();rafId=requestAnimationFrame(tick);
-    }
-    rafId=requestAnimationFrame(tick);
+    stopM();
+    (function tick(){
+      if(Math.abs(st.vx)<MIN_V&&Math.abs(st.vy)<MIN_V){stopM();cl();apT();return;}
+      st.tx+=st.vx;st.ty+=st.vy;st.vx*=FRIC;st.vy*=FRIC;
+      if(st.img){
+        const iw=st.img.naturalWidth*st.s,ih=st.img.naturalHeight*st.s;
+        const mnX=iw>mw()?mw()-iw:(mw()-iw)/2,mxX=iw>mw()?0:(mw()-iw)/2;
+        const mnY=ih>mh()?mh()-ih:(mh()-ih)/2,mxY=ih>mh()?0:(mh()-ih)/2;
+        if(st.tx<mnX){st.tx+=(mnX-st.tx)*0.2;st.vx*=0.4;}
+        if(st.tx>mxX){st.tx+=(mxX-st.tx)*0.2;st.vx*=0.4;}
+        if(st.ty<mnY){st.ty+=(mnY-st.ty)*0.2;st.vy*=0.4;}
+        if(st.ty>mxY){st.ty+=(mxY-st.ty)*0.2;st.vy*=0.4;}
+      }
+      apT();st.rafId=requestAnimationFrame(tick);
+    })();
   }
 
-  // CRITICAL: assign onload BEFORE setting src
+  // Store helpers on state so mapFullscreen can call apT/cl
+  st._apT=apT; st._cl=cl; st._stopM=stopM;
+
+  inner.addEventListener('touchstart',e=>{
+    if(!st.ready)return;
+    e.preventDefault();
+    stopM();
+    if(e.touches.length===1){
+      st.dr=true;st.pi=false;
+      st.lx=e.touches[0].clientX;st.ly=e.touches[0].clientY;
+      st.vx=0;st.vy=0;
+    }else if(e.touches.length===2){
+      st.dr=false;st.pi=true;
+      const t0=e.touches[0],t1=e.touches[1];
+      st.ld=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+      st.pMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2};
+      st.vx=0;st.vy=0;
+    }
+  },{passive:false});
+
+  inner.addEventListener('touchmove',e=>{
+    if(!st.ready)return;
+    e.preventDefault();
+    if(st.pi&&e.touches.length>=2){
+      const t0=e.touches[0],t1=e.touches[1];
+      const nd=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+      const ns=Math.max(0.5,Math.min(8,st.s*(nd/st.ld)));
+      // Midpoint-anchored zoom
+      const px=(st.pMid.x-st.tx)/st.s, py=(st.pMid.y-st.ty)/st.s;
+      st.tx=st.pMid.x-px*ns;
+      st.ty=st.pMid.y-py*ns;
+      st.s=ns;st.ld=nd;
+      st.pMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2};
+      cl();apT();
+    }else if(st.dr&&e.touches.length===1){
+      const dx=e.touches[0].clientX-st.lx, dy=e.touches[0].clientY-st.ly;
+      st.vx=dx*0.8;st.vy=dy*0.8;
+      st.tx+=dx;st.ty+=dy;
+      st.lx=e.touches[0].clientX;st.ly=e.touches[0].clientY;
+      cl();apT();
+    }
+  },{passive:false});
+
+  inner.addEventListener('touchend',e=>{
+    if(!st.ready)return;
+    if(e.touches.length===0){
+      st.dr=false;st.pi=false;
+      if(Math.abs(st.vx)>0.5||Math.abs(st.vy)>0.5){startM();}else{cl();apT();}
+    }else if(e.touches.length===1){
+      st.pi=false;st.dr=true;
+      st.lx=e.touches[0].clientX;st.ly=e.touches[0].clientY;
+      st.vx=0;st.vy=0;
+    }
+  },{passive:true});
+
+  // Close button — wire BOTH touchend and click
+  const closeBtn=document.getElementById('map-fs-close');
+  if(closeBtn){
+    closeBtn.addEventListener('touchend',e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      mapFsClose();
+    },{passive:false});
+    closeBtn.addEventListener('click',e=>{
+      e.stopPropagation();
+      mapFsClose();
+    });
+  }
+}
+
+function mapFullscreen(){
+  const fs=document.getElementById('map-fs');
+  const inner=document.getElementById('map-fs-inner');
+  const st=_fsState;
+
+  // Show overlay
+  fs.classList.add('sh');
+
+  // Reset ready flag while loading
+  st.ready=false;
+
+  // Remove old image
+  inner.querySelectorAll('img').forEach(el=>el.remove());
+
+  // Show loading indicator
+  const ldg=document.getElementById('map-fs-loading');
+  if(ldg)ldg.style.display='flex';
+
+  const fimg=document.createElement('img');
+  fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;';
+  st.img=fimg;
+
   fimg.onload=()=>{
-    s=Math.min(mw()/fimg.naturalWidth,mh()/fimg.naturalHeight);
-    tx=(mw()-fimg.naturalWidth*s)/2;
-    ty=(mh()-fimg.naturalHeight*s)/2;
-    apT();
+    // Fit image to screen
+    st.s=Math.min(window.innerWidth/fimg.naturalWidth, window.innerHeight/fimg.naturalHeight);
+    st.tx=(window.innerWidth-fimg.naturalWidth*st.s)/2;
+    st.ty=(window.innerHeight-fimg.naturalHeight*st.s)/2;
+    st.vx=0;st.vy=0;st.dr=false;st.pi=false;
+    if(st._apT)st._apT();
     fimg.style.transition='opacity 0.3s';
     fimg.style.opacity='1';
-    const ldg=document.getElementById('map-fs-loading');if(ldg)ldg.style.display='none';
-
-    // Touch events with momentum
-    inner.ontouchstart=e=>{
-      e.preventDefault();stopM();
-      if(e.touches.length===1){
-        dr=true;pi=false;lx=e.touches[0].clientX;ly=e.touches[0].clientY;vx=0;vy=0;
-      }else if(e.touches.length===2){
-        dr=false;pi=true;
-        const t0=e.touches[0],t1=e.touches[1];
-        ld=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
-        pMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2};
-      }
-    };
-    inner.ontouchmove=e=>{
-      e.preventDefault();
-      if(pi&&e.touches.length>=2){
-        const t0=e.touches[0],t1=e.touches[1];
-        const nd=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
-        const ns=Math.max(0.8,Math.min(8,s*(nd/ld)));
-        const px=(pMid.x-tx)/s,py=(pMid.y-ty)/s;
-        tx=pMid.x-px*ns;ty=pMid.y-py*ns;s=ns;ld=nd;
-        pMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2};
-        cl();apT();
-      }else if(dr&&e.touches.length===1){
-        const dx=e.touches[0].clientX-lx,dy=e.touches[0].clientY-ly;
-        vx=dx*0.7;vy=dy*0.7;tx+=dx;ty+=dy;
-        lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();
-      }
-    };
-    inner.ontouchend=e=>{
-      if(e.touches.length===0){
-        dr=false;pi=false;
-        if(Math.abs(vx)>0.5||Math.abs(vy)>0.5){startM();}else{cl();apT();}
-      }else if(e.touches.length===1){
-        pi=false;dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;vx=0;vy=0;
-      }
-    };
+    if(ldg)ldg.style.display='none';
+    // NOW enable touch handling
+    st.ready=true;
   };
-  // Append to DOM before src — ensures load event captured on all browsers
+
   inner.appendChild(fimg);
   fimg.src='kfbg_map.jpg';
 }
+
 function mapFsClose(){
+  const st=_fsState;
+  if(st.rafId){cancelAnimationFrame(st.rafId);st.rafId=null;}
+  st.ready=false;
+  st.dr=false;st.pi=false;
   document.getElementById('map-fs').classList.remove('sh');
 }
 
