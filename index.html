@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v14
+   Single Page App — v15
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -100,7 +100,7 @@ span.en,span.tc{display:inline;}
 /* ════ JOURNEY VIEW ════ */
 .mapw{position:relative;overflow:hidden;background:var(--sa);height:180px;touch-action:none;cursor:grab;user-select:none;}
 .mapw.gr{cursor:grabbing;}
-.mapw img.mimg{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;}
+.mapw img.mimg{position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;}
 .mapph{height:180px;background:linear-gradient(135deg,#d6e4c8,#e8f0de,#c8d8b4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--oll);}
 .mapph svg{width:28px;height:28px;opacity:0.38;}
 .mapph p{font-size:0.7rem;opacity:0.6;}
@@ -751,37 +751,50 @@ function initSeekBar(){
   document.addEventListener('mouseup',()=>{if(sk){sk=false;t.classList.remove('sk');}});
 }
 
-// ════ MAP ════
+// ════ MAP — with momentum/inertia like NYBG ════
 function initMap(){
   const w=document.getElementById('mapw');
-  let mi=null,sc=1,tx=0,ty=0,dr=false,lx=0,ly=0,pi=false,pMid={x:0,y:0},ld=0;
+  // Transform state
+  let mi=null, sc=1, tx=0, ty=0;
+  // Touch state
+  let dr=false, lx=0, ly=0;
+  let pi=false, pMid={x:0,y:0}, ld=0;
+  // Momentum / inertia state
+  let vx=0, vy=0;           // velocity px/ms
+  let lastT=0;              // last timestamp
+  let rafId=null;           // animation frame id
+  const FRICTION=0.92;      // velocity decay per frame (0.92 = nice deceleration)
+  const MIN_V=0.1;          // stop threshold
 
+  // ── LOAD MAP IMAGE ──
   window.loadMapImage=function(src){
-    // Remove old map first
     w.querySelectorAll('img.mimg').forEach(el=>el.remove());
+    stopMomentum();
     mi=document.createElement('img');
     mi.className='mimg';
-    mi.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;transition:opacity 0.3s;';
-    // Assign onload BEFORE setting src (critical for cached images)
+    mi.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;';
     mi.onload=()=>{
       const ph=document.getElementById('mapph');
       if(ph)ph.style.display='none';
-      // Fit: fill container width, centre vertically
+      w.appendChild(mi);
+      // Fit width, centre vertically
       sc=w.clientWidth/mi.naturalWidth;
       tx=0;
       ty=Math.max(0,(w.clientHeight-mi.naturalHeight*sc)/2);
-      apT();
-      mi.style.opacity='1';
+      apT(true); // instant on load
+      // Fade in
+      requestAnimationFrame(()=>{ mi.style.transition='opacity 0.35s'; mi.style.opacity='1'; });
     };
-    mi.onerror=()=>{
-      console.warn('Map image failed to load:',src);
-    };
-    w.appendChild(mi); // append before setting src so browser tracks it
-    mi.src=src;
+    mi.onerror=()=>console.warn('Map load failed:',src);
+    mi.src=src; // set src after onload
   };
 
-  function apT(){
+  // ── TRANSFORM ──
+  function apT(instant){
     if(!mi)return;
+    if(instant){
+      mi.style.transition='none';
+    }
     mi.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;
   }
 
@@ -789,107 +802,164 @@ function initMap(){
     if(!mi)return;
     const iw=mi.naturalWidth*sc, ih=mi.naturalHeight*sc;
     const mw=w.clientWidth, mh=w.clientHeight;
-    // Allow panning freely when image is larger than container
-    // Lock to edges when image is smaller
-    if(iw>mw){tx=Math.min(0,Math.max(mw-iw,tx));}
-    else{tx=(mw-iw)/2;}
-    if(ih>mh){ty=Math.min(0,Math.max(mh-ih,ty));}
-    else{ty=(mh-ih)/2;}
+    if(iw>mw){ tx=Math.min(0,Math.max(mw-iw,tx)); }
+    else      { tx=(mw-iw)/2; }
+    if(ih>mh){ ty=Math.min(0,Math.max(mh-ih,ty)); }
+    else      { ty=(mh-ih)/2; }
   }
 
-  // ── TOUCH ──
+  // ── MOMENTUM ──
+  function startMomentum(){
+    if(rafId) cancelAnimationFrame(rafId);
+    function tick(){
+      if(Math.abs(vx)<MIN_V && Math.abs(vy)<MIN_V){ vx=0;vy=0;return; }
+      tx+=vx; ty+=vy;
+      vx*=FRICTION; vy*=FRICTION;
+      // Soft bounce at edges
+      if(mi){
+        const iw=mi.naturalWidth*sc, ih=mi.naturalHeight*sc;
+        const mw=w.clientWidth, mh=w.clientHeight;
+        const minX=iw>mw?mw-iw:( mw-iw)/2;
+        const maxX=iw>mw?0:(mw-iw)/2;
+        const minY=ih>mh?mh-ih:(mh-ih)/2;
+        const maxY=ih>mh?0:(mh-ih)/2;
+        if(tx<minX){tx+=(minX-tx)*0.15;vx*=0.5;}
+        if(tx>maxX){tx+=(maxX-tx)*0.15;vx*=0.5;}
+        if(ty<minY){ty+=(minY-ty)*0.15;vy*=0.5;}
+        if(ty>maxY){ty+=(maxY-ty)*0.15;vy*=0.5;}
+      }
+      apT(true);
+      rafId=requestAnimationFrame(tick);
+    }
+    rafId=requestAnimationFrame(tick);
+  }
+
+  function stopMomentum(){
+    if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+    vx=0;vy=0;
+  }
+
+  // ── TOUCH EVENTS ──
   w.addEventListener('touchstart',e=>{
-    e.preventDefault(); // prevent scroll interference
+    e.preventDefault();
+    stopMomentum();
     if(e.touches.length===1){
-      dr=true;pi=false;
+      dr=true; pi=false;
       lx=e.touches[0].clientX;
       ly=e.touches[0].clientY;
+      lastT=performance.now();
+      vx=0; vy=0;
     } else if(e.touches.length===2){
-      dr=false;pi=true;
+      dr=false; pi=true;
       const t0=e.touches[0], t1=e.touches[1];
       ld=Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
-      // Store midpoint in ELEMENT-local coords (for zoom origin)
       const rect=w.getBoundingClientRect();
       pMid={
         x:(t0.clientX+t1.clientX)/2 - rect.left,
         y:(t0.clientY+t1.clientY)/2 - rect.top
       };
+      vx=0; vy=0;
     }
   },{passive:false});
 
   w.addEventListener('touchmove',e=>{
     e.preventDefault();
-    if(pi && e.touches.length===2){
+    if(pi && e.touches.length>=2){
       const t0=e.touches[0], t1=e.touches[1];
       const newDist=Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
-      const ratio=newDist/ld;
-      const newSc=Math.max(0.5,Math.min(6,sc*ratio));
-
-      // Zoom anchored at finger midpoint:
-      // After scaling, the pixel that was under pMid should stay under pMid
-      // pixel = (pMid - tx) / sc  →  tx_new = pMid - pixel * newSc
-      const pixelX=(pMid.x - tx)/sc;
-      const pixelY=(pMid.y - ty)/sc;
-      tx=pMid.x - pixelX*newSc;
-      ty=pMid.y - pixelY*newSc;
-      sc=newSc;
-      ld=newDist;
-
-      // Update midpoint
+      const newSc=Math.max(0.8,Math.min(6,sc*(newDist/ld)));
+      // Zoom anchored at pinch midpoint
+      const pixelX=(pMid.x-tx)/sc;
+      const pixelY=(pMid.y-ty)/sc;
+      tx=pMid.x-pixelX*newSc;
+      ty=pMid.y-pixelY*newSc;
+      sc=newSc; ld=newDist;
+      // Update midpoint continuously
       const rect=w.getBoundingClientRect();
       pMid={
-        x:(t0.clientX+t1.clientX)/2 - rect.left,
-        y:(t0.clientY+t1.clientY)/2 - rect.top
+        x:(t0.clientX+t1.clientX)/2-rect.left,
+        y:(t0.clientY+t1.clientY)/2-rect.top
       };
-      clamp();apT();
+      clamp(); apT(true);
     } else if(dr && e.touches.length===1){
-      tx+=e.touches[0].clientX-lx;
-      ty+=e.touches[0].clientY-ly;
+      const now=performance.now();
+      const dt=Math.max(1, now-lastT);
+      const dx=e.touches[0].clientX-lx;
+      const dy=e.touches[0].clientY-ly;
+      // Track velocity (px/ms, smoothed)
+      vx=dx/dt*16; // convert to ~px/frame at 60fps
+      vy=dy/dt*16;
+      tx+=dx; ty+=dy;
       lx=e.touches[0].clientX;
       ly=e.touches[0].clientY;
-      clamp();apT();
+      lastT=now;
+      clamp(); apT(true);
     }
   },{passive:false});
 
   w.addEventListener('touchend',e=>{
-    if(e.touches.length===0){dr=false;pi=false;}
-    else if(e.touches.length===1){
-      // Transition from pinch to pan
-      pi=false;dr=true;
+    if(e.touches.length===0){
+      if(dr && (Math.abs(vx)>0.5 || Math.abs(vy)>0.5)){
+        dr=false; pi=false;
+        startMomentum(); // release finger → coast to a stop
+      } else {
+        dr=false; pi=false; clamp(); apT(true);
+      }
+    } else if(e.touches.length===1){
+      pi=false; dr=true;
       lx=e.touches[0].clientX;
       ly=e.touches[0].clientY;
+      lastT=performance.now();
+      vx=0; vy=0;
     }
   },{passive:true});
 
-  // ── MOUSE ──
-  w.addEventListener('mousedown',e=>{dr=true;lx=e.clientX;ly=e.clientY;w.classList.add('gr');});
+  // ── MOUSE EVENTS (desktop) ──
+  w.addEventListener('mousedown',e=>{
+    stopMomentum();
+    dr=true; lx=e.clientX; ly=e.clientY;
+    lastT=performance.now();
+    vx=0; vy=0;
+    w.classList.add('gr');
+  });
   window.addEventListener('mousemove',e=>{
     if(!dr)return;
-    tx+=e.clientX-lx;ty+=e.clientY-ly;
-    lx=e.clientX;ly=e.clientY;
-    clamp();apT();
+    const now=performance.now();
+    const dt=Math.max(1,now-lastT);
+    const dx=e.clientX-lx, dy=e.clientY-ly;
+    vx=dx/dt*16; vy=dy/dt*16;
+    tx+=dx; ty+=dy;
+    lx=e.clientX; ly=e.clientY;
+    lastT=now;
+    clamp(); apT(true);
   });
-  window.addEventListener('mouseup',()=>{dr=false;w.classList.remove('gr');});
+  window.addEventListener('mouseup',()=>{
+    if(!dr)return;
+    dr=false; w.classList.remove('gr');
+    if(Math.abs(vx)>0.5||Math.abs(vy)>0.5) startMomentum();
+  });
 
-  // ── WHEEL (desktop zoom anchored at cursor) ──
+  // ── WHEEL (smooth zoom at cursor, desktop) ──
+  let wheelTimeout;
   w.addEventListener('wheel',e=>{
     e.preventDefault();
+    stopMomentum();
     const rect=w.getBoundingClientRect();
-    const mx=e.clientX-rect.left;
-    const my=e.clientY-rect.top;
-    const newSc=Math.max(0.5,Math.min(6,sc*(e.deltaY<0?1.12:0.9)));
-    const pixelX=(mx-tx)/sc;
-    const pixelY=(my-ty)/sc;
-    tx=mx-pixelX*newSc;
-    ty=my-pixelY*newSc;
+    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    // Smooth wheel: reduce step size for trackpad feel
+    const delta=e.deltaY*(e.deltaMode===1?20:1);
+    const factor=delta<0?1.08:0.93;
+    const newSc=Math.max(0.8,Math.min(6,sc*factor));
+    const pixelX=(mx-tx)/sc, pixelY=(my-ty)/sc;
+    tx=mx-pixelX*newSc; ty=my-pixelY*newSc;
     sc=newSc;
-    clamp();apT();
+    clamp(); apT(true);
   },{passive:false});
 
-  // touch-action: none is set in CSS — enforce here too
+  // Enforce touch-action none
   w.style.touchAction='none';
 
-  // Auto-load the KFBG lower hillside map
+  // Auto-load KFBG lower hillside map
   loadMapImage('kfbg_map_lower.jpg');
 }
 
