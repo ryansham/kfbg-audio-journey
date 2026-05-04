@@ -1,5 +1,5 @@
-/* KFBG Audio Journey — SW v16 */
-const PAGE_CACHE='kfbg-pages-v16';
+/* KFBG Audio Journey — SW v17 */
+const PAGE_CACHE='kfbg-pages-v17';
 const AUDIO_CACHE='kfbg-audio-v1';
 const PRECACHE=['./', './index.html', './manifest.json', './KFBG_Logo.png', './og-image.jpg', './kfbg_map.jpg', './kfbg_map_lower.jpg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting()));});
