@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v15
+   Single Page App — v16
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -370,9 +370,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <div id="vj" class="view">
     <div class="mapw" id="mapw">
       <div class="mapph" id="mapph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><p class="en">Loading map…</p><p class="tc">地圖載入中…</p></div>
-      <div class="maphint"><span class="en">Pinch · Drag</span><span class="tc">捏合 · 拖動</span></div>
-      <button id="map-expand" onclick="mapFullscreen()" style="position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.88);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 1px 6px rgba(0,0,0,0.15);">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B4A2F" stroke-width="2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+      <div class="maphint"><span class="en">Pinch · Drag · ⛶ Expand</span><span class="tc">捏合 · 拖動 · ⛶ 放大</span></div>
+      <button id="map-expand" onclick="mapFullscreen()" style="position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:10px;background:rgba(247,243,236,0.95);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,0.2);-webkit-tap-highlight-color:transparent;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B4A2F" stroke-width="2.2" stroke-linecap="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
       </button>
     </div>
     <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
@@ -468,7 +468,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <!-- SINGLE AUDIO ELEMENT — never destroyed -->
 <!-- MAP FULLSCREEN OVERLAY -->
 <div id="map-fs">
-  <div id="map-fs-inner">
+  <div id="map-fs-inner"><div id="map-fs-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:rgba(247,243,236,0.4);font-family:'DM Sans',sans-serif;font-size:0.82rem;pointer-events:none;"><span class='en'>Loading map…</span><span class='tc'>地圖載入中…</span></div>
     <button id="map-fs-close" onclick="mapFsClose()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     <div id="map-fs-hint"><span class="en">Pinch to zoom · Drag to pan</span><span class="tc">捏合縮放 · 拖動移動</span></div>
   </div>
@@ -963,40 +963,108 @@ function initMap(){
   loadMapImage('kfbg_map_lower.jpg');
 }
 
-// ════ SCROLL PROGRESS ════
+// ════ MAP FULLSCREEN ════
 function mapFullscreen(){
   const fs=document.getElementById('map-fs');
   const inner=document.getElementById('map-fs-inner');
-  // Always load full map in fullscreen regardless of thumbnail
-  const src=document.querySelector('#mapw img.mimg');
-  // Remove old content
-  inner.querySelectorAll('img,.fs-no-map').forEach(el=>el.remove());
-  // Load full map image
-  const fimg=document.createElement('img');
-  fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;';
-  inner.insertBefore(fimg,inner.firstChild);
-  fimg.onload=()=>{
-    let sc2=Math.min(window.innerWidth/fimg.naturalWidth,window.innerHeight/fimg.naturalHeight);
-    let tx2=(window.innerWidth-fimg.naturalWidth*sc2)/2;
-    let ty2=(window.innerHeight-fimg.naturalHeight*sc2)/2;
-    fimg.style.transform=`translate(${tx2}px,${ty2}px) scale(${sc2})`;
-    let s=sc2,tx=tx2,ty=ty2,dr=false,lx=0,ly=0,pi=false,ld=0;
-    function apT(){fimg.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
-    function cl(){const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s,mw=window.innerWidth,mh=window.innerHeight;if(iw>mw){tx=Math.min(0,Math.max(mw-iw,tx));}else{tx=(mw-iw)/2;}if(ih>mh){ty=Math.min(0,Math.max(mh-ih,ty));}else{ty=(mh-ih)/2;}}
-    inner.ontouchstart=e=>{e.preventDefault();if(e.touches.length===1){dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;}else if(e.touches.length===2){pi=true;ld=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}};
-    inner.ontouchmove=e=>{e.preventDefault();if(pi&&e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);s=Math.max(0.5,Math.min(8,s*(d/ld)));ld=d;cl();apT();}else if(dr&&e.touches.length===1){tx+=e.touches[0].clientX-lx;ty+=e.touches[0].clientY-ly;lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();}};
-    inner.ontouchend=()=>{dr=false;pi=false;};
-  };
-  fimg.src='kfbg_map.jpg';  // Full resolution map in fullscreen
+
+  // Show overlay immediately — full black bg visible while image loads
   fs.classList.add('sh');
-  document.body.style.overflow='hidden';
-  return;
-  // dead code below kept for reference
+
+  // Clear previous image
+  inner.querySelectorAll('img').forEach(el=>el.remove());
+
+  const fimg=document.createElement('img');
+  fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;';
+  inner.appendChild(fimg);
+
+  // Full momentum state for fullscreen
+  let s=1,tx=0,ty=0,dr=false,lx=0,ly=0;
+  let pi=false,pMid={x:0,y:0},ld=0;
+  let vx=0,vy=0,rafId=null;
+  const FRIC=0.91, MIN_V=0.15;
+  const mw=()=>window.innerWidth, mh=()=>window.innerHeight;
+
+  function apT(){fimg.style.transform=`translate(${tx}px,${ty}px) scale(${s})`;}
+  function cl(){
+    const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s;
+    if(iw>mw()){tx=Math.min(0,Math.max(mw()-iw,tx));}else{tx=(mw()-iw)/2;}
+    if(ih>mh()){ty=Math.min(0,Math.max(mh()-ih,ty));}else{ty=(mh()-ih)/2;}
+  }
+  function stopM(){if(rafId){cancelAnimationFrame(rafId);rafId=null;}vx=0;vy=0;}
+  function startM(){
+    if(rafId)cancelAnimationFrame(rafId);
+    function tick(){
+      if(Math.abs(vx)<MIN_V&&Math.abs(vy)<MIN_V){stopM();cl();apT();return;}
+      tx+=vx;ty+=vy;vx*=FRIC;vy*=FRIC;
+      const iw=fimg.naturalWidth*s,ih=fimg.naturalHeight*s;
+      const mnX=iw>mw()?mw()-iw:(mw()-iw)/2;
+      const mxX=iw>mw()?0:(mw()-iw)/2;
+      const mnY=ih>mh()?mh()-ih:(mh()-ih)/2;
+      const mxY=ih>mh()?0:(mh()-ih)/2;
+      if(tx<mnX){tx+=(mnX-tx)*0.2;vx*=0.4;}
+      if(tx>mxX){tx+=(mxX-tx)*0.2;vx*=0.4;}
+      if(ty<mnY){ty+=(mnY-ty)*0.2;vy*=0.4;}
+      if(ty>mxY){ty+=(mxY-ty)*0.2;vy*=0.4;}
+      apT();rafId=requestAnimationFrame(tick);
+    }
+    rafId=requestAnimationFrame(tick);
+  }
+
+  // CRITICAL: assign onload BEFORE setting src
+  fimg.onload=()=>{
+    s=Math.min(mw()/fimg.naturalWidth,mh()/fimg.naturalHeight);
+    tx=(mw()-fimg.naturalWidth*s)/2;
+    ty=(mh()-fimg.naturalHeight*s)/2;
+    apT();
+    fimg.style.transition='opacity 0.3s';
+    fimg.style.opacity='1';
+    const ldg=document.getElementById('map-fs-loading');if(ldg)ldg.style.display='none';
+
+    // Touch events with momentum
+    inner.ontouchstart=e=>{
+      e.preventDefault();stopM();
+      if(e.touches.length===1){
+        dr=true;pi=false;lx=e.touches[0].clientX;ly=e.touches[0].clientY;vx=0;vy=0;
+      }else if(e.touches.length===2){
+        dr=false;pi=true;
+        const t0=e.touches[0],t1=e.touches[1];
+        ld=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+        pMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2};
+      }
+    };
+    inner.ontouchmove=e=>{
+      e.preventDefault();
+      if(pi&&e.touches.length>=2){
+        const t0=e.touches[0],t1=e.touches[1];
+        const nd=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+        const ns=Math.max(0.8,Math.min(8,s*(nd/ld)));
+        const px=(pMid.x-tx)/s,py=(pMid.y-ty)/s;
+        tx=pMid.x-px*ns;ty=pMid.y-py*ns;s=ns;ld=nd;
+        pMid={x:(t0.clientX+t1.clientX)/2,y:(t0.clientY+t1.clientY)/2};
+        cl();apT();
+      }else if(dr&&e.touches.length===1){
+        const dx=e.touches[0].clientX-lx,dy=e.touches[0].clientY-ly;
+        vx=dx*0.7;vy=dy*0.7;tx+=dx;ty+=dy;
+        lx=e.touches[0].clientX;ly=e.touches[0].clientY;cl();apT();
+      }
+    };
+    inner.ontouchend=e=>{
+      if(e.touches.length===0){
+        dr=false;pi=false;
+        if(Math.abs(vx)>0.5||Math.abs(vy)>0.5){startM();}else{cl();apT();}
+      }else if(e.touches.length===1){
+        pi=false;dr=true;lx=e.touches[0].clientX;ly=e.touches[0].clientY;vx=0;vy=0;
+      }
+    };
+  };
+  fimg.src='kfbg_map.jpg';
 }
 function mapFsClose(){
   document.getElementById('map-fs').classList.remove('sh');
-  document.body.style.overflow='';
 }
+
+// ════ SCROLL PROGRESS ════
 // QR CODE DEEP LINK
 function handleDeepLink(){
   if(!_DL)return;
