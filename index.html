@@ -24,13 +24,13 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v23
+   Single Page App — v29
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
-  --nav:54px;--bar:124px;--pills:44px;--fs:1rem;
+  --nav:54px;--bar:168px;--bar-min:32px;--pills:44px;--fs:1rem;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -117,7 +117,7 @@ span.en,span.tc{display:inline;}
 .paico svg{width:12px;height:12px;fill:var(--olm);margin-left:2px;}
 /* chapters */
 .jcon{max-width:640px;margin:0 auto;padding:0 14px 60px;}
-.csec{margin-top:26px;scroll-margin-top:8px;}
+
 .csec.ca .cimg{box-shadow:0 0 0 3px var(--ol);}
 .cimg{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:11px;margin-bottom:13px;background:var(--sa);transition:box-shadow 0.3s;}
 .cimg img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -176,7 +176,7 @@ details[open] summary::after{content:'▾';}
 #offbar.sh{display:block;}
 
 /* ════ FUSED CHAPTER CARD ════ */
-.csec{margin-top:20px;scroll-margin-top:8px;}
+.csec{margin-top:0;padding-top:52px;padding-bottom:52px;scroll-margin-top:8px;}
 .csec.ca .ch-card{box-shadow:0 0 0 3px var(--ol);}
 /* chapter card: photo + player fused */
 .ch-card{border-radius:13px;overflow:hidden;background:var(--ol);margin-bottom:11px;transition:box-shadow 0.3s;}
@@ -212,7 +212,7 @@ details[open] summary::after{content:'▾';}
 .ctitle{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,4vw,1.3rem);font-weight:500;color:var(--tx);line-height:1.25;margin-bottom:6px;}
 [data-lang="zh"] .ctitle{font-family:'Noto Serif TC',serif;}
 .cdesc{font-size:0.84rem;color:var(--mu);line-height:1.75;margin-bottom:11px;}
-.cdiv{display:flex;align-items:center;gap:10px;margin:20px 0 0;opacity:0.15;}
+.cdiv{display:flex;align-items:center;gap:10px;margin:8px 0;opacity:0.2;}
 .cdiv::before,.cdiv::after{content:'';flex:1;height:1px;background:var(--ol);}
 .cdivd{width:4px;height:4px;border-radius:50%;background:var(--ol);}
 
@@ -223,14 +223,19 @@ details[open] summary::after{content:'▾';}
 .speaker-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--tx);line-height:1.2;margin-bottom:3px;}
 [data-lang="zh"] .speaker-name{font-family:'Noto Serif TC',serif;}
 .speaker-title{font-size:0.72rem;color:var(--mu);line-height:1.4;}
-.speaker-bio{font-size:0.8rem;color:var(--tm);line-height:1.82;max-height:4.5em;overflow:hidden;position:relative;transition:max-height 0.4s ease;}
-.speaker-bio.expanded{max-height:none;}
-.speaker-bio:not(.expanded)::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2em;background:linear-gradient(transparent,var(--sa));}
-.speaker-toggle{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:0.72rem;color:var(--ol);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
-.speaker-toggle svg{width:13px;height:13px;transition:transform 0.25s;}
-.speaker-toggle.exp svg{transform:rotate(180deg);}
+.speaker-bio{font-size:0.8rem;color:var(--tm);line-height:1.82;}
 /* ════ BOTTOM BAR — Audible-style ════ */
-#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);}
+/* minimised state — only seek track + time visible */
+#bar.minimised .pb-time-row-wrap,
+#bar.minimised #pb-info-row,
+#bar.minimised #pbseq,
+#bar.minimised #pb-ctrl-row,
+#bar.minimised #pills-bar-wrap{display:none!important;}
+#bar.minimised #pbt{height:10px;}
+#bar.minimised{border-top:1px solid rgba(255,255,255,0.12);}
+/* minimise toggle button — now a separate fixed element, styled via inline */
+#bar-toggle svg{width:12px;height:12px;transition:transform 0.25s;}
+#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);}
 /* seek track — tall touch target, thin visual */
 #pbt{height:22px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;padding:0 13px;}
 #pbt-track{position:absolute;left:13px;right:13px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;pointer-events:none;}
@@ -442,6 +447,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 
 <!-- BOTTOM BAR -->
 
+<!-- Bar toggle — separate fixed element to avoid iOS child-of-fixed bug -->
+<button id="bar-toggle" onclick="toggleBarSize()" aria-label="Toggle player size" style="position:fixed;bottom:var(--bar);left:50%;transform:translateX(-50%);width:44px;height:18px;background:var(--olm);border:none;border-top:1px solid rgba(255,255,255,0.12);border-left:1px solid rgba(255,255,255,0.08);border-right:1px solid rgba(255,255,255,0.08);border-bottom:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px 8px 0 0;z-index:201;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-bottom:-1px;"><svg id="bar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(247,243,236,0.5)" stroke-width="2.5" stroke-linecap="round" style="width:12px;height:12px;transition:transform 0.25s;"><polyline points="6 9 12 15 18 9"/></svg></button>
 <div id="bar">
   <!-- Seek track -->
   <div id="pbt"><div id="pbt-track"></div><div id="pbf"></div><div id="pbth"></div></div>
@@ -612,6 +619,16 @@ function init(){
   setupSW();
   checkDlState();
   _fsSetup(); // wire fullscreen touch/close handlers once
+  // Set initial toggle position (home page — no pills)
+  const _bt=document.getElementById('bar-toggle');
+  if(_bt){_bt.style.bottom='calc(var(--bar) - var(--pills))';_bt.style.marginBottom='-1px';}
+  // Restore bar minimise state
+  if(localStorage.getItem('kfbg-bar-min')==='1'){
+    document.getElementById('bar')?.classList.add('minimised');
+    const icon=document.getElementById('bar-toggle-icon');
+    if(icon) icon.style.transform='rotate(180deg)';
+    if(_bt) _bt.style.bottom='var(--bar-min)';
+  }
   // Apply deep link AFTER all setup is done
   setTimeout(handleDeepLink,0);
 }
@@ -657,6 +674,9 @@ function goJourney(){
   const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';}
   document.getElementById('views').scrollTop=0;
   setNavTitle();
+  // Position toggle above full bar (includes pills)
+  const bt=document.getElementById('bar-toggle');
+  if(bt) bt.style.bottom='var(--bar)';bt.style.marginBottom='-1px';
   // Load map NOW — container is visible so clientWidth is correct
   // Use rAF to ensure layout is painted first
   requestAnimationFrame(()=>{
@@ -707,8 +727,8 @@ function buildChapters(){
         <div class="pract en">${c.prac.en}</div>
         <div class="pract tc">${c.prac.tc}</div>
       </div>
-      ${i<CH.length-1?'<div class="cdiv"><div class="cdivd"></div></div>':''}
-    </section>`).join('')+`
+    </section>
+    ${i<CH.length-1?'<div class="cdiv"><div class="cdivd"></div></div>':''}`).join('')+`
     <div class="comp" id="comp">
       <div class="compst">🌿</div>
       <h2 class="en">Journey Complete</h2><h2 class="tc nst">旅程完成</h2>
@@ -735,10 +755,7 @@ function buildChapters(){
         <p class="en">${spk.bio.en}</p>
         <p class="tc">${spk.bio.tc}</p>
       </div>
-      <button class="speaker-toggle" id="spk-toggle" onclick="toggleSpeakerBio()">
-        <span class="en">Read more</span><span class="tc">閱讀更多</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
+
     </div>
     `:'';})()}`;
   // attach seek listeners on fused cards
@@ -1277,20 +1294,17 @@ function handleDeepLink(){
     setTimeout(()=>loadCh(idx,true),400);
   }));
 }
-function toggleSpeakerBio(){
-  const bio=document.getElementById('spk-bio');
-  const btn=document.getElementById('spk-toggle');
-  if(!bio||!btn)return;
-  bio.classList.toggle('expanded');
-  btn.classList.toggle('exp');
-  const k=dk();
-  if(bio.classList.contains('expanded')){
-    btn.innerHTML='<span class="en">Show less</span><span class="tc">收起</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>';
-    btn.classList.add('exp');
-  }else{
-    btn.innerHTML='<span class="en">Read more</span><span class="tc">閱讀更多</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>';
-    btn.classList.remove('exp');
-  }
+
+function toggleBarSize(){
+  const bar=document.getElementById('bar');
+  const isMin=bar.classList.toggle('minimised');
+  // Rotate chevron
+  const icon=document.getElementById('bar-toggle-icon');
+  if(icon) icon.style.transform=isMin?'rotate(180deg)':'rotate(0deg)';
+  // Reposition toggle button above new bar height
+  const btn=document.getElementById('bar-toggle');
+  if(btn) btn.style.bottom=isMin?'var(--bar-min)':'var(--bar)';
+  localStorage.setItem('kfbg-bar-min', isMin?'1':'0');
 }
 function setupScroll(){
   const v=document.getElementById('views');
