@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v29
+   Single Page App — v31
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -58,7 +58,10 @@ span.en,span.tc{display:inline;}
 #sbar{position:fixed;top:0;left:0;height:3px;background:var(--gd);width:0%;z-index:500;pointer-events:none;}
 
 /* ── VIEWS ── */
-#views{position:fixed;top:var(--nav);left:0;right:0;bottom:var(--bar);overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
+#views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) - var(--pills));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
+/* views bottom adjustments */
+body.journey-view #views{bottom:var(--bar);}
+body.bar-min #views{bottom:var(--bar-min);}
 .view{display:none;}
 .view.on{display:block;}
 
@@ -226,15 +229,13 @@ details[open] summary::after{content:'▾';}
 .speaker-bio{font-size:0.8rem;color:var(--tm);line-height:1.82;}
 /* ════ BOTTOM BAR — Audible-style ════ */
 /* minimised state — only seek track + time visible */
-#bar.minimised .pb-time-row-wrap,
 #bar.minimised #pb-info-row,
 #bar.minimised #pbseq,
 #bar.minimised #pb-ctrl-row,
 #bar.minimised #pills-bar-wrap{display:none!important;}
-#bar.minimised #pbt{height:10px;}
-#bar.minimised{border-top:1px solid rgba(255,255,255,0.12);}
-/* minimise toggle button — now a separate fixed element, styled via inline */
-#bar-toggle svg{width:12px;height:12px;transition:transform 0.25s;}
+#bar.minimised #pbt{height:8px;}
+#bar.minimised #pb-time-row{padding:6px 14px 4px;}
+
 #bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);}
 /* seek track — tall touch target, thin visual */
 #pbt{height:22px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;padding:0 13px;}
@@ -243,7 +244,7 @@ details[open] summary::after{content:'▾';}
 #pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;z-index:1;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
 /* time row — both sides like Audible */
-#pb-time-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px 2px;font-size:0.62rem;color:rgba(247,243,236,0.4);font-variant-numeric:tabular-nums;line-height:1.2;}
+#pb-time-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px 2px;font-size:0.62rem;color:rgba(247,243,236,0.4);font-variant-numeric:tabular-nums;line-height:1.2;gap:4px;}
 /* track info row — centred, tappable */
 #pb-info-row{padding:2px 14px 0;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
 #pb-info-row:hover #pbttl{color:var(--gd);}
@@ -447,15 +448,14 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 
 <!-- BOTTOM BAR -->
 
-<!-- Bar toggle — separate fixed element to avoid iOS child-of-fixed bug -->
-<button id="bar-toggle" onclick="toggleBarSize()" aria-label="Toggle player size" style="position:fixed;bottom:var(--bar);left:50%;transform:translateX(-50%);width:44px;height:18px;background:var(--olm);border:none;border-top:1px solid rgba(255,255,255,0.12);border-left:1px solid rgba(255,255,255,0.08);border-right:1px solid rgba(255,255,255,0.08);border-bottom:none;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:8px 8px 0 0;z-index:201;-webkit-tap-highlight-color:transparent;touch-action:manipulation;margin-bottom:-1px;"><svg id="bar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(247,243,236,0.5)" stroke-width="2.5" stroke-linecap="round" style="width:12px;height:12px;transition:transform 0.25s;"><polyline points="6 9 12 15 18 9"/></svg></button>
+<!-- bar-toggle moved into time row -->
 <div id="bar">
   <!-- Seek track -->
   <div id="pbt"><div id="pbt-track"></div><div id="pbf"></div><div id="pbth"></div></div>
-  <!-- Times: left=current, right=total -->
+  <!-- Times + minimise toggle in one row -->
   <div id="pb-time-row">
     <span id="pbt2">0:00</span>
-    <span id="pbt2-dur">—:——</span>
+    <div style="display:flex;align-items:center;gap:6px;"><span id="pbt2-dur">—:——</span><button id="bar-toggle" onclick="toggleBarSize()" aria-label="Toggle player size" style="background:none;border:none;cursor:pointer;padding:2px 0 2px 4px;display:flex;align-items:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0;min-width:28px;min-height:28px;justify-content:center;"><svg id="bar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(247,243,236,0.38)" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px;transition:transform 0.25s;"><polyline points="6 9 12 15 18 9"/></svg></button></div>
   </div>
   <!-- Track info — centred, tap to jump to section -->
   <div id="pb-info-row" onclick="jumpToCurrent()">
@@ -619,15 +619,12 @@ function init(){
   setupSW();
   checkDlState();
   _fsSetup(); // wire fullscreen touch/close handlers once
-  // Set initial toggle position (home page — no pills)
-  const _bt=document.getElementById('bar-toggle');
-  if(_bt){_bt.style.bottom='calc(var(--bar) - var(--pills))';_bt.style.marginBottom='-1px';}
   // Restore bar minimise state
   if(localStorage.getItem('kfbg-bar-min')==='1'){
     document.getElementById('bar')?.classList.add('minimised');
+    document.body.classList.add('bar-min');
     const icon=document.getElementById('bar-toggle-icon');
     if(icon) icon.style.transform='rotate(180deg)';
-    if(_bt) _bt.style.bottom='var(--bar-min)';
   }
   // Apply deep link AFTER all setup is done
   setTimeout(handleDeepLink,0);
@@ -664,6 +661,7 @@ function goHome(){
   document.getElementById('nav-back').style.display='none';
   document.getElementById('pills-bar-wrap').style.display='none';
   document.getElementById('views').scrollTop=0;
+  document.body.classList.remove('journey-view');
   setNavTitle();
 }
 function goJourney(){
@@ -674,9 +672,7 @@ function goJourney(){
   const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';}
   document.getElementById('views').scrollTop=0;
   setNavTitle();
-  // Position toggle above full bar (includes pills)
-  const bt=document.getElementById('bar-toggle');
-  if(bt) bt.style.bottom='var(--bar)';bt.style.marginBottom='-1px';
+  document.body.classList.add('journey-view');
   // Load map NOW — container is visible so clientWidth is correct
   // Use rAF to ensure layout is painted first
   requestAnimationFrame(()=>{
@@ -1298,12 +1294,9 @@ function handleDeepLink(){
 function toggleBarSize(){
   const bar=document.getElementById('bar');
   const isMin=bar.classList.toggle('minimised');
-  // Rotate chevron
+  document.body.classList.toggle('bar-min', isMin);
   const icon=document.getElementById('bar-toggle-icon');
   if(icon) icon.style.transform=isMin?'rotate(180deg)':'rotate(0deg)';
-  // Reposition toggle button above new bar height
-  const btn=document.getElementById('bar-toggle');
-  if(btn) btn.style.bottom=isMin?'var(--bar-min)':'var(--bar)';
   localStorage.setItem('kfbg-bar-min', isMin?'1':'0');
 }
 function setupScroll(){
