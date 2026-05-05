@@ -9,12 +9,7 @@
   "theme_color": "#4A5C3A",
   "lang": "zh-Hant",
   "icons": [
-    {
-      "src": "KFBG_Logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "KFBG_Logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ],
   "categories": ["lifestyle", "health", "education"]
 }

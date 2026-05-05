@@ -1,16 +1,17 @@
-/* KFBG Audio Journey — SW v20 */
-const PAGE_CACHE='kfbg-pages-v21';
+/* KFBG Audio Journey — SW v23 */
+const PAGE_CACHE='kfbg-pages-v23';
 const AUDIO_CACHE='kfbg-audio-v1';
 const PRECACHE=[
   './', './index.html', './manifest.json',
   './KFBG_Logo.png', './og-image.jpg',
-  './kfbg_map.jpg', './kfbg_map_lower.jpg',
-  './images/journeys/j1-grounding-walk/card.jpg',
-  './images/journeys/j1-grounding-walk/ch01.jpg',
-  './images/journeys/j1-grounding-walk/ch02.jpg',
-  './images/journeys/j1-grounding-walk/ch03.jpg',
-  './images/journeys/j1-grounding-walk/ch04.jpg',
-  './images/journeys/j1-grounding-walk/ch05.jpg',
+  './images/maps/kfbg-map-full.jpg',
+  './images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg',
+  './images/journeys/grounding-walk/grounding-walk-card.jpg',
+  './images/journeys/grounding-walk/grounding-walk-ch01.jpg',
+  './images/journeys/grounding-walk/grounding-walk-ch02.jpg',
+  './images/journeys/grounding-walk/grounding-walk-ch03.jpg',
+  './images/journeys/grounding-walk/grounding-walk-ch04.jpg',
+  './images/journeys/grounding-walk/grounding-walk-ch05.jpg',
   './images/speakers/stanley-chan.jpg',
 ];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting()));});
@@ -19,7 +20,7 @@ self.addEventListener('fetch',e=>{
   const url=new URL(e.request.url);const path=url.pathname;
   const isAudio=path.includes('/audio/')&&path.endsWith('.mp3');
   const isImage=path.includes('/images/')&&(path.endsWith('.jpg')||path.endsWith('.png'));
-  const isPage=path==='/'||path.endsWith('/index.html')||path.endsWith('/manifest.json')||path.endsWith('/KFBG_Logo.png')||path.endsWith('/og-image.jpg')||path.endsWith('/kfbg_map.jpg')||path.endsWith('/kfbg_map_lower.jpg');
+  const isPage=path==='/'||path.endsWith('/index.html')||path.endsWith('/manifest.json')||path.endsWith('/KFBG_Logo.png')||path.endsWith('/og-image.jpg');
   if(isAudio){e.respondWith(caches.open(AUDIO_CACHE).then(c=>c.match(e.request).then(cached=>cached||fetch(e.request).then(res=>{if(res.ok)c.put(e.request,res.clone());return res;}))));}
   else if(isImage){e.respondWith(caches.open(PAGE_CACHE).then(c=>c.match(e.request).then(cached=>cached||fetch(e.request).then(res=>{if(res.ok)c.put(e.request,res.clone());return res;}))));}
   else if(isPage){const cleanReq=(path.endsWith('/index.html')||path==='/')?new Request(url.origin+path):e.request;e.respondWith(fetch(cleanReq).then(res=>{if(res.ok)caches.open(PAGE_CACHE).then(c=>c.put(cleanReq,res.clone()));return res;}).catch(()=>caches.match(cleanReq)||caches.match('./index.html')));}

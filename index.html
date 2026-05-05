@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v18
+   Single Page App — v23
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -116,7 +116,7 @@ span.en,span.tc{display:inline;}
 .paico{width:34px;height:34px;border-radius:50%;background:var(--gd);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .paico svg{width:12px;height:12px;fill:var(--olm);margin-left:2px;}
 /* chapters */
-.jcon{max-width:640px;margin:0 auto;padding:0 14px 20px;}
+.jcon{max-width:640px;margin:0 auto;padding:0 14px 60px;}
 .csec{margin-top:26px;scroll-margin-top:8px;}
 .csec.ca .cimg{box-shadow:0 0 0 3px var(--ol);}
 .cimg{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:11px;margin-bottom:13px;background:var(--sa);transition:box-shadow 0.3s;}
@@ -175,6 +175,60 @@ details[open] summary::after{content:'▾';}
 #offbar{display:none;background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:6px 13px;margin:4px 14px;font-size:0.7rem;color:var(--gd);text-align:center;}
 #offbar.sh{display:block;}
 
+/* ════ FUSED CHAPTER CARD ════ */
+.csec{margin-top:20px;scroll-margin-top:8px;}
+.csec.ca .ch-card{box-shadow:0 0 0 3px var(--ol);}
+/* chapter card: photo + player fused */
+.ch-card{border-radius:13px;overflow:hidden;background:var(--ol);margin-bottom:11px;transition:box-shadow 0.3s;}
+.ch-card-img{position:relative;width:100%;height:160px;overflow:hidden;background:var(--sa);}
+.ch-card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;}
+.csec.ca .ch-card-img img{transform:scale(1.03);}
+.ch-card-badge{position:absolute;top:9px;left:9px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.94);font-size:0.52rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:3px 9px;border-radius:100px;}
+.ch-card-num{position:absolute;bottom:9px;right:9px;width:26px;height:26px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:var(--ol);}
+/* fused player strip at bottom of card */
+.ch-card-player{padding:10px 13px 11px;display:flex;align-items:center;gap:10px;}
+.ch-card-info{flex:1;min-width:0;}
+.ch-card-lbl{font-size:0.56rem;color:rgba(196,169,106,0.55);letter-spacing:0.06em;margin-bottom:1px;}
+.ch-card-name{font-size:0.88rem;font-weight:500;color:var(--cr);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ch-card-time{font-size:0.62rem;color:rgba(247,243,236,0.3);margin-top:1px;}
+/* seek bar inside fused card */
+.ch-card-seek{height:3px;background:rgba(255,255,255,0.15);border-radius:2px;cursor:pointer;margin:8px 0 0;}
+.ch-card-seek-fill{height:100%;background:var(--gd);border-radius:2px;width:0%;pointer-events:none;}
+/* play button — right side */
+.ch-card-btn{width:42px;height:42px;border-radius:50%;background:var(--gd);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;transition:transform 0.15s;}
+.ch-card-btn:active{transform:scale(0.92);}
+.ch-card-btn svg{width:14px;height:14px;fill:var(--olm);}
+.ch-card-btn .ip{display:none;}
+.ch-card-btn.pl .ip2{display:none;}
+.ch-card-btn.pl .ip{display:block;}
+.ch-card-btn.ld::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:2px solid rgba(255,255,255,0.18);border-top-color:rgba(255,255,255,0.8);animation:sp 0.8s linear infinite;}
+/* loading bar */
+.ch-dlb{height:2px;background:rgba(255,255,255,0.1);border-radius:1px;margin-top:4px;display:none;overflow:hidden;}
+.ch-dlb.sh{display:block;animation:pld 1.5s ease-in-out infinite;}
+.ch-dlf{height:100%;background:rgba(255,255,255,0.5);width:0%;border-radius:1px;}
+/* chapter text below card */
+.ch-meta{padding:2px 0 6px;}
+.ckick{font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--oll);margin-bottom:3px;}
+.ctitle{font-family:'Cormorant Garamond',serif;font-size:clamp(1rem,4vw,1.3rem);font-weight:500;color:var(--tx);line-height:1.25;margin-bottom:6px;}
+[data-lang="zh"] .ctitle{font-family:'Noto Serif TC',serif;}
+.cdesc{font-size:0.84rem;color:var(--mu);line-height:1.75;margin-bottom:11px;}
+.cdiv{display:flex;align-items:center;gap:10px;margin:20px 0 0;opacity:0.15;}
+.cdiv::before,.cdiv::after{content:'';flex:1;height:1px;background:var(--ol);}
+.cdivd{width:4px;height:4px;border-radius:50%;background:var(--ol);}
+
+/* ════ SPEAKER CARD ════ */
+.speaker-card{background:var(--sa);border-radius:13px;padding:16px;margin:0 0 4px;}
+.speaker-head{display:flex;align-items:center;gap:13px;margin-bottom:12px;}
+.speaker-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border);}
+.speaker-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--tx);line-height:1.2;margin-bottom:3px;}
+[data-lang="zh"] .speaker-name{font-family:'Noto Serif TC',serif;}
+.speaker-title{font-size:0.72rem;color:var(--mu);line-height:1.4;}
+.speaker-bio{font-size:0.8rem;color:var(--tm);line-height:1.82;max-height:4.5em;overflow:hidden;position:relative;transition:max-height 0.4s ease;}
+.speaker-bio.expanded{max-height:none;}
+.speaker-bio:not(.expanded)::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2em;background:linear-gradient(transparent,var(--sa));}
+.speaker-toggle{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:0.72rem;color:var(--ol);cursor:pointer;background:none;border:none;font-family:inherit;padding:0;}
+.speaker-toggle svg{width:13px;height:13px;transition:transform 0.25s;}
+.speaker-toggle.exp svg{transform:rotate(180deg);}
 /* ════ BOTTOM BAR — Audible-style ════ */
 #bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);border-top:1px solid rgba(255,255,255,0.07);}
 /* seek track — tall touch target, thin visual */
@@ -351,7 +405,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     <div class="lib">
       <div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>
       <div class="jc" onclick="goJourney()">
-        <div class="ji"><img src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900" loading="lazy"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
+        <div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-card.jpg" loading="lazy"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
         <div class="jbody">
           <div class="jkick"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
           <div class="jtitle en">Grounding Walk at the Lower Hillside of KFBG</div>
@@ -361,8 +415,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
           <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">~45 min · 5 stops</span><span class="tc">約45分鐘 · 5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
         </div>
       </div>
-      <div class="jc locked"><div class="ji"><img src="https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc">上農場步道</div></div></div>
-      <div class="jc locked"><div class="ji"><img src="https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900" loading="lazy"/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc">林地靜境</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc">上農場步道</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch05.jpg" loading="lazy"/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc">林地靜境</div></div></div>
     </div>
   </div>
 
@@ -492,12 +546,28 @@ const SOC=[
   {l:'LinkedIn',h:'https://www.linkedin.com/company/kfbg/',s:'<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>'},
   {l:'Weibo',h:'https://weibo.com/kfbg',s:'<path d="M10.1 20c-3.87 0-7-1.79-7-4s3.13-4 7-4 7 1.79 7 4-3.14 4-7 4zm0-6.5c-2.98 0-5.4 1.12-5.4 2.5S7.12 18.5 10.1 18.5s5.4-1.12 5.4-2.5-2.42-2.5-5.4-2.5zM8.5 16.5c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm3 .5c-.28 0-.5-.22-.5-.5s.22-.5.5-.5.5.22.5.5-.22.5-.5.5zM18.5 7c-.17 0-.34.01-.5.04A4.5 4.5 0 0 0 10 8.5h-.5A3.5 3.5 0 0 0 6 12.5v.04A8.4 8.4 0 0 1 3.1 12C3.1 8.69 6.23 6 10.1 6c2.11 0 4 .79 5.35 2.06A3.98 3.98 0 0 1 18.5 7z"/>'},
 ];
+const SPEAKERS={
+  'grounding-walk':{
+    key:'stanley-chan',
+    img:'images/speakers/stanley-chan.jpg',
+    name:{en:'Dr. Stanley Chan',tc:'陳鑑忠博士'},
+    title:{
+      en:'Registered Educational Psychologist · Mindfulness Teacher',
+      tc:'註冊教育心理學家 · 靜觀導師'
+    },
+    bio:{
+      en:'Dr. Stanley Chan is currently an Associate Fellow and a Registered Educational Psychologist of the Hong Kong Psychological Society. He is also an Adjunct Assistant Professor at the School of Public Health and Primary Care of the Chinese University of Hong Kong. He also serves as a trainer, supervisor, and mindfulness teacher at the Oxford Mindfulness Centre, and the CUHK Thomas Jing Centre for Mindfulness Research and Training.',
+      tc:'陳鑑忠博士為香港心理學會副院士暨註冊教育心理學家，以及香港中文大學公共衛生及基層醫療學院客座助理教授；同時亦為英國牛津靜觀中心及香港中文大學敬霆靜觀研究與培訓中心之專業培訓導師、督導、及靜觀導師。'
+    }
+  }
+};
+
 const CH=[
-  {id:1,a:'audio/grounding-walk/ch01.mp3',loc:{en:'The Plaza',tc:'廣場'},title:{en:'The Beginning of Connection: Entrance of KFBG & Sensory Awareness',tc:'連結之始：進入園區與五感體驗'},sh:{en:'The Beginning of Connection',tc:'連結之始'},desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},prac:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},tr:`歡迎您嚟到嘉道理農場暨植物園。\n\n呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。\n\n喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。\n\n先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。\n\n宜家，細心聆聽四周圍嘅聲音。可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……\n\n可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……\n\n呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度。可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。\n\n接住落嚟，可以暫時放低呢段錄音，行到去下一個停留點：「生機園」。`,img:'https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?auto=format&fit=crop&q=80&w=900'},
-  {id:2,a:'audio/grounding-walk/ch02.mp3',loc:{en:'Eco Garden',tc:'生機園'},title:{en:'Sensory Exploration: Plant Observation at the Eco Garden',tc:'感官探索：生機園的植物觀察'},sh:{en:'Sensory Exploration',tc:'感官探索'},desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},prac:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},tr:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。\n\n今次我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。\n\n慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。留心見到嘅形狀、紋理、顏色……帶住好奇心，望真啲佢。\n\n合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。用觸覺去探索佢嘅葉、莖同花。\n\n用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？放低要去介定「喜歡」或「唔喜歡」嘅意向，單純咁去觀察呢種氣味。\n\n而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。乾既？濕既？\n\n接住落嚟，行到去下一個停留點：「葛先生花園」。`,img:'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&q=80&w=900'},
-  {id:3,a:'audio/grounding-walk/ch03.mp3',loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},title:{en:'Between Far and Near: The Rocks of Walter Kerr Garden',tc:'遠近之間：葛先生花園的磐石'},sh:{en:'Between Far and Near',tc:'遠近之間'},desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},prac:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},tr:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。\n\n慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色……留意大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走？\n\n呢一刻，慢慢向後退幾步，行遠少少，直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離同近距離觀察同一件物件，所留意到嘅係一樣、定唔同嘅？\n\n合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置。\n\n直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,img:'https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&q=80&w=900'},
-  {id:4,a:'audio/grounding-walk/ch04.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},sh:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},prac:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，留心任何嘅聲音。留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=900'},
-  {id:5,a:'audio/grounding-walk/ch05.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},sh:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},prac:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、所有嘅浮雲……\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動……\n\n慢慢、溫柔咁伸展……讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&q=80&w=900'},
+  {id:1,a:'audio/grounding-walk/grounding-walk-ch01.mp3',loc:{en:'The Plaza',tc:'廣場'},title:{en:'The Beginning of Connection: Entrance of KFBG & Sensory Awareness',tc:'連結之始：進入園區與五感體驗'},sh:{en:'The Beginning of Connection',tc:'連結之始'},desc:{en:'Pause beneath the trees at the entrance to let go of urban bustle. Learn to observe the textures and colors of the forest with curiosity, rebuilding your connection with nature in the present moment.',tc:'在廣場的大樹下停留，透過呼吸與五官慢慢放下城市忙碌。學習以好奇心觀察樹木的紋理與色彩，重新建立與當下自然的連結。'},prac:{en:'Observe the nearest tree, touch its bark, and feel its temperature.',tc:'觀察最近的一棵樹，觸摸它的樹皮，感受它的溫度。'},tr:`歡迎您嚟到嘉道理農場暨植物園。\n\n呢段錄音大約會用一個鐘嘅時間，陪您喺唔同嘅地方，用五感慢慢連結大自然，放鬆身心。每一個停留點，大約會用十分鐘。您可以按自己嘅節奏進行，亦可以隨時暫停，或者完結。\n\n喺城市生活，我哋個腦好多時都好忙，就算嚟到大自然，思想都未必即刻停得落嚟。呢個，其實好自然。所以，呢一刻，我哋唔需要逼自己放鬆，亦唔需要刻意「唔好諗嘢」。只要慢慢將注意力，帶返去身體同感官，就已經足夠。\n\n先用眼睛，望一望四周。留意樹幹、樹枝、樹葉……亦都可以抬起頭，透過樹葉望向天空。\n\n宜家，細心聆聽四周圍嘅聲音。可以除低其中一邊嘅耳機。可能會留意到風聲……樹葉嘅聲音……昆蟲、雀仔嘅聲音……\n\n可以嘅話，深深咁吸一口氣。觀察聞到嘅氣味……\n\n呢一刻，將注意力帶到皮膚。感受皮膚上嘅溫度。可以嘅話，用手輕輕觸摸眼前呢棵樹。帶住好奇心，用觸覺去探索呢棵樹。\n\n接住落嚟，可以暫時放低呢段錄音，行到去下一個停留點：「生機園」。`,img:'images/journeys/grounding-walk/grounding-walk-ch01.jpg'},
+  {id:2,a:'audio/grounding-walk/grounding-walk-ch02.mp3',loc:{en:'Eco Garden',tc:'生機園'},title:{en:'Sensory Exploration: Plant Observation at the Eco Garden',tc:'感官探索：生機園的植物觀察'},sh:{en:'Sensory Exploration',tc:'感官探索'},desc:{en:'Step into the Eco Garden and narrow your focus. Explore the subtle and unique vitality of plants by touching the textures of leaves and breathing in the fragrance of the soil.',tc:'走進生機園並收細覺察範圍。透過觸摸葉片的質感與嗅聞泥土的芬芳，探索植物細微而獨特的生命力。'},prac:{en:'Close your eyes, take three deep breaths, and try to identify the scent of soil or flowers.',tc:'閉上眼睛，深呼吸三次，嘗試辨別泥土或花朵的氣味。'},tr:`歡迎嚟到生機園。帶住好奇心，將注意力放到去五官同身體嘅感覺。\n\n今次我哋嘗試將覺察嘅範圍收細，去到一棵又一棵嘅植物，仔細啲咁去觀察。\n\n慢慢行到生機園當中標示住「有氣味」嘅植物嗰度。到達之後，用眼睛細心去觀察眼前呢棵有氣味嘅植物。留心見到嘅形狀、紋理、顏色……帶住好奇心，望真啲佢。\n\n合適嘅話，用手觸摸呢棵植物嘅唔同位置，感受佢嘅溫度、手感。用觸覺去探索佢嘅葉、莖同花。\n\n用手指輕輕卒一卒葉片，然後將手指放到鼻哥嘅下面，自然咁呼吸。有冇氣味嘅？放低要去介定「喜歡」或「唔喜歡」嘅意向，單純咁去觀察呢種氣味。\n\n而家，將注意力沿住植物嘅莖部一路向下延伸。留意孕育住整棵植物嘅泥土。乾既？濕既？\n\n接住落嚟，行到去下一個停留點：「葛先生花園」。`,img:'images/journeys/grounding-walk/grounding-walk-ch02.jpg'},
+  {id:3,a:'audio/grounding-walk/grounding-walk-ch03.mp3',loc:{en:'Walter Kerr Garden',tc:'葛先生花園'},title:{en:'Between Far and Near: The Rocks of Walter Kerr Garden',tc:'遠近之間：葛先生花園的磐石'},sh:{en:'Between Far and Near',tc:'遠近之間'},desc:{en:'Practice shifting your perspective before the great rocks. Explore the solid presence of nature through different layers, from close-up micro-textures to the broad outlines of the landscape.',tc:'在大石前練習視角的轉換。從近距離觀察微觀紋理，到遠距離感受整體的輪廓，帶領您以不同層次探索大自然的堅實存在。'},prac:{en:'Focus on the moss on the rock for one minute, then look up at the distant ridge.',tc:'專注凝視岩石上的苔蘚一分鐘，然後抬頭望向遠處的山脊。'},tr:`歡迎嚟到葛先生花園嘅入口。繼續保持住好奇心，喺呢個位置探索大自然。\n\n慢慢行近花園入口處嘅幾塊大石。當行到其中一舊大石嘅前面，稍作停留。再行近啲，好近距離咁用眼睛細心去觀察呢舊大石上細緻嘅紋理、顏色……留意大石表面或者縫隙之間，有無啲小昆蟲喺度停留或者行走？\n\n呢一刻，慢慢向後退幾步，行遠少少，直至將視野開闊，可以觀察到整舊大石。喺呢份開闊嘅覺察之中，觀察整舊大石嘅紋理、顏色、形狀……遠距離同近距離觀察同一件物件，所留意到嘅係一樣、定唔同嘅？\n\n合適嘅話，行返近呢舊大石，用手指觸摸，感受佢嘅溫度、手感、質地。帶住好奇心，用手指、手掌壓向石頭嘅唔同位置。\n\n直到覺得合適嘅時候，行到去下一個停留點：「石橋」。`,img:'images/journeys/grounding-walk/grounding-walk-ch03.jpg'},
+  {id:4,a:'audio/grounding-walk/grounding-walk-ch04.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},sh:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},prac:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，留心任何嘅聲音。留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'images/journeys/grounding-walk/grounding-walk-ch04.jpg'},
+  {id:5,a:'audio/grounding-walk/grounding-walk-ch05.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},sh:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},prac:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、所有嘅浮雲……\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動……\n\n慢慢、溫柔咁伸展……讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'images/journeys/grounding-walk/grounding-walk-ch05.jpg'},
 ];
 const FS=['0.94rem','1rem','1.08rem','1.16rem','1.25rem','1.35rem','1.5rem'];
 const SPDS=[1,1.25,1.5];
@@ -591,7 +661,7 @@ function goJourney(){
   // Use rAF to ensure layout is painted first
   requestAnimationFrame(()=>{
     if(typeof loadMapImage==='function' && !document.querySelector('#mapw img.mimg')){
-      loadMapImage('kfbg_map_lower.jpg');
+      loadMapImage('images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg');
     }
   });
 }
@@ -600,32 +670,43 @@ function goJourney(){
 function buildChapters(){
   document.getElementById('jcon').innerHTML=CH.map((c,i)=>`
     <section class="csec" id="s${i}">
-      <div class="cimg"><img src="${c.img}" loading="lazy"/>
-        <div class="cbadge"><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></div>
-        <div class="cnum">${c.id}</div></div>
-      <div class="ckick"><span class="en">Chapter 0${c.id}</span><span class="tc">第 0${c.id} 章</span></div>
-      <div class="ctitle en">${c.title.en}</div>
-      <div class="ctitle tc nst">${c.title.tc}</div>
-      <p class="cdesc en">${c.desc.en}</p>
-      <p class="cdesc tc">${c.desc.tc}</p>
-      <div class="cplayer">
-        <div class="cpm">
-          <div class="cpi">
-            <div class="cplbl"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc">第0${c.id}章 · ${c.loc.tc}</span></div>
-            <div class="cpname en">${c.sh.en}</div><div class="cpname tc">${c.sh.tc}</div>
-            <div class="cptime" id="ct${i}">0:00 / —:——</div>
+      <div class="ch-card">
+        <div class="ch-card-img">
+          <img src="${c.img}" loading="lazy" alt="${c.loc.en}"/>
+          <div class="ch-card-badge"><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></div>
+          <div class="ch-card-num">${c.id}</div>
+        </div>
+        <div class="ch-card-player">
+          <div class="ch-card-info">
+            <div class="ch-card-lbl"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc">第0${c.id}章 · ${c.loc.tc}</span></div>
+            <div class="ch-card-name en">${c.sh.en}</div>
+            <div class="ch-card-name tc">${c.sh.tc}</div>
+            <div class="ch-card-time" id="ct${i}">0:00 / —:——</div>
+            <div class="ch-dlb" id="cdl${i}"><div class="ch-dlf" id="cdf${i}"></div></div>
+            <div class="ch-card-seek" id="csk${i}"><div class="ch-card-seek-fill" id="csf${i}"></div></div>
           </div>
-          <button class="cpbtn" id="cb${i}" onclick="tapPlay(${i})">
+          <button class="ch-card-btn" id="cb${i}" onclick="tapPlay(${i})">
             <svg class="ip2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
             <svg class="ip" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
           </button>
         </div>
-        <div class="cdlb" id="cdl${i}"><div class="cdlf" id="cdf${i}"></div></div>
-        <div class="cseek" id="csk${i}"><div class="csf" id="csf${i}"></div></div>
-
       </div>
-      <details><summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary><div class="trb">${c.tr}</div></details>
-      <div class="prac"><div class="pracl"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div><div class="pract en">${c.prac.en}</div><div class="pract tc">${c.prac.tc}</div></div>
+      <div class="ch-meta">
+        <div class="ckick"><span class="en">Chapter 0${c.id}</span><span class="tc">第 0${c.id} 章</span></div>
+        <div class="ctitle en">${c.title.en}</div>
+        <div class="ctitle tc nst">${c.title.tc}</div>
+        <p class="cdesc en">${c.desc.en}</p>
+        <p class="cdesc tc">${c.desc.tc}</p>
+      </div>
+      <details>
+        <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
+        <div class="trb">${c.tr}</div>
+      </details>
+      <div class="prac">
+        <div class="pracl"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div>
+        <div class="pract en">${c.prac.en}</div>
+        <div class="pract tc">${c.prac.tc}</div>
+      </div>
       ${i<CH.length-1?'<div class="cdiv"><div class="cdivd"></div></div>':''}
     </section>`).join('')+`
     <div class="comp" id="comp">
@@ -633,9 +714,34 @@ function buildChapters(){
       <h2 class="en">Journey Complete</h2><h2 class="tc nst">旅程完成</h2>
       <p class="en">You have walked all five stops. Take a breath before you return.</p>
       <p class="tc">你已完成全部五個站點。在回程前，靜靜感受此刻的覺察。</p>
-      <button class="btnhome" onclick="goHome()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span></button>
-    </div>`;
-  // attach seek listeners
+      <button class="btnhome" onclick="goHome()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span>
+      </button>
+    </div>
+    ${(()=>{const spk=SPEAKERS['grounding-walk'];return spk?`
+    <div class="cdiv" style="margin:24px 0 20px;"><div class="cdivd"></div></div>
+    <div class="speaker-card" id="speaker-section" style="margin-bottom:48px;">
+      <div class="speaker-head">
+        <img src="${spk.img}" class="speaker-avatar" alt="${spk.name.en}" loading="lazy"/>
+        <div>
+          <div class="speaker-name en">${spk.name.en}</div>
+          <div class="speaker-name tc nst">${spk.name.tc}</div>
+          <div class="speaker-title en">${spk.title.en}</div>
+          <div class="speaker-title tc">${spk.title.tc}</div>
+        </div>
+      </div>
+      <div class="speaker-bio" id="spk-bio">
+        <p class="en">${spk.bio.en}</p>
+        <p class="tc">${spk.bio.tc}</p>
+      </div>
+      <button class="speaker-toggle" id="spk-toggle" onclick="toggleSpeakerBio()">
+        <span class="en">Read more</span><span class="tc">閱讀更多</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+    </div>
+    `:'';})()}`;
+  // attach seek listeners on fused cards
   CH.forEach((_,i)=>{
     const b=document.getElementById('csk'+i);
     if(b)b.addEventListener('click',e=>chSeek(e,i));
@@ -694,11 +800,11 @@ function jumpToCurrent(){
   if(view==='home'){goJourney();setTimeout(()=>document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'}),100);}
   else{document.getElementById('s'+ai)?.scrollIntoView({behavior:'smooth',block:'start'});}
 }
-function chSeek(e,i){if(i!==ai||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();aud.currentTime=((e.clientX-r.left)/r.width)*aud.duration;}
+function chSeek(e,i){if(i!==ai||!aud.duration)return;const r=e.currentTarget.getBoundingClientRect();const p=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));aud.currentTime=p*aud.duration;}
 function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
 function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
-function showLd(i){document.getElementById('cb'+i)?.classList.add('ld');document.getElementById('cdl'+i)?.classList.add('sh');}
-function hideLd(i){document.getElementById('cb'+i)?.classList.remove('ld');document.getElementById('cdl'+i)?.classList.remove('sh');}
+function showLd(i){document.getElementById('cb'+i)?.classList.add('ld');const d=document.getElementById('cdl'+i);if(d){d.classList.add('sh');}}
+function hideLd(i){document.getElementById('cb'+i)?.classList.remove('ld');const d=document.getElementById('cdl'+i);if(d){d.classList.remove('sh');}}
 function syncBtns(on){document.getElementById('pbplay').classList.toggle('pl',on);CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));}
 aud.addEventListener('timeupdate',()=>{
   if(!aud.duration)return;
@@ -1145,7 +1251,7 @@ function mapFullscreen(){
   };
 
   inner.appendChild(fimg);
-  fimg.src='kfbg_map.jpg';
+  fimg.src='images/maps/kfbg-map-full.jpg';
 }
 
 function mapFsClose(){
@@ -1170,6 +1276,21 @@ function handleDeepLink(){
     // Load and play the chapter
     setTimeout(()=>loadCh(idx,true),400);
   }));
+}
+function toggleSpeakerBio(){
+  const bio=document.getElementById('spk-bio');
+  const btn=document.getElementById('spk-toggle');
+  if(!bio||!btn)return;
+  bio.classList.toggle('expanded');
+  btn.classList.toggle('exp');
+  const k=dk();
+  if(bio.classList.contains('expanded')){
+    btn.innerHTML='<span class="en">Show less</span><span class="tc">收起</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    btn.classList.add('exp');
+  }else{
+    btn.innerHTML='<span class="en">Read more</span><span class="tc">閱讀更多</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>';
+    btn.classList.remove('exp');
+  }
 }
 function setupScroll(){
   const v=document.getElementById('views');
@@ -1236,12 +1357,33 @@ function setupInstall(){
   if(isIOS&&!sessionStorage.getItem('ib-ok')){buildIBSteps('ios');setTimeout(()=>document.getElementById('ib').classList.add('sh'),5000);}
 }
 function buildIBSteps(plat){
+  const isAndroid=/android/i.test(navigator.userAgent);
   const ens=plat==='ios'
-    ?['Tap the <strong style="color:#C4A96A">Share ↑</strong> icon in your browser','Tap <strong style="color:#fff">"Add to Home Screen"</strong>','Tap <strong style="color:#fff">"Add"</strong> — works offline!']
-    :['Tap <strong style="color:#C4A96A">⋮</strong> menu in your browser','Tap <strong style="color:#fff">"Add to Home Screen"</strong> or <strong style="color:#fff">"Install"</strong>','Tap <strong style="color:#fff">"Add"</strong> — works offline!'];
+    ?[
+      'Open this page in <strong style="color:#C4A96A">Safari</strong> (not Chrome)',
+      'Tap the <strong style="color:#C4A96A">Share ↑</strong> icon at the bottom of Safari',
+      'Scroll down and tap <strong style="color:#fff">"Add to Home Screen"</strong>',
+      'Tap <strong style="color:#fff">"Add"</strong> — works offline!'
+    ]
+    :[
+      'Open this page in <strong style="color:#C4A96A">Chrome</strong> on your Android phone',
+      'Tap the <strong style="color:#C4A96A">three dots ⋮</strong> menu at the top right',
+      'Tap <strong style="color:#fff">"Add to Home Screen"</strong> or <strong style="color:#fff">"Install App"</strong>',
+      'Confirm the name and tap <strong style="color:#fff">"Add"</strong> — works offline!'
+    ];
   const tcs=plat==='ios'
-    ?['點擊瀏覽器的<strong style="color:#C4A96A">分享 ↑</strong>圖示','點選<strong style="color:#fff">「加至主畫面」</strong>','點選<strong style="color:#fff">「加入」</strong>，可離線使用！']
-    :['點擊瀏覽器的<strong style="color:#C4A96A">⋮</strong>選單','點選<strong style="color:#fff">「加至主畫面」</strong>或<strong style="color:#fff">「安裝」</strong>','點選<strong style="color:#fff">「加入」</strong>，可離線使用！'];
+    ?[
+      '請使用 <strong style="color:#C4A96A">Safari</strong> 開啟此頁面（非 Chrome）',
+      '點擊 Safari 底部的<strong style="color:#C4A96A">分享 ↑</strong>圖示',
+      '向下捲動並點選<strong style="color:#fff">「加至主畫面」</strong>',
+      '點選<strong style="color:#fff">「加入」</strong>，可離線使用！'
+    ]
+    :[
+      '使用 Android 手機的 <strong style="color:#C4A96A">Chrome</strong> 開啟此頁面',
+      '點擊右上角的<strong style="color:#C4A96A">三點選單 ⋮</strong>',
+      '點選<strong style="color:#fff">「加至主畫面」</strong>或<strong style="color:#fff">「安裝應用程式」</strong>',
+      '確認名稱後點選<strong style="color:#fff">「加入」</strong>，可離線使用！'
+    ];
   document.getElementById('ibsteps').innerHTML=ens.map((s,i)=>`<div class="ibstep"><div class="ibn">${i+1}</div><span class="en">${s}</span><span class="tc">${tcs[i]}</span></div>`).join('');
   if(plat==='ios')document.getElementById('ibaddbtn').style.display='none';
 }
