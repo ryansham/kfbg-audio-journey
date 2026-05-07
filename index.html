@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v32
+   Single Page App — v33
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -173,7 +173,7 @@ details summary{cursor:pointer;padding:11px 14px;background:var(--sa);border:1px
 details summary::after{content:'▸';font-size:10px;}
 details[open] summary::after{content:'▾';}
 .trb{padding:13px;background:#F9F7F3;border:1px solid var(--bd);border-top:none;border-radius:0 0 9px 9px;font-size:0.78rem;color:var(--mu);line-height:1.9;white-space:pre-wrap;}
-.prac{background:var(--sa);border-left:4px solid var(--ol);border-radius:0 9px 9px 0;padding:13px 15px;}
+.prac{background:var(--sa);border-left:4px solid var(--ol);border-radius:0 9px 9px 0;padding:13px 15px;margin-bottom:14px;}
 .pracl{font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--ol);margin-bottom:5px;font-weight:600;}
 .pract{font-family:'Cormorant Garamond',serif;font-size:1rem;font-style:italic;color:var(--tx);line-height:1.55;}
 [data-lang="zh"] .pract{font-family:'Noto Serif TC',serif;}
@@ -200,7 +200,7 @@ details[open] summary::after{content:'▾';}
 .ch-card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.4s;}
 .csec.ca .ch-card-img img{transform:scale(1.03);}
 .ch-card-badge{position:absolute;top:9px;left:9px;background:rgba(59,74,47,0.88);color:rgba(247,243,236,0.94);font-size:0.52rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;padding:3px 9px;border-radius:100px;}
-.ch-card-num{position:absolute;bottom:9px;right:9px;width:26px;height:26px;border-radius:50%;background:rgba(247,243,236,0.92);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600;color:var(--ol);}
+.ch-card-num{display:none;}
 /* fused player strip at bottom of card */
 .ch-card-player{padding:10px 13px 11px;display:flex;align-items:center;gap:10px;}
 .ch-card-info{flex:1;min-width:0;}
@@ -233,7 +233,7 @@ details[open] summary::after{content:'▾';}
 .cdivd{width:4px;height:4px;border-radius:50%;background:var(--ol);}
 
 /* ════ SPEAKER CARD ════ */
-.speaker-card{background:var(--sa);border-radius:13px;padding:16px;margin:0 0 4px;}
+.speaker-card{background:var(--sa);border-radius:13px;padding:16px;margin:20px 0 4px;}
 .speaker-head{display:flex;align-items:center;gap:13px;margin-bottom:12px;}
 .speaker-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border);}
 .speaker-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:500;color:var(--tx);line-height:1.2;margin-bottom:3px;}
@@ -555,7 +555,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
     <div class="drs">
       <div class="drsl"><span class="en">Kadoorie Farm and Botanic Garden</span><span class="tc">嘉道理農場暨植物園</span></div>
-      <div class="drlink" onclick="openLink('home')"><span class="en">Homepage</span><span class="tc">主頁</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="drlink" onclick="openLink('home')"><span class="en">kfbg.org · Homepage</span><span class="tc">kfbg.org · 主頁</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
       <div class="drlink" onclick="openLink('events')"><span class="en">Events &amp; Programmes</span><span class="tc">活動及課程</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
       <div class="drlink" onclick="openLink('donate')"><span class="en">Donate</span><span class="tc">捐款</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
     </div>
@@ -949,6 +949,9 @@ function initMap(){
   const MIN_V=0.1;          // stop threshold
 
   // ── LOAD MAP IMAGE ──
+  // Minimum scale = fit-to-container (never smaller than this)
+  let minSc=0.5;
+
   window.loadMapImage=function(src){
     w.querySelectorAll('img.mimg').forEach(el=>el.remove());
     stopMomentum();
@@ -959,16 +962,18 @@ function initMap(){
       const ph=document.getElementById('mapph');
       if(ph)ph.style.display='none';
       w.appendChild(mi);
-      // Fit width, centre vertically
-      sc=w.clientWidth/mi.naturalWidth;
-      tx=0;
-      ty=Math.max(0,(w.clientHeight-mi.naturalHeight*sc)/2);
-      apT(true); // instant on load
-      // Fade in
+      // Fit: show full image in container (fit-to-contain)
+      const fitW=w.clientWidth/mi.naturalWidth;
+      const fitH=w.clientHeight/mi.naturalHeight;
+      sc=Math.min(fitW,fitH); // fit whole image, no crop
+      minSc=sc*0.98; // minimum = slightly less than fit (soft floor)
+      tx=(w.clientWidth-mi.naturalWidth*sc)/2;
+      ty=(w.clientHeight-mi.naturalHeight*sc)/2;
+      apT(true);
       requestAnimationFrame(()=>{ mi.style.transition='opacity 0.35s'; mi.style.opacity='1'; });
     };
     mi.onerror=()=>console.warn('Map load failed:',src);
-    mi.src=src; // set src after onload
+    mi.src=src;
   };
 
   // ── TRANSFORM ──
@@ -1049,7 +1054,7 @@ function initMap(){
     if(pi && e.touches.length>=2){
       const t0=e.touches[0], t1=e.touches[1];
       const newDist=Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
-      const newSc=Math.max(0.8,Math.min(6,sc*(newDist/ld)));
+      const newSc=Math.max(minSc,Math.min(6,sc*(newDist/ld)));
       // Zoom anchored at pinch midpoint
       const pixelX=(pMid.x-tx)/sc;
       const pixelY=(pMid.y-ty)/sc;
