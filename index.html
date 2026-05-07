@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v31
+   Single Page App — v32
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -75,6 +75,19 @@ body.bar-min #views{bottom:var(--bar-min);}
 .hero-desc{font-size:0.85rem;color:var(--mu);max-width:320px;margin:0 auto 22px;line-height:1.75;}
 .hero-meta{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:0.68rem;color:var(--mu);}
 .hdot{width:3px;height:3px;border-radius:50%;background:var(--bd);}
+.inst-block{background:var(--sa);border-radius:16px;padding:18px;margin:0 14px 28px;}
+.inst-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.inst-ico{width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;}
+.inst-ico img{width:100%;height:100%;object-fit:cover;}
+.inst-title{font-size:0.92rem;font-weight:500;color:var(--tx);margin-bottom:2px;}
+.inst-sub{font-size:0.72rem;color:var(--mu);}
+.inst-tabs{display:flex;gap:6px;margin-bottom:14px;}
+.inst-tab{flex:1;padding:7px;border:1px solid var(--bd);border-radius:8px;background:transparent;font-family:inherit;font-size:0.78rem;color:var(--mu);cursor:pointer;transition:all 0.18s;}
+.inst-tab.active{background:var(--ol);border-color:var(--ol);color:#fff;font-weight:500;}
+.inst-panel{display:flex;flex-direction:column;gap:10px;}
+.inst-step{display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--tm);line-height:1.55;}
+.inst-n{width:22px;height:22px;border-radius:50%;background:var(--ol);color:#fff;font-size:0.65rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.inst-add{width:100%;margin-top:14px;padding:12px;background:var(--ol);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:0.88rem;font-weight:500;cursor:pointer;}
 .about{background:var(--ol);padding:36px 20px;}
 .about-in{max-width:540px;margin:0 auto;text-align:center;}
 .about h2{font-family:'Cormorant Garamond',serif;font-size:clamp(1.25rem,4vw,1.65rem);font-weight:500;color:#fff;margin-bottom:11px;line-height:1.25;}
@@ -289,6 +302,8 @@ details[open] summary::after{content:'▾';}
 .drh{padding:13px 13px 11px;background:var(--ol);display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;}
 .drclose{background:rgba(255,255,255,0.12);border:none;color:rgba(247,243,236,0.7);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;}
 .drb{padding:14px;flex:1;}
+.dr-note{display:flex;gap:8px;align-items:flex-start;background:rgba(196,169,106,0.1);border:1px solid rgba(196,169,106,0.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:0.75rem;color:var(--mu);line-height:1.55;}
+.dr-note svg{flex-shrink:0;margin-top:2px;stroke:var(--gd);}
 .drs{margin-bottom:18px;}
 .drsl{font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--oll);margin-bottom:9px;font-weight:600;}
 .drlang{display:flex;gap:7px;}
@@ -393,10 +408,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <h1 class="en"><em>Self-guided<br>Audio Journey</em></h1>
       <h1 class="tc nst"><em>自助語音旅程</em></h1>
       <p class="hero-desc en">Step off the path. Slow down. Let the forest speak.</p>
-      <p class="hero-desc tc">放慢腳步，讓自然引路。每條步道設有五個聆聽站，帶領你與大地深連。</p>
+      <p class="hero-desc tc">放慢腳步，讓自然引路。每條步道設有多個聆聽站，帶領你與大地深連。</p>
       <div class="hero-meta">
         <span class="en">Headphones recommended</span><span class="tc">建議佩戴耳機</span>
-        <div class="hdot"></div><span class="en">~45 min</span><span class="tc">約45分鐘</span>
         <div class="hdot"></div><span class="en">Offline-ready</span><span class="tc">支援離線</span>
       </div>
     </div>
@@ -408,6 +422,39 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <p class="tc">在這個永不停歇的城市裡，嘉道理農場暨植物園是讓人重拾寧靜的地方。這些聆聽之旅引領訪客與自然建立更深的聯繫——不是透過知識，而是透過當下的存在。</p>
       </div>
     </div>
+    <!-- INSTALL BLOCK — inline on homepage -->
+    <div class="inst-block" id="inst-block">
+      <div class="inst-head">
+        <div class="inst-ico"><img src="KFBG_Logo.png" alt="KFBG"/></div>
+        <div>
+          <div class="inst-title"><span class="en">Save to Home Screen</span><span class="tc">加至主畫面</span></div>
+          <div class="inst-sub"><span class="en">Listen offline · No App Store needed</span><span class="tc">可離線收聽 · 無需應用程式商店</span></div>
+        </div>
+      </div>
+      <!-- Slider tabs -->
+      <div class="inst-tabs">
+        <button class="inst-tab active" onclick="instTab('ios',this)">iOS</button>
+        <button class="inst-tab" onclick="instTab('android',this)">Android</button>
+      </div>
+      <!-- iOS steps -->
+      <div class="inst-panel" id="inst-ios">
+        <div class="inst-step"><div class="inst-n">1</div><span class="en">Open this page in <strong>Safari</strong> (not Chrome)</span><span class="tc">請使用 <strong>Safari</strong> 開啟此頁面（非 Chrome）</span></div>
+        <div class="inst-step"><div class="inst-n">2</div><span class="en">Tap the <strong>Share ↑</strong> icon at the bottom of Safari</span><span class="tc">點擊 Safari 底部的<strong>分享 ↑</strong>圖示</span></div>
+        <div class="inst-step"><div class="inst-n">3</div><span class="en">Scroll down and tap <strong>"Add to Home Screen"</strong></span><span class="tc">向下捲動並點選<strong>「加至主畫面」</strong></span></div>
+        <div class="inst-step"><div class="inst-n">4</div><span class="en">Tap <strong>"Add"</strong> — then you can save this web app to your home page</span><span class="tc">點選<strong>「加入」</strong>——即可將此網頁應用程式儲存至主畫面</span></div>
+        <div class="inst-step"><div class="inst-n">5</div><span class="en">Afterwards, tap the <strong>top right ☰ menu</strong> to download all audio files and listen offline</span><span class="tc">之後，點擊右上角<strong>☰ 選單</strong>下載所有音頻，即可離線收聽</span></div>
+      </div>
+      <!-- Android steps -->
+      <div class="inst-panel" id="inst-android" style="display:none;">
+        <div class="inst-step"><div class="inst-n">1</div><span class="en">Open this page in <strong>Chrome</strong> on your Android phone</span><span class="tc">使用 Android 手機的 <strong>Chrome</strong> 開啟此頁面</span></div>
+        <div class="inst-step"><div class="inst-n">2</div><span class="en">Tap the <strong>three dots ⋮</strong> menu at the top right</span><span class="tc">點擊右上角的<strong>三點選單 ⋮</strong></span></div>
+        <div class="inst-step"><div class="inst-n">3</div><span class="en">Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></span><span class="tc">點選<strong>「加至主畫面」</strong>或<strong>「安裝應用程式」</strong></span></div>
+        <div class="inst-step"><div class="inst-n">4</div><span class="en">Confirm the name and tap <strong>"Add"</strong> — then you can save this web app to your home page</span><span class="tc">確認名稱後點選<strong>「加入」</strong>——即可將此網頁應用程式儲存至主畫面</span></div>
+        <div class="inst-step"><div class="inst-n">5</div><span class="en">Afterwards, tap the <strong>top right ☰ menu</strong> to download all audio files and listen offline</span><span class="tc">之後，點擊右上角<strong>☰ 選單</strong>下載所有音頻，即可離線收聽</span></div>
+      </div>
+      <button class="inst-add" id="inst-add-btn" style="display:none;" onclick="ibInstall()"><span class="en">Add to Home Screen</span><span class="tc">加至主畫面</span></button>
+    </div>
+
     <div class="lib">
       <div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>
       <div class="jc" onclick="goJourney()">
@@ -418,7 +465,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
           <div class="jtitle tc">連結大地 — 下山區靜心漫步</div>
           <p class="jdesc en">Five stops through the lower hillside. Touch bark, breathe soil, listen to water.</p>
           <p class="jdesc tc">穿越下山區的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。</p>
-          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">~45 min · 5 stops</span><span class="tc">約45分鐘 · 5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
+          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">5 stops</span><span class="tc">5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
         </div>
       </div>
       <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc">上農場步道</div></div></div>
@@ -497,6 +544,11 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="6" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
     <div class="drs">
       <div class="drsl"><span class="en">Offline</span><span class="tc">離線使用</span></div>
+      <div class="dr-note">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="en">Please add this app to your Home Screen first — otherwise audio will not play offline even after downloading.</span>
+        <span class="tc">請先將此應用程式加至主畫面，否則即使下載後仍無法離線收聽。</span>
+      </div>
       <button class="drdlbtn" id="drdlbtn" onclick="dlClick()"><span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
       <div class="drprog" id="drprog"><div class="drpbar"><div class="drpfill" id="drpfill"></div></div><div class="drptxt" id="drptxt"></div></div>
       <button class="drdel" id="drdel" onclick="delCache()"><span class="en">Delete downloaded audio</span><span class="tc">刪除已下載音頻</span></button>
@@ -520,12 +572,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   </div>
 </div>
 
-<!-- INSTALL BANNER -->
-<div id="ib">
-  <div class="ibtop"><div class="ibico"><img src="KFBG_Logo.png" alt="KFBG"/></div><div class="ibinfo"><div class="ibname en">KFBG Audio Journey</div><div class="ibname tc">自助語音旅程</div><div class="ibsub en">Add to Home Screen</div><div class="ibsub tc">加至主畫面</div></div><button class="ibx" onclick="ibDismiss()">✕</button></div>
-  <div class="ibsteps" id="ibsteps"></div>
-  <button class="ibaddbtn" id="ibaddbtn" onclick="ibInstall()"><span class="en">Add to Home Screen</span><span class="tc">加至主畫面</span></button>
-</div>
+<!-- install banner removed — now inline on homepage -->
 
 <!-- UPDATE BAR -->
 <div id="ubar"><p class="en"><strong>New version available.</strong> Refresh to update.</p><p class="tc"><strong>有新版本。</strong>重新整理以更新。</p><button class="ubtn" onclick="location.reload(true)"><span class="en">Refresh</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
@@ -714,15 +761,16 @@ function buildChapters(){
         <p class="cdesc en">${c.desc.en}</p>
         <p class="cdesc tc">${c.desc.tc}</p>
       </div>
-      <details>
-        <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
-        <div class="trb">${c.tr}</div>
-      </details>
       <div class="prac">
         <div class="pracl"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div>
         <div class="pract en">${c.prac.en}</div>
         <div class="pract tc">${c.prac.tc}</div>
       </div>
+      <details>
+        <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
+        <div class="trb en" style="font-size:0.78rem;color:var(--mu);font-style:italic;padding:10px 14px 6px;">Transcript is available in Chinese only.</div>
+        <div class="trb">${c.tr}</div>
+      </details>
     </section>
     ${i<CH.length-1?'<div class="cdiv"><div class="cdivd"></div></div>':''}`).join('')+`
     <div class="comp" id="comp">
@@ -1291,6 +1339,12 @@ function handleDeepLink(){
   }));
 }
 
+function instTab(plat,btn){
+  document.querySelectorAll('.inst-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('inst-ios').style.display=plat==='ios'?'flex':'none';
+  document.getElementById('inst-android').style.display=plat==='android'?'flex':'none';
+}
 function toggleBarSize(){
   const bar=document.getElementById('bar');
   const isMin=bar.classList.toggle('minimised');
@@ -1357,11 +1411,19 @@ async function delCache(){
 // ════ INSTALL ════
 let dPr=null;
 function setupInstall(){
+  // Auto-select correct tab based on device
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone=window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches;
-  if(isStandalone)return;
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dPr=e;buildIBSteps('android');setTimeout(()=>document.getElementById('ib').classList.add('sh'),4000);});
-  if(isIOS&&!sessionStorage.getItem('ib-ok')){buildIBSteps('ios');setTimeout(()=>document.getElementById('ib').classList.add('sh'),5000);}
+  const isAndroid=/android/i.test(navigator.userAgent);
+  if(isAndroid){
+    instTab('android', document.querySelector('.inst-tab:last-child'));
+  }
+  // Show native install button if beforeinstallprompt available
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();
+    window._deferredPrompt=e;
+    const btn=document.getElementById('inst-add-btn');
+    if(btn)btn.style.display='block';
+  });
 }
 function buildIBSteps(plat){
   const isAndroid=/android/i.test(navigator.userAgent);
