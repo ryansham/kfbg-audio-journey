@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v33
+   Single Page App — v34
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -455,7 +455,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <button class="inst-add" id="inst-add-btn" style="display:none;" onclick="ibInstall()"><span class="en">Add to Home Screen</span><span class="tc">加至主畫面</span></button>
     </div>
 
-    <div class="lib">
+    <div class="lib" id="jlib">
       <div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>
       <div class="jc" onclick="goJourney()">
         <div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-card.jpg" loading="lazy"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
@@ -591,6 +591,107 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <audio id="aud" preload="none"></audio>
 
 <script>
+// ════ SANITY CMS CONFIG ════
+const SANITY_PROJECT = 'bw3aid78';
+const SANITY_DATASET = 'production';
+const SANITY_CDN = `https://${SANITY_PROJECT}.apicdn.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}`;
+
+// Convert Sanity image reference to CDN URL
+function sanityImg(ref, w=800, h=450) {
+  if(!ref||!ref.asset||!ref.asset._ref) return null;
+  // ref format: image-{hash}-{w}x{h}-{ext}
+  const r = ref.asset._ref.replace('image-','').replace(/-(\w+)$/, '.$1').replace('-','x').replace('-','/');
+  // Correct format: image-{hash}-{w}x{h}-jpg → hash/WxH.jpg
+  const parts = ref.asset._ref.replace('image-','').split('-');
+  const ext = parts.pop();
+  const dims = parts.pop();
+  const hash = parts.join('-');
+  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/production/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
+}
+
+// Fetch all journeys from Sanity
+async function fetchFromSanity() {
+  const query = encodeURIComponent(`*[_type == "journey" && status in ["published","coming_soon"]] | order(journey_number asc) {
+    _id, slug, journey_number, status,
+    title_en, title_tc, tagline_en, tagline_tc,
+    label_en, label_tc, area_en, area_tc, stop_count,
+    teaser_en, teaser_tc,
+    completion_emoji, completion_en, completion_tc,
+    card_image{ asset->{_ref, url}, alt_en, alt_tc },
+    map_preview_image{ asset->{_ref, url}, alt_en, alt_tc },
+    map_full_image{ asset->{_ref, url}, alt_en, alt_tc },
+    speaker->{ key, name_en, name_tc, title_en, title_tc, bio_en, bio_tc,
+      photo{ asset->{_ref,url}, alt_en, alt_tc } },
+    chapters[]{ _key, chapter_number, visible, location_en, location_tc,
+      short_title_en, short_title_tc, full_title_en, full_title_tc,
+      audio_url, audio_duration_seconds,
+      description_en, description_tc, practice_en, practice_tc, transcript_tc,
+      image{ asset->{_ref,url}, alt_en, alt_tc } }
+  }`);
+  const res = await fetch(`${SANITY_CDN}?query=${query}`);
+  if(!res.ok) throw new Error(`Sanity fetch failed: ${res.status}`);
+  const data = await res.json();
+  return data.result;
+}
+
+// Map Sanity journey → app home card format
+function sanityToCard(j) {
+  const img = j.card_image?.asset?.url || j.card_image?.asset?._ref
+    ? (j.card_image?.asset?.url || sanityImg(j.card_image, 900, 506))
+    : null;
+  return {
+    _id: j._id,
+    slug: j.slug?.current,
+    status: j.status,
+    num: j.journey_number,
+    title_en: j.title_en,
+    title_tc: j.title_tc,
+    tagline_en: j.tagline_en,
+    tagline_tc: j.tagline_tc,
+    label_en: j.label_en,
+    label_tc: j.label_tc,
+    area_en: j.area_en,
+    area_tc: j.area_tc,
+    stops: j.stop_count,
+    img: img,
+    teaser_en: j.teaser_en,
+    teaser_tc: j.teaser_tc,
+  };
+}
+
+// Map Sanity journey chapters → CH array format
+function sanityToCH(j) {
+  if(!j.chapters) return [];
+  return j.chapters
+    .filter(c => c.visible !== false)
+    .sort((a,b) => a.chapter_number - b.chapter_number)
+    .map(c => ({
+      id: c.chapter_number,
+      a: c.audio_url,
+      loc: {en: c.location_en, tc: c.location_tc},
+      title: {en: c.full_title_en, tc: c.full_title_tc},
+      sh: {en: c.short_title_en, tc: c.short_title_tc},
+      desc: {en: c.description_en, tc: c.description_tc},
+      prac: {en: c.practice_en, tc: c.practice_tc},
+      tr: c.transcript_tc || '',
+      img: c.image?.asset?.url || sanityImg(c.image, 800, 450) || '',
+      imgAlt: {en: c.image?.alt_en||'', tc: c.image?.alt_tc||''},
+    }));
+}
+
+// Map Sanity speaker → SPEAKERS format
+function sanityToSpeaker(j) {
+  if(!j.speaker) return null;
+  const sp = j.speaker;
+  return {
+    key: sp.key?.current || sp.key,
+    img: sp.photo?.asset?.url || sanityImg(sp.photo, 400, 400) || 'images/speakers/stanley-chan.jpg',
+    name: {en: sp.name_en, tc: sp.name_tc},
+    title: {en: sp.title_en, tc: sp.title_tc},
+    bio: {en: sp.bio_en, tc: sp.bio_tc},
+  };
+}
+
 // ════ DATA ════
 const LINKS={home:{en:'https://kfbg.org/en/',tc:'https://kfbg.org/tc/'},events:{en:'https://kfbg.org/en/event-calendar',tc:'https://kfbg.org/tc/event-calendar'},donate:{en:'https://kfbg.org/en/donation',tc:'https://kfbg.org/tc/donation'}};
 const SOC=[
@@ -655,7 +756,8 @@ function init(){
   applyFont(fs);
   buildSoc();
   buildDlList();
-  buildChapters(); // BUILD CONTENT IMMEDIATELY
+  buildChapters(); // render immediately from hardcoded fallback
+  buildHomeCards(); // render home cards from hardcoded fallback
   buildPills();
   loadCh(parseInt(localStorage.getItem('kfbg-pos')||'0'),false);
   initMap();
@@ -665,16 +767,53 @@ function init(){
   setupInstall();
   setupSW();
   checkDlState();
-  _fsSetup(); // wire fullscreen touch/close handlers once
-  // Restore bar minimise state
+  _fsSetup();
   if(localStorage.getItem('kfbg-bar-min')==='1'){
     document.getElementById('bar')?.classList.add('minimised');
     document.body.classList.add('bar-min');
     const icon=document.getElementById('bar-toggle-icon');
     if(icon) icon.style.transform='rotate(180deg)';
   }
-  // Apply deep link AFTER all setup is done
+  // Fetch from Sanity and refresh content if available
+  fetchFromSanity().then(journeys=>{
+    if(!journeys||!journeys.length) return;
+    // Cache for offline
+    try{localStorage.setItem('kfbg-sanity-cache',JSON.stringify(journeys));}catch(e){}
+    applyJourneyData(journeys);
+  }).catch(()=>{
+    // Sanity unavailable — try local cache
+    const cached=localStorage.getItem('kfbg-sanity-cache');
+    if(cached){try{applyJourneyData(JSON.parse(cached));}catch(e){}}
+  });
   setTimeout(handleDeepLink,0);
+}
+
+// Apply Sanity data to the app — called after fetch or cache hit
+function applyJourneyData(journeys){
+  // Find the active (published) journey — currently always grounding-walk
+  const j1=journeys.find(j=>j.status==='published')||journeys[0];
+  if(!j1) return;
+
+  // Update CH array from Sanity
+  const newCH=sanityToCH(j1);
+  if(newCH.length){
+    CH.length=0;
+    newCH.forEach(c=>CH.push(c));
+    buildChapters();
+    buildPills();
+    buildDlList();
+  }
+
+  // Update speaker
+  const spk=sanityToSpeaker(j1);
+  if(spk) SPEAKERS['grounding-walk']=spk;
+
+  // Update home cards
+  const cards=journeys.map(sanityToCard);
+  if(cards.length) buildHomeCards(cards);
+
+  // Update nav title from Sanity
+  window._j1Title={en:j1.title_en,tc:j1.title_tc};
 }
 
 // ════ LANG ════
@@ -692,7 +831,12 @@ function applyLang(l,save=true){
 function setLang(l){applyLang(l);}
 function setNavTitle(){
   const t=document.getElementById('nav-title');
-  t.textContent=view==='journey'?(lang==='zh'?'連結大地':'Grounding Walk'):'';
+  if(view==='journey'){
+    const title=window._j1Title;
+    t.textContent=title?(lang==='zh'?title.tc:title.en):(lang==='zh'?'連結大地':'Grounding Walk');
+  } else {
+    t.textContent='';
+  }
 }
 function openLink(k){window.open((LINKS[k][dk()]||LINKS[k].en),'_blank','noopener');}
 
@@ -1368,6 +1512,48 @@ function setupScroll(){
 }
 
 // ════ SOCIALS ════
+// Build home journey cards from data (Sanity or hardcoded fallback)
+function buildHomeCards(cards){
+  const lib=document.getElementById('jlib');
+  if(!lib) return;
+  if(!cards){
+    // Use hardcoded fallback — cards already in HTML, nothing to do
+    return;
+  }
+  lib.innerHTML=cards.map(c=>{
+    const isPublished=c.status==='published';
+    const imgSrc=c.img||(isPublished?'images/journeys/grounding-walk/grounding-walk-card.jpg':'images/journeys/grounding-walk/grounding-walk-ch02.jpg');
+    if(isPublished){
+      return `<div class="jc" onclick="goJourney()">
+        <div class="ji"><img src="${imgSrc}" loading="lazy" alt="${c.area_en||''}"/>
+          <div class="jbadge"><span class="en">${c.area_en||''}</span><span class="tc">${c.area_tc||''}</span></div>
+          <div class="jnum">${c.num}</div></div>
+        <div class="jbody">
+          <div class="jkick"><span class="en">${c.label_en||''}</span><span class="tc">${c.label_tc||''}</span></div>
+          <div class="jtitle en">${c.title_en||''}</div>
+          <div class="jtitle tc">${c.title_tc||''}</div>
+          <p class="jdesc en">${c.tagline_en||''}</p>
+          <p class="jdesc tc">${c.tagline_tc||''}</p>
+          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="en">${c.stops||0} stops</span><span class="tc">${c.stops||0}站</span></div>
+            <span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
+        </div>
+      </div>`;
+    } else {
+      return `<div class="jc locked">
+        <div class="ji"><img src="${imgSrc}" loading="lazy" alt=""/>
+          <div class="jnum">${c.num}</div>
+          <div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div>
+        <div class="jbody">
+          <div class="jkick"><span class="en">${c.label_en||'Journey 0'+c.num}</span><span class="tc">${c.label_tc||'旅程 0'+c.num}</span></div>
+          <div class="jtitle en">${c.title_en||''}</div>
+          <div class="jtitle tc">${c.title_tc||''}</div>
+        </div>
+      </div>`;
+    }
+  }).join('');
+}
+
 function buildSoc(){document.getElementById('drsoc').innerHTML=SOC.map(s=>`<a href="${s.h}" class="drsb" target="_blank" rel="noopener" aria-label="${s.l}"><svg viewBox="0 0 24 24">${s.s}</svg></a>`).join('');}
 
 // ════ DRAWER ════
