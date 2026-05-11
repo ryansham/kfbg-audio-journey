@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v37
+   Single Page App — v38
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -792,7 +792,7 @@ function init(){
   const badge=document.getElementById('env-badge');
   if(badge){
     if(SANITY_DATASET==='staging'){
-      badge.textContent='▪ Staging Environment — Content from staging dataset';
+      badge.textContent='▪ Staging Environment ▪';
       badge.className='staging';
       document.body.classList.add('env-staging');
     } else {
