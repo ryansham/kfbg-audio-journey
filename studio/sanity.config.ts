@@ -4,19 +4,30 @@ import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemaTypes'
 import {structure} from './structure'
 
-export default defineConfig({
-  name: 'kfbg-audio-journey',
-  title: 'KFBG Audio Journey',
-
+const sharedConfig = {
   projectId: 'bw3aid78',
-  dataset: 'production',
-
   plugins: [
     structureTool({structure}),
     visionTool(),
   ],
-
   schema: {
     types: schemaTypes,
   },
-})
+}
+
+export default defineConfig([
+  {
+    ...sharedConfig,
+    name: 'production',
+    title: 'Production',
+    dataset: 'production',
+    basePath: '/production',
+  },
+  {
+    ...sharedConfig,
+    name: 'staging',
+    title: 'Staging',
+    dataset: 'staging',
+    basePath: '/staging',
+  },
+])
