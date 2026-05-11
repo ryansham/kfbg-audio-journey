@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v34
+   Single Page App — v36
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -46,6 +46,10 @@ span.en,span.tc{display:inline;}
 [data-lang="zh"] .nst{font-family:'Noto Serif TC',serif!important;}
 
 /* ── NAV ── */
+/* Environment badge */
+#env-badge{position:fixed;bottom:calc(var(--bar) + 2px);right:10px;z-index:199;font-size:0.55rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 7px;border-radius:100px;pointer-events:none;opacity:0.7;}
+#env-badge.staging{background:rgba(196,169,106,0.2);color:var(--gd);border:1px solid rgba(196,169,106,0.3);}
+#env-badge.production{display:none;}
 #nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav);background:rgba(247,243,236,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0 12px;display:flex;align-items:center;gap:10px;}
 #nav-logo{height:34px;cursor:pointer;flex-shrink:0;display:block;}
 #nav-back{display:none;align-items:center;gap:5px;font-size:0.78rem;color:var(--ol);font-weight:500;cursor:pointer;flex-shrink:0;background:none;border:none;font-family:inherit;}
@@ -75,7 +79,7 @@ body.bar-min #views{bottom:var(--bar-min);}
 .hero-desc{font-size:0.85rem;color:var(--mu);max-width:320px;margin:0 auto 22px;line-height:1.75;}
 .hero-meta{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:0.68rem;color:var(--mu);}
 .hdot{width:3px;height:3px;border-radius:50%;background:var(--bd);}
-.inst-block{background:var(--sa);border-radius:16px;padding:18px;margin:0 14px 28px;}
+.inst-block{background:var(--sa);border-radius:16px;padding:18px;margin:32px 14px 28px;}
 .inst-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
 .inst-ico{width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;}
 .inst-ico img{width:100%;height:100%;object-fit:cover;}
@@ -588,12 +592,24 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <!-- close button is SIBLING of inner — NOT inside touch-action:none zone -->
   <button id="map-fs-close" style="-webkit-tap-highlight-color:transparent;touch-action:manipulation;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
+<!-- Environment badge -->
+<div id="env-badge"></div>
 <audio id="aud" preload="none"></audio>
 
 <script>
 // ════ SANITY CMS CONFIG ════
 const SANITY_PROJECT = 'bw3aid78';
-const SANITY_DATASET = 'production';
+
+// Auto-detect dataset based on hostname:
+//   audio.kfbg.org       → production  (public-facing)
+//   ryansham.github.io   → staging     (internal testing)
+//   localhost            → staging     (local dev)
+const SANITY_DATASET = (()=>{
+  const h = window.location.hostname;
+  if(h === 'audio.kfbg.org') return 'production';
+  return 'staging';
+})();
+
 const SANITY_CDN = `https://${SANITY_PROJECT}.apicdn.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}`;
 
 // Convert Sanity image reference to CDN URL
@@ -610,6 +626,8 @@ function sanityImg(ref, w=800, h=450) {
 }
 
 // Fetch all journeys from Sanity
+// NOTE: Both 'staging' and 'production' datasets must exist in Sanity.
+// CORS: https://ryansham.github.io must be whitelisted in sanity.io/manage
 async function fetchFromSanity() {
   const query = encodeURIComponent(`*[_type == "journey" && status in ["published","coming_soon"]] | order(journey_number asc) {
     _id, slug, journey_number, status,
@@ -768,6 +786,9 @@ function init(){
   setupSW();
   checkDlState();
   _fsSetup();
+  // Show environment badge
+  const badge=document.getElementById('env-badge');
+  if(badge){badge.textContent=SANITY_DATASET==='staging'?'▪ staging':'';badge.className=SANITY_DATASET;}
   if(localStorage.getItem('kfbg-bar-min')==='1'){
     document.getElementById('bar')?.classList.add('minimised');
     document.body.classList.add('bar-min');
@@ -807,6 +828,20 @@ function applyJourneyData(journeys){
   // Update speaker
   const spk=sanityToSpeaker(j1);
   if(spk) SPEAKERS['grounding-walk']=spk;
+
+  // Update map images from Sanity
+  if(j1.map_preview_image?.asset?.url){
+    window._mapPreviewUrl=j1.map_preview_image.asset.url+'?w=1200&auto=format';
+  }
+  if(j1.map_full_image?.asset?.url){
+    window._mapFullUrl=j1.map_full_image.asset.url+'?w=2400&auto=format';
+  }
+  // If journey view is already open, reload map with new Sanity URL
+  if(view==='journey' && window._mapPreviewUrl && typeof loadMapImage==='function'){
+    // Remove old map image so it reloads fresh
+    document.querySelectorAll('#mapw img.mimg').forEach(el=>el.remove());
+    loadMapImage(window._mapPreviewUrl);
+  }
 
   // Update home cards
   const cards=journeys.map(sanityToCard);
@@ -868,7 +903,8 @@ function goJourney(){
   // Use rAF to ensure layout is painted first
   requestAnimationFrame(()=>{
     if(typeof loadMapImage==='function' && !document.querySelector('#mapw img.mimg')){
-      loadMapImage('images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg');
+      const mapSrc=window._mapPreviewUrl||'images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg';
+      loadMapImage(mapSrc);
     }
   });
 }
@@ -1461,7 +1497,7 @@ function mapFullscreen(){
   };
 
   inner.appendChild(fimg);
-  fimg.src='images/maps/kfbg-map-full.jpg';
+  fimg.src=window._mapFullUrl||'images/maps/kfbg-map-full.jpg';
 }
 
 function mapFsClose(){
