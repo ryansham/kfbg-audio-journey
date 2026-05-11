@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v36
+   Single Page App — v37
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -46,9 +46,9 @@ span.en,span.tc{display:inline;}
 [data-lang="zh"] .nst{font-family:'Noto Serif TC',serif!important;}
 
 /* ── NAV ── */
-/* Environment badge */
-#env-badge{position:fixed;bottom:calc(var(--bar) + 2px);right:10px;z-index:199;font-size:0.55rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:3px 7px;border-radius:100px;pointer-events:none;opacity:0.7;}
-#env-badge.staging{background:rgba(196,169,106,0.2);color:var(--gd);border:1px solid rgba(196,169,106,0.3);}
+/* Environment badge — full width bar below nav */
+#env-badge{position:fixed;top:var(--nav);left:0;right:0;z-index:198;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;text-align:center;pointer-events:none;display:none;}
+#env-badge.staging{display:block;background:rgba(196,169,106,0.15);color:var(--gd);border-bottom:1px solid rgba(196,169,106,0.25);}
 #env-badge.production{display:none;}
 #nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav);background:rgba(247,243,236,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0 12px;display:flex;align-items:center;gap:10px;}
 #nav-logo{height:34px;cursor:pointer;flex-shrink:0;display:block;}
@@ -62,6 +62,8 @@ span.en,span.tc{display:inline;}
 #sbar{position:fixed;top:0;left:0;height:3px;background:var(--gd);width:0%;z-index:500;pointer-events:none;}
 
 /* ── VIEWS ── */
+body.env-staging #views{top:calc(var(--nav) + 28px);}
+body.env-staging #nav{top:0;}
 #views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) - var(--pills));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
 /* views bottom adjustments */
 body.journey-view #views{bottom:var(--bar);}
@@ -466,14 +468,14 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <div class="jbody">
           <div class="jkick"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
           <div class="jtitle en">Grounding Walk at the Lower Hillside of KFBG</div>
-          <div class="jtitle tc">連結大地 — 下山區靜心漫步</div>
+          <div class="jtitle tc nst">連結大地 — 下山區靜心漫步</div>
           <p class="jdesc en">Five stops through the lower hillside. Touch bark, breathe soil, listen to water.</p>
           <p class="jdesc tc">穿越下山區的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。</p>
           <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">5 stops</span><span class="tc">5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
         </div>
       </div>
-      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc">上農場步道</div></div></div>
-      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch05.jpg" loading="lazy"/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc">林地靜境</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc nst">上農場步道</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch05.jpg" loading="lazy"/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc nst">林地靜境</div></div></div>
     </div>
   </div>
 
@@ -788,7 +790,15 @@ function init(){
   _fsSetup();
   // Show environment badge
   const badge=document.getElementById('env-badge');
-  if(badge){badge.textContent=SANITY_DATASET==='staging'?'▪ staging':'';badge.className=SANITY_DATASET;}
+  if(badge){
+    if(SANITY_DATASET==='staging'){
+      badge.textContent='▪ Staging Environment — Content from staging dataset';
+      badge.className='staging';
+      document.body.classList.add('env-staging');
+    } else {
+      badge.className='production';
+    }
+  }
   if(localStorage.getItem('kfbg-bar-min')==='1'){
     document.getElementById('bar')?.classList.add('minimised');
     document.body.classList.add('bar-min');
@@ -921,9 +931,9 @@ function buildChapters(){
         </div>
         <div class="ch-card-player">
           <div class="ch-card-info">
-            <div class="ch-card-lbl"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc">第0${c.id}章 · ${c.loc.tc}</span></div>
+            <div class="ch-card-lbl"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc nst">第0${c.id}章 · ${c.loc.tc}</span></div>
             <div class="ch-card-name en">${c.sh.en}</div>
-            <div class="ch-card-name tc">${c.sh.tc}</div>
+            <div class="ch-card-name tc nst">${c.sh.tc}</div>
             <div class="ch-card-time" id="ct${i}">0:00 / —:——</div>
             <div class="ch-dlb" id="cdl${i}"><div class="ch-dlf" id="cdf${i}"></div></div>
             <div class="ch-card-seek" id="csk${i}"><div class="ch-card-seek-fill" id="csf${i}"></div></div>
@@ -1142,13 +1152,19 @@ function initMap(){
       const ph=document.getElementById('mapph');
       if(ph)ph.style.display='none';
       w.appendChild(mi);
-      // Fit: show full image in container (fit-to-contain)
+      // Fit whole image first, then zoom in 1.8× for readable initial view
       const fitW=w.clientWidth/mi.naturalWidth;
       const fitH=w.clientHeight/mi.naturalHeight;
-      sc=Math.min(fitW,fitH); // fit whole image, no crop
-      minSc=sc*0.98; // minimum = slightly less than fit (soft floor)
+      const fitSc=Math.min(fitW,fitH);
+      minSc=fitSc*0.95; // can zoom out to see whole map
+      sc=fitSc*1.8;     // start zoomed in so map text is readable
       tx=(w.clientWidth-mi.naturalWidth*sc)/2;
       ty=(w.clientHeight-mi.naturalHeight*sc)/2;
+      // Clamp so initial view isn't out of bounds
+      const iw=mi.naturalWidth*sc,ih=mi.naturalHeight*sc;
+      const mw=w.clientWidth,mh=w.clientHeight;
+      if(iw>mw){tx=Math.min(0,Math.max(mw-iw,tx));}else{tx=(mw-iw)/2;}
+      if(ih>mh){ty=Math.min(0,Math.max(mh-ih,ty));}else{ty=(mh-ih)/2;}
       apT(true);
       requestAnimationFrame(()=>{ mi.style.transition='opacity 0.35s'; mi.style.opacity='1'; });
     };
@@ -1348,7 +1364,7 @@ function initMap(){
 
 // ════ MAP FULLSCREEN ════
 // State lives outside function so it persists across open/close
-let _fsState={s:1,tx:0,ty:0,dr:false,lx:0,ly:0,pi:false,pMid:{x:0,y:0},ld:0,vx:0,vy:0,rafId:null,img:null,ready:false};
+let _fsState={s:1,tx:0,ty:0,dr:false,lx:0,ly:0,pi:false,pMid:{x:0,y:0},ld:0,vx:0,vy:0,rafId:null,img:null,ready:false,minSc:0.3};
 
 function _fsSetup(){
   // Called once to wire up all touch/mouse events on #map-fs-inner
@@ -1416,7 +1432,7 @@ function _fsSetup(){
     if(st.pi&&e.touches.length>=2){
       const t0=e.touches[0],t1=e.touches[1];
       const nd=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
-      const ns=Math.max(0.5,Math.min(8,st.s*(nd/st.ld)));
+      const ns=Math.max(st.minSc||0.3,Math.min(8,st.s*(nd/st.ld)));
       // Midpoint-anchored zoom
       const px=(st.pMid.x-st.tx)/st.s, py=(st.pMid.y-st.ty)/st.s;
       st.tx=st.pMid.x-px*ns;
@@ -1483,8 +1499,10 @@ function mapFullscreen(){
   st.img=fimg;
 
   fimg.onload=()=>{
-    // Fit image to screen
-    st.s=Math.min(window.innerWidth/fimg.naturalWidth, window.innerHeight/fimg.naturalHeight);
+    // Fit image to screen — this becomes the minimum scale (can't zoom out past this)
+    const fitSc=Math.min(window.innerWidth/fimg.naturalWidth, window.innerHeight/fimg.naturalHeight);
+    st.minSc=fitSc*0.95; // soft floor just below fit
+    st.s=fitSc;
     st.tx=(window.innerWidth-fimg.naturalWidth*st.s)/2;
     st.ty=(window.innerHeight-fimg.naturalHeight*st.s)/2;
     st.vx=0;st.vy=0;st.dr=false;st.pi=false;
@@ -1567,7 +1585,7 @@ function buildHomeCards(cards){
         <div class="jbody">
           <div class="jkick"><span class="en">${c.label_en||''}</span><span class="tc">${c.label_tc||''}</span></div>
           <div class="jtitle en">${c.title_en||''}</div>
-          <div class="jtitle tc">${c.title_tc||''}</div>
+          <div class="jtitle tc nst">${c.title_tc||''}</div>
           <p class="jdesc en">${c.tagline_en||''}</p>
           <p class="jdesc tc">${c.tagline_tc||''}</p>
           <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1583,7 +1601,7 @@ function buildHomeCards(cards){
         <div class="jbody">
           <div class="jkick"><span class="en">${c.label_en||'Journey 0'+c.num}</span><span class="tc">${c.label_tc||'旅程 0'+c.num}</span></div>
           <div class="jtitle en">${c.title_en||''}</div>
-          <div class="jtitle tc">${c.title_tc||''}</div>
+          <div class="jtitle tc nst">${c.title_tc||''}</div>
         </div>
       </div>`;
     }
