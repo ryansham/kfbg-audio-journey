@@ -654,6 +654,35 @@ async function fetchFromSanity() {
   return data.result;
 }
 
+async function fetchSiteSettings() {
+  const query = encodeURIComponent(`*[_type == "siteSettings"][0]{
+    org_name_en, org_name_tc,
+    app_name_en, app_name_tc,
+    home_tagline_en, home_tagline_tc,
+    home_description_en, home_description_tc,
+    home_why_title_en, home_why_title_tc,
+    home_why_body_en, home_why_body_tc
+  }`);
+  const res = await fetch(`${SANITY_CDN}?query=${query}`);
+  if(!res.ok) throw new Error(`Sanity siteSettings fetch failed: ${res.status}`);
+  const data = await res.json();
+  return data.result;
+}
+
+function applySiteSettings(s) {
+  if(!s) return;
+  const set = (sel, val) => { const el = document.querySelector(sel); if(el && val) el.textContent = val; };
+  set('.hero-ey .en', s.org_name_en);
+  set('.hero-ey .tc', s.org_name_tc);
+  set('.hero-desc.en', s.home_tagline_en);
+  const tcDesc = [s.home_tagline_tc, s.home_description_tc].filter(Boolean).join('');
+  if(tcDesc) { const el = document.querySelector('.hero-desc.tc'); if(el) el.textContent = tcDesc; }
+  set('.about-in h2.en', s.home_why_title_en);
+  set('.about-in h2.tc', s.home_why_title_tc);
+  set('.about-in p.en', s.home_why_body_en);
+  set('.about-in p.tc', s.home_why_body_tc);
+}
+
 // Map Sanity journey → app home card format
 function sanityToCard(j) {
   const img = j.card_image?.asset?.url || j.card_image?.asset?._ref
@@ -816,6 +845,7 @@ function init(){
     const cached=localStorage.getItem('kfbg-sanity-cache');
     if(cached){try{applyJourneyData(JSON.parse(cached));}catch(e){}}
   });
+  fetchSiteSettings().then(applySiteSettings).catch(()=>{});
   setTimeout(handleDeepLink,0);
 }
 
