@@ -10,4 +10,5 @@ export default defineCliConfig({
    * Learn more at https://www.sanity.io/docs/cli#auto-updates
    */
   autoUpdatesEnabled: true,
+  studioHost: 'kfbg-audio-journey',
 })
