@@ -624,7 +624,7 @@ function sanityImg(ref, w=800, h=450) {
   const ext = parts.pop();
   const dims = parts.pop();
   const hash = parts.join('-');
-  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/production/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
+  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/${SANITY_DATASET}/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
 }
 
 // Fetch all journeys from Sanity
