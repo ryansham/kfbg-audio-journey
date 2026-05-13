@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v42
+   Single Page App — v43
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -751,6 +751,7 @@ const CH=[
 const FS=['0.94rem','1rem','1.08rem','1.16rem','1.25rem','1.35rem','1.5rem'];
 const SPDS=[1,1.25,1.5];
 const CACHE='kfbg-audio-v1';
+const IMAGE_CACHE='kfbg-images-v1';
 const DONE=new Set(JSON.parse(localStorage.getItem('kfbg-done')||'[]'));
 
 // ════ DEEP LINK PARAMS — capture immediately before any redirects ════
@@ -1655,8 +1656,54 @@ async function runDl(files){
     btn.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';
     txt.textContent=lang==='zh'?'✓ 可離線收聽':'✓ Ready for offline';
     checkDlState();
+    // Silently cache all images in background (separate IMAGE_CACHE)
+    cacheImages();
   }catch(e){btn.disabled=false;txt.textContent='Error — please retry';}
 }
+// Collect all image URLs to cache for offline
+function getImageUrls(){
+  const urls=[];
+  // Chapter images from CH array
+  CH.forEach(c=>{ if(c.img) urls.push(c.img); });
+  // Map images (Sanity CDN or local fallback)
+  if(window._mapPreviewUrl) urls.push(window._mapPreviewUrl);
+  if(window._mapFullUrl)    urls.push(window._mapFullUrl);
+  // Local fallback maps (always cache these)
+  urls.push('images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg');
+  urls.push('images/maps/kfbg-map-full.jpg');
+  // Speaker photo
+  const spk=SPEAKERS['grounding-walk'];
+  if(spk&&spk.img) urls.push(spk.img);
+  urls.push('images/speakers/stanley-chan.jpg');
+  // Journey card
+  urls.push('images/journeys/grounding-walk/grounding-walk-card.jpg');
+  // Deduplicate
+  return [...new Set(urls.filter(Boolean))];
+}
+
+async function cacheImages(){
+  if(!('caches' in window)) return;
+  try{
+    const c=await caches.open(IMAGE_CACHE);
+    const urls=getImageUrls();
+    let cached=0;
+    for(const url of urls){
+      try{
+        if(!await c.match(url).catch(()=>null)){
+          const r=await fetch(url);
+          if(r.ok){ await c.put(url,r); cached++; }
+        }
+      }catch(e){ /* skip individual failures silently */ }
+    }
+    console.log(`Images cached: ${cached} new, ${urls.length} total`);
+  }catch(e){ console.warn('Image cache failed:', e); }
+}
+
+async function deleteCachedImages(){
+  if(!('caches' in window)) return;
+  await caches.delete(IMAGE_CACHE);
+}
+
 async function checkDlState(){
   if(!('caches' in window))return;
   try{const c=await caches.open(CACHE);const k=await c.keys();document.getElementById('drdel').style.display=k.some(r=>r.url.endsWith('.mp3'))?'inline-block':'none';}catch(e){}
