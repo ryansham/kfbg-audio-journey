@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v41
+   Single Page App — v42
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -855,10 +855,10 @@ function applyJourneyData(journeys){
 
   // Update map images from Sanity
   if(j1.map_preview_image?.asset?.url){
-    window._mapPreviewUrl=j1.map_preview_image.asset.url+'?w=1200&auto=format';
+    window._mapPreviewUrl=j1.map_preview_image.asset.url+'?w=1800&auto=format&q=90';
   }
   if(j1.map_full_image?.asset?.url){
-    window._mapFullUrl=j1.map_full_image.asset.url+'?w=2400&auto=format';
+    window._mapFullUrl=j1.map_full_image.asset.url+'?auto=format&q=95';
   }
   // If journey view is already open, reload map with new Sanity URL
   if(view==='journey' && window._mapPreviewUrl && typeof loadMapImage==='function'){
@@ -1174,7 +1174,7 @@ function initMap(){
       const fitH=w.clientHeight/mi.naturalHeight;
       const fitSc=Math.min(fitW,fitH);
       minSc=fitSc*0.95; // can zoom out to see whole map
-      sc=fitSc*1.8;     // start zoomed in so map text is readable
+      sc=fitSc*1.5;     // start at 1.5× fit — shows lower half of route
       tx=(w.clientWidth-mi.naturalWidth*sc)/2;
       ty=(w.clientHeight-mi.naturalHeight*sc)/2;
       // Clamp so initial view isn't out of bounds
