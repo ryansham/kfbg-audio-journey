@@ -1,5 +1,6 @@
 import {StructureBuilder} from 'sanity/structure'
 import {BookIcon, CogIcon, TranslateIcon, UserIcon} from '@sanity/icons'
+import {JourneyPreview} from './components/JourneyPreview'
 
 export const structure = (S: StructureBuilder) =>
   S.list()
@@ -13,6 +14,22 @@ export const structure = (S: StructureBuilder) =>
           S.documentTypeList('journey')
             .title('All Journeys')
             .defaultOrdering([{field: 'journey_number', direction: 'asc'}])
+            .child((documentId) =>
+              S.document()
+                .documentId(documentId)
+                .schemaType('journey')
+                .views([
+                  S.view.form().title('Edit'),
+                  S.view
+                    .component(JourneyPreview)
+                    .options({baseUrl: 'https://ryansham.github.io/kfbg-audio-journey'})
+                    .title('Staging Preview'),
+                  S.view
+                    .component(JourneyPreview)
+                    .options({baseUrl: 'https://audio.kfbg.org'})
+                    .title('Production Preview'),
+                ])
+            )
         ),
 
       S.divider(),
