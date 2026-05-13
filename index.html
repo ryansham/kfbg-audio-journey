@@ -24,7 +24,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v38
+   Single Page App — v40
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -239,6 +239,7 @@ details[open] summary::after{content:'▾';}
 .cdivd{width:4px;height:4px;border-radius:50%;background:var(--ol);}
 
 /* ════ SPEAKER CARD ════ */
+.attr-line{padding:20px 0 20px;text-align:center;font-size:0.8rem;color:var(--mu);line-height:1.7;border-top:1px solid var(--bd);}
 .speaker-card{background:var(--sa);border-radius:13px;padding:16px;margin:20px 0 4px;}
 .speaker-head{display:flex;align-items:center;gap:13px;margin-bottom:12px;}
 .speaker-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border);}
@@ -612,10 +613,7 @@ const SANITY_DATASET = (()=>{
   return 'staging';
 })();
 
-// staging uses direct API (no cache) so changes appear immediately
-const SANITY_CDN = SANITY_DATASET === 'production'
-  ? `https://${SANITY_PROJECT}.apicdn.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}`
-  : `https://${SANITY_PROJECT}.api.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}`;
+const SANITY_CDN = `https://${SANITY_PROJECT}.apicdn.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}`;
 
 // Convert Sanity image reference to CDN URL
 function sanityImg(ref, w=800, h=450) {
@@ -627,7 +625,7 @@ function sanityImg(ref, w=800, h=450) {
   const ext = parts.pop();
   const dims = parts.pop();
   const hash = parts.join('-');
-  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/${SANITY_DATASET}/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
+  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/production/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
 }
 
 // Fetch all journeys from Sanity
@@ -640,6 +638,7 @@ async function fetchFromSanity() {
     label_en, label_tc, area_en, area_tc, stop_count,
     teaser_en, teaser_tc,
     completion_emoji, completion_en, completion_tc,
+    attribution_en, attribution_tc,
     card_image{ asset->{_ref, url}, alt_en, alt_tc },
     map_preview_image{ asset->{_ref, url}, alt_en, alt_tc },
     map_full_image{ asset->{_ref, url}, alt_en, alt_tc },
@@ -655,35 +654,6 @@ async function fetchFromSanity() {
   if(!res.ok) throw new Error(`Sanity fetch failed: ${res.status}`);
   const data = await res.json();
   return data.result;
-}
-
-async function fetchSiteSettings() {
-  const query = encodeURIComponent(`*[_type == "siteSettings"][0]{
-    org_name_en, org_name_tc,
-    app_name_en, app_name_tc,
-    home_tagline_en, home_tagline_tc,
-    home_description_en, home_description_tc,
-    home_why_title_en, home_why_title_tc,
-    home_why_body_en, home_why_body_tc
-  }`);
-  const res = await fetch(`${SANITY_CDN}?query=${query}`);
-  if(!res.ok) throw new Error(`Sanity siteSettings fetch failed: ${res.status}`);
-  const data = await res.json();
-  return data.result;
-}
-
-function applySiteSettings(s) {
-  if(!s) return;
-  const set = (sel, val) => { const el = document.querySelector(sel); if(el && val) el.textContent = val; };
-  set('.hero-ey .en', s.org_name_en);
-  set('.hero-ey .tc', s.org_name_tc);
-  set('.hero-desc.en', s.home_tagline_en);
-  const tcDesc = [s.home_tagline_tc, s.home_description_tc].filter(Boolean).join('');
-  if(tcDesc) { const el = document.querySelector('.hero-desc.tc'); if(el) el.textContent = tcDesc; }
-  set('.about-in h2.en', s.home_why_title_en);
-  set('.about-in h2.tc', s.home_why_title_tc);
-  set('.about-in p.en', s.home_why_body_en);
-  set('.about-in p.tc', s.home_why_body_tc);
 }
 
 // Map Sanity journey → app home card format
@@ -708,6 +678,8 @@ function sanityToCard(j) {
     img: img,
     teaser_en: j.teaser_en,
     teaser_tc: j.teaser_tc,
+    attribution_en: j.attribution_en,
+    attribution_tc: j.attribution_tc,
   };
 }
 
@@ -848,7 +820,6 @@ function init(){
     const cached=localStorage.getItem('kfbg-sanity-cache');
     if(cached){try{applyJourneyData(JSON.parse(cached));}catch(e){}}
   });
-  fetchSiteSettings().then(applySiteSettings).catch(()=>{});
   setTimeout(handleDeepLink,0);
 }
 
@@ -871,6 +842,16 @@ function applyJourneyData(journeys){
   // Update speaker
   const spk=sanityToSpeaker(j1);
   if(spk) SPEAKERS['grounding-walk']=spk;
+
+  // Update attribution line from Sanity if present
+  if(j1.attribution_en||j1.attribution_tc){
+    const attrEl=document.querySelector('.attr-line');
+    if(attrEl){
+      attrEl.innerHTML=
+        (j1.attribution_en?`<span class="en">${j1.attribution_en}</span>`:'<span class="en">This audio content was co‑designed by KFBG and Dr. Stanley Chan, with voice guidance provided by Dr. Stanley Chan.</span>')+
+        (j1.attribution_tc?`<span class="tc">${j1.attribution_tc}</span>`:'<span class="tc">本語音內容，由KFBG及陳鑑忠博士共同設計，並由陳鑑忠博士作聲音導航。</span>');
+    }
+  }
 
   // Update map images from Sanity
   if(j1.map_preview_image?.asset?.url){
@@ -1007,7 +988,11 @@ function buildChapters(){
       </button>
     </div>
     ${(()=>{const spk=SPEAKERS['grounding-walk'];return spk?`
-    <div class="cdiv" style="margin:24px 0 20px;"><div class="cdivd"></div></div>
+    <div class="cdiv" style="margin:0;"><div class="cdivd"></div></div>
+    <p class="attr-line">
+      <span class="en">This audio content was co‑designed by KFBG and Dr. Stanley Chan, with voice guidance provided by Dr. Stanley Chan.</span>
+      <span class="tc">本語音內容，由KFBG及陳鑑忠博士共同設計，並由陳鑑忠博士作聲音導航。</span>
+    </p>
     <div class="speaker-card" id="speaker-section" style="margin-bottom:48px;">
       <div class="speaker-head">
         <img src="${spk.img}" class="speaker-avatar" alt="${spk.name.en}" loading="lazy"/>
