@@ -1,0 +1,19 @@
+# Secrets & handoff docs (contain live tokens — never commit)
+CC-CONTEXT-TRANSFER.md
+.env
+.env.*
+*.secret
+
+# macOS
+.DS_Store
+
+# Editor / OS junk
+*~
+.vscode/
+Thumbs.db
+
+# Sanity studio
+studio/node_modules/
+studio/dist/
+studio/.sanity/
+studio/backups/

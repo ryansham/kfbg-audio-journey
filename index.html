@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="theme-color" content="#4A5C3A"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="KFBG Audio Journey"/>
 <link rel="manifest" href="manifest.json"/>
@@ -24,7 +25,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v43
+   Single Page App — v44
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -604,12 +605,13 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 const SANITY_PROJECT = 'bw3aid78';
 
 // Auto-detect dataset based on hostname:
-//   audio.kfbg.org       → production  (public-facing)
-//   ryansham.github.io   → staging     (internal testing)
-//   localhost            → staging     (local dev)
+//   audio-journey.kfbg.org → production  (public-facing, DirectAdmin)
+//   audio.kfbg.org         → production  (reserved if IT switches subdomain)
+//   ryansham.github.io     → staging     (internal testing)
+//   localhost              → staging     (local dev)
 const SANITY_DATASET = (()=>{
   const h = window.location.hostname;
-  if(h === 'audio.kfbg.org') return 'production';
+  if(h === 'audio-journey.kfbg.org' || h === 'audio.kfbg.org') return 'production';
   return 'staging';
 })();
 
@@ -625,7 +627,9 @@ function sanityImg(ref, w=800, h=450) {
   const ext = parts.pop();
   const dims = parts.pop();
   const hash = parts.join('-');
-  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/production/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
+  // ponytail: follow the active dataset, not hardcoded 'production'. Safe because the
+  // GROQ query resolves asset->url first; this builder is only a fallback path.
+  return `https://cdn.sanity.io/images/${SANITY_PROJECT}/${SANITY_DATASET}/${hash}-${dims}.${ext}?w=${w}&h=${h}&fit=crop&auto=format`;
 }
 
 // Fetch all journeys from Sanity
@@ -1729,7 +1733,7 @@ function setupInstall(){
   // Show native install button if beforeinstallprompt available
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();
-    window._deferredPrompt=e;
+    dPr=e; // store on the same var ibInstall() reads
     const btn=document.getElementById('inst-add-btn');
     if(btn)btn.style.display='block';
   });
@@ -1765,8 +1769,15 @@ function buildIBSteps(plat){
   document.getElementById('ibsteps').innerHTML=ens.map((s,i)=>`<div class="ibstep"><div class="ibn">${i+1}</div><span class="en">${s}</span><span class="tc">${tcs[i]}</span></div>`).join('');
   if(plat==='ios')document.getElementById('ibaddbtn').style.display='none';
 }
-function ibInstall(){if(dPr){dPr.prompt();dPr.userChoice.then(()=>{dPr=null;ibDismiss();});}}
-function ibDismiss(){document.getElementById('ib').classList.remove('sh');sessionStorage.setItem('ib-ok','1');}
+function ibInstall(){
+  if(!dPr)return;
+  dPr.prompt();
+  dPr.userChoice.then(()=>{
+    dPr=null;
+    const btn=document.getElementById('inst-add-btn'); // hide the live button, not the removed #ib banner
+    if(btn)btn.style.display='none';
+  });
+}
 
 // ════ OFFLINE ════
 function setupOffline(){

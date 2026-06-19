@@ -1,0 +1,28 @@
+# KFBG Audio Journey — Apache/DirectAdmin config
+# ponytail: only the rules Apache gets wrong for a PWA. Everything else is default.
+# Every directive is guarded by <IfModule> — a missing module must DEGRADE, never 500 the site.
+
+<IfModule mod_headers.c>
+  # 1. Service worker + manifest must NEVER be cached — or users get stuck on an old version.
+  <FilesMatch "^(sw\.js|manifest\.json)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+  # 2. Long cache for static assets (safe: bump filenames/PAGE_CACHE on change).
+  <FilesMatch "\.(jpg|jpeg|png|webp|mp3|woff2)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_mime.c>
+  # 3. Correct MIME for web app manifest.
+  AddType application/manifest+json .webmanifest
+</IfModule>
+
+# 4. Force HTTPS — service workers require it.
+#    ⚠️ ENABLE SSL IN DIRECTADMIN *BEFORE* UPLOADING THIS FILE.
+#    If you upload this with no SSL cert, every request redirects to a dead https:// → site unreachable.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
