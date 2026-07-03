@@ -788,8 +788,18 @@ const _DL=(function(){
   return null;
 })();
 
+// URL 語言覆蓋：?lang=en / ?lang=zh（亦支援 #lang=），只影響今次載入顯示，不寫入偏好
+const _langParam=(function(){
+  const s=window.location.search,h=window.location.hash;
+  let p=null;
+  if(s&&s.includes('lang='))p=new URLSearchParams(s.slice(1));
+  else if(h&&h.includes('lang='))p=new URLSearchParams(h.slice(1));
+  const v=p&&p.get('lang');
+  return (v==='en'||v==='zh')?v:null;
+})();
+
 // ════ STATE ════
-let lang=localStorage.getItem('kfbg-lang')||'zh';
+let lang=_langParam||localStorage.getItem('kfbg-lang')||'zh';
 let fs=parseInt(localStorage.getItem('kfbg-fs')||'2');
 let view='home'; // 'home' | 'journey'
 let ai=0, playing=false, plMode=false, si=0; // si=speed index
