@@ -26,7 +26,7 @@ export const structure = (S: StructureBuilder) =>
                     .title('Staging Preview'),
                   S.view
                     .component(JourneyPreview)
-                    .options({baseUrl: 'https://audio.kfbg.org'})
+                    .options({baseUrl: 'https://audio-journey.kfbg.org'})
                     .title('Production Preview'),
                 ])
             )

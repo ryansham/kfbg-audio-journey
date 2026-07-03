@@ -37,7 +37,7 @@ export function JourneyPreview({document: {displayed}, options}: JourneyPreviewP
     )
   }
 
-  const url = `${baseUrl}/?journey=${slug}`
+  const url = `${baseUrl}/?journey=${slug}&chapter=1`
 
   return (
     <div style={{display: 'flex', flexDirection: 'column', height: '100%'}}>

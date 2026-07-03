@@ -121,6 +121,7 @@ export const journey = defineType({
       title: 'Home Screen Card Image',
       type: 'image',
       description: 'Recommended: 1600×900px (16:9)',
+      validation: (R) => R.custom((val, ctx) => (ctx.document?.status === 'published' && !val) ? 'Card image is required for a published journey' : true),
       options: {hotspot: true},
       fields: [
         defineField({name: 'alt_en', title: 'Alt Text (English)', type: 'string'}),
@@ -251,6 +252,7 @@ export const journey = defineType({
       type: 'array',
       of: [{type: 'chapter'}],
       description: 'Drag to reorder. Each chapter is one audio stop on the trail.',
+      validation: (R) => R.custom((val, ctx) => (ctx.document?.status === 'published' && (!val || val.length < 1)) ? 'A published journey needs at least one chapter' : true),
     }),
   ],
 })

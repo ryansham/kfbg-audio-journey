@@ -25,7 +25,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v44
+   Single Page App — v45
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -617,6 +617,9 @@ const SANITY_DATASET = (()=>{
 
 const SANITY_CDN = `https://${SANITY_PROJECT}.apicdn.sanity.io/v2021-06-07/data/query/${SANITY_DATASET}`;
 
+// ponytail: escape CMS strings only at HTML (innerHTML) sinks — textContent uses stay raw. Makes CMS interpolation XSS-safe.
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
 // Convert Sanity image reference to CDN URL
 function sanityImg(ref, w=800, h=450) {
   if(!ref||!ref.asset||!ref.asset._ref) return null;
@@ -839,6 +842,8 @@ function applyJourneyData(journeys){
   if(newCH.length){
     CH.length=0;
     newCH.forEach(c=>CH.push(c));
+    // ponytail: CMS may return fewer chapters than the persisted position — clamp so CH[ai] can't crash the player.
+    if(ai>=CH.length){ai=0;loadCh(0,false);}
     buildChapters();
     buildPills();
     buildDlList();
@@ -853,8 +858,8 @@ function applyJourneyData(journeys){
     const attrEl=document.querySelector('.attr-line');
     if(attrEl){
       attrEl.innerHTML=
-        (j1.attribution_en?`<span class="en">${j1.attribution_en}</span>`:'<span class="en">This audio content was co‑designed by KFBG and Dr. Stanley Chan, with voice guidance provided by Dr. Stanley Chan.</span>')+
-        (j1.attribution_tc?`<span class="tc">${j1.attribution_tc}</span>`:'<span class="tc">本語音內容，由KFBG及陳鑑忠博士共同設計，並由陳鑑忠博士作聲音導航。</span>');
+        (j1.attribution_en?`<span class="en">${esc(j1.attribution_en)}</span>`:'<span class="en">This audio content was co‑designed by KFBG and Dr. Stanley Chan, with voice guidance provided by Dr. Stanley Chan.</span>')+
+        (j1.attribution_tc?`<span class="tc">${esc(j1.attribution_tc)}</span>`:'<span class="tc">本語音內容，由KFBG及陳鑑忠博士共同設計，並由陳鑑忠博士作聲音導航。</span>');
     }
   }
 
@@ -944,15 +949,15 @@ function buildChapters(){
     <section class="csec" id="s${i}">
       <div class="ch-card">
         <div class="ch-card-img">
-          <img src="${c.img}" loading="lazy" alt="${c.loc.en}"/>
-          <div class="ch-card-badge"><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></div>
+          <img src="${esc(c.img)}" loading="lazy" alt="${esc(c.loc.en)}"/>
+          <div class="ch-card-badge"><span class="en">${esc(c.loc.en)}</span><span class="tc">${esc(c.loc.tc)}</span></div>
           <div class="ch-card-num">${c.id}</div>
         </div>
         <div class="ch-card-player">
           <div class="ch-card-info">
-            <div class="ch-card-lbl"><span class="en">Ch.0${c.id} · ${c.loc.en}</span><span class="tc nst">第0${c.id}章 · ${c.loc.tc}</span></div>
-            <div class="ch-card-name en">${c.sh.en}</div>
-            <div class="ch-card-name tc nst">${c.sh.tc}</div>
+            <div class="ch-card-lbl"><span class="en">Ch.0${c.id} · ${esc(c.loc.en)}</span><span class="tc nst">第0${c.id}章 · ${esc(c.loc.tc)}</span></div>
+            <div class="ch-card-name en">${esc(c.sh.en)}</div>
+            <div class="ch-card-name tc nst">${esc(c.sh.tc)}</div>
             <div class="ch-card-time" id="ct${i}">0:00 / —:——</div>
             <div class="ch-dlb" id="cdl${i}"><div class="ch-dlf" id="cdf${i}"></div></div>
             <div class="ch-card-seek" id="csk${i}"><div class="ch-card-seek-fill" id="csf${i}"></div></div>
@@ -965,20 +970,20 @@ function buildChapters(){
       </div>
       <div class="ch-meta">
         <div class="ckick"><span class="en">Chapter 0${c.id}</span><span class="tc">第 0${c.id} 章</span></div>
-        <div class="ctitle en">${c.title.en}</div>
-        <div class="ctitle tc nst">${c.title.tc}</div>
-        <p class="cdesc en">${c.desc.en}</p>
-        <p class="cdesc tc">${c.desc.tc}</p>
+        <div class="ctitle en">${esc(c.title.en)}</div>
+        <div class="ctitle tc nst">${esc(c.title.tc)}</div>
+        <p class="cdesc en">${esc(c.desc.en)}</p>
+        <p class="cdesc tc">${esc(c.desc.tc)}</p>
       </div>
       <div class="prac">
         <div class="pracl"><span class="en">Mindful Practice</span><span class="tc">正念練習</span></div>
-        <div class="pract en">${c.prac.en}</div>
-        <div class="pract tc">${c.prac.tc}</div>
+        <div class="pract en">${esc(c.prac.en)}</div>
+        <div class="pract tc">${esc(c.prac.tc)}</div>
       </div>
       <details>
         <summary><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></summary>
         <div class="trb en" style="font-size:0.78rem;color:var(--mu);font-style:italic;padding:10px 14px 6px;">Transcript is available in Chinese only.</div>
-        <div class="trb">${c.tr}</div>
+        <div class="trb">${esc(c.tr)}</div>
       </details>
     </section>
     ${i<CH.length-1?'<div class="cdiv"><div class="cdivd"></div></div>':''}`).join('')+`
@@ -999,17 +1004,17 @@ function buildChapters(){
     </p>
     <div class="speaker-card" id="speaker-section" style="margin-bottom:48px;">
       <div class="speaker-head">
-        <img src="${spk.img}" class="speaker-avatar" alt="${spk.name.en}" loading="lazy"/>
+        <img src="${esc(spk.img)}" class="speaker-avatar" alt="${esc(spk.name.en)}" loading="lazy"/>
         <div>
-          <div class="speaker-name en">${spk.name.en}</div>
-          <div class="speaker-name tc nst">${spk.name.tc}</div>
-          <div class="speaker-title en">${spk.title.en}</div>
-          <div class="speaker-title tc">${spk.title.tc}</div>
+          <div class="speaker-name en">${esc(spk.name.en)}</div>
+          <div class="speaker-name tc nst">${esc(spk.name.tc)}</div>
+          <div class="speaker-title en">${esc(spk.title.en)}</div>
+          <div class="speaker-title tc">${esc(spk.title.tc)}</div>
         </div>
       </div>
       <div class="speaker-bio" id="spk-bio">
-        <p class="en">${spk.bio.en}</p>
-        <p class="tc">${spk.bio.tc}</p>
+        <p class="en">${esc(spk.bio.en)}</p>
+        <p class="tc">${esc(spk.bio.tc)}</p>
       </div>
 
     </div>
@@ -1596,20 +1601,20 @@ function buildHomeCards(cards){
     // Use hardcoded fallback — cards already in HTML, nothing to do
     return;
   }
-  lib.innerHTML=cards.map(c=>{
+  lib.innerHTML=`<div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>`+cards.map(c=>{
     const isPublished=c.status==='published';
     const imgSrc=c.img||(isPublished?'images/journeys/grounding-walk/grounding-walk-card.jpg':'images/journeys/grounding-walk/grounding-walk-ch02.jpg');
     if(isPublished){
       return `<div class="jc" onclick="goJourney()">
-        <div class="ji"><img src="${imgSrc}" loading="lazy" alt="${c.area_en||''}"/>
-          <div class="jbadge"><span class="en">${c.area_en||''}</span><span class="tc">${c.area_tc||''}</span></div>
+        <div class="ji"><img src="${esc(imgSrc)}" loading="lazy" alt="${esc(c.area_en||'')}"/>
+          <div class="jbadge"><span class="en">${esc(c.area_en||'')}</span><span class="tc">${esc(c.area_tc||'')}</span></div>
           <div class="jnum">${c.num}</div></div>
         <div class="jbody">
-          <div class="jkick"><span class="en">${c.label_en||''}</span><span class="tc">${c.label_tc||''}</span></div>
-          <div class="jtitle en">${c.title_en||''}</div>
-          <div class="jtitle tc nst">${c.title_tc||''}</div>
-          <p class="jdesc en">${c.tagline_en||''}</p>
-          <p class="jdesc tc">${c.tagline_tc||''}</p>
+          <div class="jkick"><span class="en">${esc(c.label_en||'')}</span><span class="tc">${esc(c.label_tc||'')}</span></div>
+          <div class="jtitle en">${esc(c.title_en||'')}</div>
+          <div class="jtitle tc nst">${esc(c.title_tc||'')}</div>
+          <p class="jdesc en">${esc(c.tagline_en||'')}</p>
+          <p class="jdesc tc">${esc(c.tagline_tc||'')}</p>
           <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
             <span class="en">${c.stops||0} stops</span><span class="tc">${c.stops||0}站</span></div>
             <span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
@@ -1617,13 +1622,13 @@ function buildHomeCards(cards){
       </div>`;
     } else {
       return `<div class="jc locked">
-        <div class="ji"><img src="${imgSrc}" loading="lazy" alt=""/>
+        <div class="ji"><img src="${esc(imgSrc)}" loading="lazy" alt=""/>
           <div class="jnum">${c.num}</div>
           <div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div>
         <div class="jbody">
-          <div class="jkick"><span class="en">${c.label_en||'Journey 0'+c.num}</span><span class="tc">${c.label_tc||'旅程 0'+c.num}</span></div>
-          <div class="jtitle en">${c.title_en||''}</div>
-          <div class="jtitle tc nst">${c.title_tc||''}</div>
+          <div class="jkick"><span class="en">${esc(c.label_en||'Journey 0'+c.num)}</span><span class="tc">${esc(c.label_tc||'旅程 0'+c.num)}</span></div>
+          <div class="jtitle en">${esc(c.title_en||'')}</div>
+          <div class="jtitle tc nst">${esc(c.title_tc||'')}</div>
         </div>
       </div>`;
     }

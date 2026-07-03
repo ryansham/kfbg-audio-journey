@@ -166,7 +166,7 @@ export const siteSettings = defineType({
       title: 'App URL',
       type: 'url',
       group: 'seo',
-      initialValue: 'https://audio.kfbg.org',
+      initialValue: 'https://audio-journey.kfbg.org',
     }),
 
     // ── Notice Bar ──
