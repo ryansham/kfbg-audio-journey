@@ -387,6 +387,18 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 #map-fs-close svg{stroke:#fff;}
 #map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
 #pills-bar-wrap::-webkit-scrollbar{display:none;height:0;}
+
+/* ── TUTORIAL COACHMARK ── */
+#tut{position:fixed;inset:0;z-index:900;display:none;}
+#tut-spot{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(30,36,24,0.72),0 0 0 3px var(--gd),0 0 0 7px rgba(196,169,106,0.3);pointer-events:none;transition:left 0.28s cubic-bezier(0.4,0,0.2,1),top 0.28s cubic-bezier(0.4,0,0.2,1),width 0.28s cubic-bezier(0.4,0,0.2,1),height 0.28s cubic-bezier(0.4,0,0.2,1);}
+#tut-bub{position:fixed;max-width:290px;width:calc(100vw - 28px);background:var(--cr);border:1px solid var(--bd);border-radius:14px;padding:17px 18px;box-shadow:0 12px 40px rgba(30,36,24,0.28);}
+#tut-bub p{font-size:0.86rem;line-height:1.6;color:var(--tx);margin-bottom:14px;}
+[data-lang="zh"] #tut-bub p{font-family:'Noto Serif TC',serif;}
+.tut-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.tut-count{font-size:0.72rem;color:var(--mu);letter-spacing:0.04em;flex-shrink:0;}
+.tut-btns{display:flex;gap:9px;align-items:center;}
+.tut-skip{background:none;border:none;color:var(--mu);font-family:inherit;font-size:0.78rem;cursor:pointer;padding:5px 2px;}
+.tut-next{background:var(--ol);color:#fff;border:none;border-radius:9px;padding:8px 18px;font-family:inherit;font-size:0.8rem;font-weight:500;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -550,6 +562,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <div class="drb">
     <div class="drs"><div class="drsl">Language / 語言</div><div class="drlang"><button class="drlopt" id="dlen" onclick="setLang('en')">English</button><button class="drlopt ac" id="dlzh" onclick="setLang('zh')">繁中</button></div></div>
     <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="6" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
+    <div class="drs"><div class="drsl"><span class="en">Tutorial</span><span class="tc">使用導覽</span></div><button class="drdlbtn" onclick="replayTour()"><span class="en">Replay tutorial</span><span class="tc">重看導覽</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><polyline points="3 3 3 8 8 8"/></svg></button></div>
     <div class="drs">
       <div class="drsl"><span class="en">Offline</span><span class="tc">離線使用</span></div>
       <div class="dr-note">
@@ -1798,8 +1811,84 @@ function setupSW(){
   navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='SW_UPDATED')document.getElementById('ubar').classList.add('sh');});
 }
 
+// ════ TUTORIAL COACHMARK ════
+// 首次使用導覽：dim 全屏 + spotlight 高亮單一目標 + 氣泡逐步。單 div box-shadow 做鏤空 dim。
+const TUT_STEPS=[
+  {sel:'#inst-block', en:'First, add this app to your home screen — one tap to open it anytime.',                 tc:'第一步：將 app 加到手機主畫面，隨時一撳即開。'},
+  {sel:'#drdlbtn', open:true, en:'Then open the menu and download the audio in advance — it plays even with no signal on the trail.', tc:'第二步：喺選單預先下載音頻，山上冇網都聽到。'},
+  {sel:'#jlib .jc',   en:'All set — tap a journey here to begin your walk.',                                      tc:'準備好喇——撳呢度揀一條旅程，開始你嘅步行。'}
+];
+let _tutI=0,_tutOn=false;
+function _tutReflow(){tutPos();}
+function startTour(){
+  _tutI=0;_tutOn=true;
+  let ov=document.getElementById('tut');
+  if(!ov){
+    ov=document.createElement('div');ov.id='tut';
+    ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label','Tutorial');
+    ov.innerHTML='<div id="tut-spot"></div><div id="tut-bub"></div>';
+    ov.addEventListener('click',tutNext);
+    document.body.appendChild(ov);
+    document.getElementById('tut-bub').addEventListener('click',e=>e.stopPropagation());
+  }
+  ov.style.display='block';
+  window.addEventListener('resize',_tutReflow);
+  window.addEventListener('scroll',_tutReflow,true);
+  document.addEventListener('keydown',tutKey);
+  tutShow();
+}
+function tutKey(e){if(e.key==='Escape')endTour();}
+function tutShow(){
+  const step=TUT_STEPS[_tutI];
+  step&&step.open?drOpen():drClose(); // 需要時打開選單，否則收起
+  const el=step&&document.querySelector(step.sel);
+  const r0=el&&el.getBoundingClientRect();
+  if(!el||!r0||(r0.width<2&&r0.height<2)){ if(_tutI<TUT_STEPS.length-1){_tutI++;return tutShow();} return endTour(); } // 目標唔喺 DOM／唔可見 → 跳步唔終止
+  el.scrollIntoView({block:'center',behavior:'smooth'});
+  const last=_tutI===TUT_STEPS.length-1;
+  document.getElementById('tut-bub').innerHTML=
+    `<p><span class="en">${step.en}</span><span class="tc">${step.tc}</span></p>`+
+    `<div class="tut-foot"><span class="tut-count">${_tutI+1} / ${TUT_STEPS.length}</span>`+
+    `<span class="tut-btns"><button class="tut-skip" type="button" onclick="endTour()"><span class="en">Skip</span><span class="tc">略過</span></button>`+
+    `<button class="tut-next" type="button" onclick="tutNext(event)">`+
+    (last?'<span class="en">Done</span><span class="tc">完成</span>':'<span class="en">Next</span><span class="tc">下一步</span>')+
+    `</button></span></div>`;
+  tutPos();
+  setTimeout(tutPos,380); // 等 smooth scroll + drawer 滑入定位
+}
+function tutPos(){
+  if(!_tutOn)return;
+  const step=TUT_STEPS[_tutI];
+  const el=step&&document.querySelector(step.sel);
+  if(!el)return;
+  const r=el.getBoundingClientRect(),PAD=6;
+  const x=Math.max(0,r.left-PAD),y=Math.max(0,r.top-PAD),w=r.width+PAD*2,h=r.height+PAD*2;
+  const spot=document.getElementById('tut-spot');
+  spot.style.left=x+'px';spot.style.top=y+'px';spot.style.width=w+'px';spot.style.height=h+'px';
+  const bub=document.getElementById('tut-bub'),vw=window.innerWidth,vh=window.innerHeight;
+  bub.style.left=Math.min(Math.max(12,x),Math.max(12,vw-302))+'px';
+  if(y+h+170<vh){bub.style.top=(y+h+12)+'px';bub.style.bottom='auto';}
+  else{bub.style.bottom=(vh-y+12)+'px';bub.style.top='auto';}
+}
+function tutNext(e){if(e&&e.stopPropagation)e.stopPropagation();if(_tutI>=TUT_STEPS.length-1)return endTour();_tutI++;tutShow();}
+function endTour(){
+  _tutOn=false;
+  const ov=document.getElementById('tut');if(ov)ov.style.display='none';
+  drClose(); // 若停喺開咗選單嗰步，收埋
+  window.removeEventListener('resize',_tutReflow);
+  window.removeEventListener('scroll',_tutReflow,true);
+  document.removeEventListener('keydown',tutKey);
+  try{localStorage.setItem('kfbg-tour','1');}catch(e){}
+}
+function maybeStartTour(){
+  if(_DL)return;                              // QR 深連結訪客唔強推導覽
+  if(localStorage.getItem('kfbg-tour'))return; // 已睇過
+  requestAnimationFrame(()=>requestAnimationFrame(startTour)); // 首頁行 3 步，唔入播放頁
+}
+function replayTour(){drClose();goHome();requestAnimationFrame(()=>requestAnimationFrame(startTour));}
+
 // ════ START ════
-document.addEventListener('DOMContentLoaded',()=>{init();});
+document.addEventListener('DOMContentLoaded',()=>{init();maybeStartTour();});
 </script>
 </body>
 </html>
