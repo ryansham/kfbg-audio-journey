@@ -93,8 +93,10 @@ export const chapter = defineType({
       name: 'audio_url',
       title: 'Audio URL',
       type: 'url',
-      description: 'Full URL to the MP3 file on the KFBG server, e.g. https://audio.kfbg.org/audio/grounding-walk/grounding-walk-ch01.mp3',
-      validation: (R) => R.required(),
+      description:
+        'Prefer a path relative to the site root, e.g. audio/grounding-walk/grounding-walk-ch01.mp3 — it then resolves to whichever host is serving the app, so promoting staging → production can never leave production pointing at the staging host.',
+      // ponytail: allowRelative so one value is correct on both hosts. Absolute URLs still validate.
+      validation: (R) => R.required().uri({allowRelative: true}),
     }),
     defineField({
       name: 'audio_duration_seconds',
