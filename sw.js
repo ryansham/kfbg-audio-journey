@@ -1,10 +1,12 @@
-/* KFBG Audio Journey — SW v46 */
-const PAGE_CACHE='kfbg-pages-v46';
+/* KFBG Audio Journey — SW v47 */
+const PAGE_CACHE='kfbg-pages-v47';
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 const PRECACHE=[
+  // ponytail: og-image.jpg is only ever read by social scrapers server-side — precaching it cost
+  // every first-time visitor 177KB for a file the app never displays. Still cached on demand below.
   './', './index.html', './manifest.json',
-  './KFBG_Logo.png', './KFBG_Logo_192.png', './og-image.jpg',
+  './KFBG_Logo.png', './KFBG_Logo_192.png',
   './images/maps/kfbg-map-full.jpg',
   './images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg',
   './images/journeys/grounding-walk/grounding-walk-card.jpg',

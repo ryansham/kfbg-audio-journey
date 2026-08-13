@@ -14,18 +14,21 @@
 <title>自助語音旅程 · KFBG</title>
 <meta property="og:title" content="KFBG Self-guided Audio Journey · 自助語音旅程"/>
 <meta property="og:description" content="A mindful audio walk through Kadoorie Farm and Botanic Garden. Five stops, five senses."/>
-<meta property="og:image" content="og-image.jpg"/>
+<meta property="og:image" content="https://audio-journey.kfbg.org/og-image.jpg"/>
+<meta property="og:url" content="https://audio-journey.kfbg.org/"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 <meta property="og:type" content="website"/>
 <meta property="og:site_name" content="Kadoorie Farm and Botanic Garden"/>
 <meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:image" content="og-image.jpg"/>
+<meta name="twitter:image" content="https://audio-journey.kfbg.org/og-image.jpg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v45
+   Single Page App — v47
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -195,8 +198,9 @@ details[open] summary::after{content:'▾';}
 .comp p{font-size:0.82rem;color:rgba(247,243,236,0.65);line-height:1.7;margin-bottom:20px;max-width:250px;margin-left:auto;margin-right:auto;}
 .btnhome{display:inline-flex;align-items:center;gap:7px;background:var(--gd);color:var(--olm);padding:11px 20px;border-radius:100px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
 /* offline */
-#offbar{display:none;background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:6px 13px;margin:4px 14px;font-size:0.7rem;color:var(--gd);text-align:center;}
-#offbar.sh{display:block;}
+#offbar,#errbar{display:none;background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:6px 13px;margin:4px 14px;font-size:0.7rem;color:var(--gd);text-align:center;}
+#offbar.sh,#errbar.sh{display:block;}
+#errbar{background:rgba(192,57,43,0.07);border-color:rgba(192,57,43,0.25);color:#a5382b;line-height:1.5;}
 
 /* ════ FUSED CHAPTER CARD ════ */
 .csec{margin-top:0;padding-top:52px;padding-bottom:52px;scroll-margin-top:8px;}
@@ -508,6 +512,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
     <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
     <div id="offbar"><span class="en">Offline — playing from cache</span><span class="tc">離線模式 — 從緩存播放</span></div>
+    <div id="errbar"><span class="en">This chapter could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此章節載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
     <div class="jcon" id="jcon"></div>
   </div>
 
@@ -1053,7 +1058,7 @@ function buildChapters(){
 function buildPills(){
   document.getElementById('pills-bar-wrap').innerHTML=
     `<button class="pill" onclick="scrollMap()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg><span class="en">Map</span><span class="tc">地圖</span></button>`+
-    CH.map((c,i)=>`<button class="pill${DONE.has(i)?' dn':''}" id="pl${i}" onclick="tapPlay(${i})"><span class="pilln">${String(c.id).padStart(2,'0')}</span><span class="en">${c.loc.en}</span><span class="tc">${c.loc.tc}</span></button>`).join('');
+    CH.map((c,i)=>`<button class="pill${DONE.has(i)?' dn':''}" id="pl${i}" onclick="tapPlay(${i})"><span class="pilln">${String(c.id).padStart(2,'0')}</span><span class="en">${esc(c.loc.en)}</span><span class="tc">${esc(c.loc.tc)}</span></button>`).join('');
 }
 function scrollMap(){document.getElementById('mapw')?.scrollIntoView({behavior:'smooth',block:'start'});}
 
@@ -1116,8 +1121,17 @@ aud.addEventListener('timeupdate',()=>{
 });
 aud.addEventListener('loadedmetadata',()=>{refreshPBProg(0,aud.duration);const ct=document.getElementById('ct'+ai);if(ct)ct.textContent='0:00 / '+fmt(aud.duration);});
 aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');}});
-aud.addEventListener('play',()=>{playing=true;syncBtns(true);});
+aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
 aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
+// ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
+// no message. On the trail that reads as a dead button. Surface it and leave the retry to the user.
+function errBar(on){document.getElementById('errbar')?.classList.toggle('sh',on);}
+aud.addEventListener('error',()=>{
+  if(!aud.src)return;              // src cleared, not a real failure
+  hideLd(ai);playing=false;syncBtns(false);
+  errBar(true);
+});
+aud.addEventListener('loadstart',()=>errBar(false));
 function refreshPBText(){
   const c=CH[ai];const k=dk();
   document.getElementById('pbch-txt').textContent='Ch.0'+c.id+' · '+(c.loc[k]||c.loc.en);
@@ -1680,17 +1694,34 @@ async function runDl(files){
   btn.disabled=true;prog.style.display='block';
   try{
     const c=await caches.open(CACHE);
+    // ponytail: per-file try/catch — one bad chapter used to abort the whole batch and leave the
+    // user with a generic error and no idea what they actually have offline.
+    let failed=0;
     for(let i=0;i<files.length;i++){
       txt.textContent=(lang==='zh'?'下載中 ':'Downloading ')+(i+1)+'/'+files.length+'...';
-      if(!await c.match(files[i]).catch(()=>null)){const r=await fetch(files[i]);if(r.ok)await c.put(files[i],r);}
+      try{
+        if(!await c.match(files[i]).catch(()=>null)){
+          const r=await fetch(files[i]);
+          // 206 passes r.ok but Cache API rejects it — same guard sw.js already uses
+          if(r.status===200)await c.put(files[i],r); else failed++;
+        }
+      }catch(e){failed++;}
       fill.style.width=Math.round(((i+1)/files.length)*100)+'%';
+    }
+    if(failed){
+      btn.disabled=false;
+      checkDlState(); // whatever did land is real — let the user delete/retry from a true state
+      txt.textContent=lang==='zh'
+        ?`已下載 ${files.length-failed}/${files.length} — ${failed} 個章節失敗，請再試一次`
+        :`Saved ${files.length-failed}/${files.length} — ${failed} failed, please retry`;
+      return;
     }
     btn.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';
     txt.textContent=lang==='zh'?'✓ 可離線收聽':'✓ Ready for offline';
     checkDlState();
     // Silently cache all images in background (separate IMAGE_CACHE)
     cacheImages();
-  }catch(e){btn.disabled=false;txt.textContent='Error — please retry';}
+  }catch(e){btn.disabled=false;txt.textContent=lang==='zh'?'下載失敗，請再試一次':'Download failed — please retry';}
 }
 // Collect all image URLs to cache for offline
 function getImageUrls(){
