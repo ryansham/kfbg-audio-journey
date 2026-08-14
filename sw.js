@@ -1,5 +1,5 @@
-/* KFBG Audio Journey — SW v48 */
-const PAGE_CACHE='kfbg-pages-v48';
+/* KFBG Audio Journey — SW v49 */
+const PAGE_CACHE='kfbg-pages-v49';
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 const PRECACHE=[
@@ -15,7 +15,9 @@ const PRECACHE=[
   './KFBG_Logo.png', './KFBG_Logo_192.png',
   './images/speakers/stanley-chan.jpg', // genuinely displayed — CMS speaker has no photo, so the local file is the live one
 ];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting()));});
+// cache:'reload' — addAll() otherwise reads the browser's HTTP cache, which can bake a stale
+// index.html into a brand-new cache. Seen live: kfbg-pages-v48 holding a v45 page.
+self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==PAGE_CACHE&&k!==AUDIO_CACHE&&k!==IMAGE_CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.matchAll({includeUncontrolled:true})).then(clients=>clients.forEach(c=>c.postMessage({type:'SW_UPDATED',version:PAGE_CACHE}))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const url=new URL(e.request.url);const path=url.pathname;
@@ -46,7 +48,8 @@ self.addEventListener('fetch',e=>{
     // Sanity API: network-first, cache for offline
     e.respondWith(fetch(e.request).then(res=>{if(res.ok)caches.open(PAGE_CACHE).then(c=>c.put(e.request,res.clone()));return res;}).catch(()=>caches.match(e.request)));
   } else if(isPage){
-    const cleanReq=(path.endsWith('/index.html')||path==='/')?new Request(url.origin+path):e.request;
+    // no-cache forces revalidation so a heuristically-cached page can't outlive a release
+    const cleanReq=(path.endsWith('/index.html')||path==='/')?new Request(url.origin+path,{cache:'no-cache'}):e.request;
     e.respondWith(fetch(cleanReq).then(res=>{if(res.ok)caches.open(PAGE_CACHE).then(c=>c.put(cleanReq,res.clone()));return res;}).catch(async()=>await caches.match(cleanReq)||await caches.match('./index.html'))); // await both so the app-shell fallback actually fires offline
   }
 });

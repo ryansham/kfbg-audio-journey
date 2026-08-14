@@ -7,6 +7,13 @@
   <FilesMatch "^(sw\.js|manifest\.json)$">
     Header set Cache-Control "no-cache, no-store, must-revalidate"
   </FilesMatch>
+  # 1b. index.html is the file that changes every release, and it had no Cache-Control at all —
+  #     so browsers applied heuristic caching, and the SW's addAll() (which reads the HTTP cache)
+  #     baked a stale page into the *new* cache. Observed live: a v48 cache holding v45 HTML.
+  #     "no-cache" still stores it; it just forces revalidation, so this stays cheap (304s).
+  <FilesMatch "^index\.html$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
   # 2. Long cache for static assets (safe: bump filenames/PAGE_CACHE on change).
   <FilesMatch "\.(jpg|jpeg|png|webp|mp3|woff2)$">
     Header set Cache-Control "public, max-age=2592000"
