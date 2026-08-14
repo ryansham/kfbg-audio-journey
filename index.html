@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v49
+   Single Page App — v50
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
@@ -708,7 +708,7 @@ function setupGA(){
   loadGA();
   window.addEventListener('online',()=>{loadGA();setTimeout(flushGA,1200);});
   // last chance to drain before the tab goes away
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushGA();});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){trackAbandon();flushGA();}});
 }
 function loadGA(){
   if(gaReady||document.getElementById('ga-src'))return;
@@ -1235,7 +1235,7 @@ function loadCh(i,doPlay){
   ai=i;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
-  _justEnded=false;
+  _justEnded=false;_abandonSent=false;
   if(doPlay){
     track('chapter_play',{chapter_number:CH[i].id,is_offline:!navigator.onLine,playlist_mode:plMode});
     showLd(i);
@@ -1244,12 +1244,16 @@ function loadCh(i,doPlay){
     aud.play().then(()=>{clearInterval(iv);setTimeout(()=>hideLd(i),300);playing=true;syncBtns(true);}).catch(()=>{clearInterval(iv);hideLd(i);playing=false;syncBtns(false);});
   }else{playing=false;syncBtns(false);}
 }
-let _justEnded=false;
+let _justEnded=false,_abandonSent=false;
+// Leaving a chapter part-way is the drop-off signal. Switching chapters is only half of it —
+// on the trail the commoner exit is closing the app mid-chapter, so this also runs on hide.
+function trackAbandon(){
+  if(_justEnded||_abandonSent||!aud.duration||aud.currentTime<=5)return;
+  _abandonSent=true;
+  track('chapter_abandon',{chapter_number:CH[ai].id,listened_pct:Math.round(aud.currentTime/aud.duration*100)});
+}
 function jump(i,asPL){
-  // leaving a chapter part-way is the drop-off signal — where the content or the walk loses people
-  if(!_justEnded&&aud.duration&&aud.currentTime>5&&i!==ai){
-    track('chapter_abandon',{chapter_number:CH[ai].id,listened_pct:Math.round(aud.currentTime/aud.duration*100)});
-  }
+  if(i!==ai)trackAbandon();
   if(asPL!==undefined)plMode=asPL;
   const c=CH[i];const k=dk();
   const sh=document.getElementById('trsh');
@@ -1978,7 +1982,13 @@ function setupInstall(){
   if(isAndroid){
     instTab('android', document.querySelector('.inst-tab:last-child'));
   }
-  window.addEventListener('appinstalled',()=>track('pwa_install',{platform:isIOS?'ios':(isAndroid?'android':'other')}));
+  const plat=isIOS?'ios':(isAndroid?'android':'other');
+  window.addEventListener('appinstalled',()=>track('pwa_install',{platform:plat}));
+  // iOS Safari never fires appinstalled, and iPhone is this app's main platform — so the install
+  // count would have read ~0 forever. "Opened from the Home Screen" is the behaviour we actually
+  // wanted to know about anyway, and it works everywhere.
+  if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)
+    track('pwa_launch',{platform:plat});
   // Show native install button if beforeinstallprompt available
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();
