@@ -1,21 +1,19 @@
-/* KFBG Audio Journey — SW v47 */
-const PAGE_CACHE='kfbg-pages-v47';
+/* KFBG Audio Journey — SW v48 */
+const PAGE_CACHE='kfbg-pages-v48';
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 const PRECACHE=[
-  // ponytail: og-image.jpg is only ever read by social scrapers server-side — precaching it cost
-  // every first-time visitor 177KB for a file the app never displays. Still cached on demand below.
+  // ponytail: app shell only. The journey images this app actually displays come from cdn.sanity.io
+  // (measured on prod), so precaching the local copies cost every first visitor 1351KB for files
+  // that never appear on screen — 77% of the old precache. They are still reachable on demand, and
+  // the offline path is covered twice over: the image handler below caches whatever the page really
+  // requests, and cacheImages() stores every real URL when the user taps Download.
+  // Trade: a first visit that ALSO cannot reach Sanity falls back to the hardcoded chapter list,
+  // whose local image paths are then uncached — that narrow case shows broken images.
+  // og-image.jpg stays out too: only social scrapers read it, server-side.
   './', './index.html', './manifest.json',
   './KFBG_Logo.png', './KFBG_Logo_192.png',
-  './images/maps/kfbg-map-full.jpg',
-  './images/journeys/grounding-walk/grounding-walk-map-preview.jpg.jpg',
-  './images/journeys/grounding-walk/grounding-walk-card.jpg',
-  './images/journeys/grounding-walk/grounding-walk-ch01.jpg',
-  './images/journeys/grounding-walk/grounding-walk-ch02.jpg',
-  './images/journeys/grounding-walk/grounding-walk-ch03.jpg',
-  './images/journeys/grounding-walk/grounding-walk-ch04.jpg',
-  './images/journeys/grounding-walk/grounding-walk-ch05.jpg',
-  './images/speakers/stanley-chan.jpg',
+  './images/speakers/stanley-chan.jpg', // genuinely displayed — CMS speaker has no photo, so the local file is the live one
 ];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==PAGE_CACHE&&k!==AUDIO_CACHE&&k!==IMAGE_CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.matchAll({includeUncontrolled:true})).then(clients=>clients.forEach(c=>c.postMessage({type:'SW_UPDATED',version:PAGE_CACHE}))).then(()=>self.clients.claim()));});

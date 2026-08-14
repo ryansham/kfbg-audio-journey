@@ -28,12 +28,14 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v47
+   Single Page App — v48
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
+  /* --gd 落喺深橄欖底只有 4.18:1，未夠 AA。呢個係佢嘅淺色版，專用喺 --olm 底上嘅細字。 */
+  --gdl:#DCC694;
   --nav:54px;--bar:168px;--bar-min:32px;--pills:44px;--fs:1rem;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -243,6 +245,17 @@ details[open] summary::after{content:'▾';}
 .cdiv::before,.cdiv::after{content:'';flex:1;height:1px;background:var(--ol);}
 .cdivd{width:4px;height:4px;border-radius:50%;background:var(--ol);}
 
+/* ════ PRIVACY / LEGAL ════ */
+.legal{max-width:640px;margin:0 auto;padding:28px 18px 70px;}
+.legal h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,6vw,2rem);font-weight:500;color:var(--tx);line-height:1.2;margin-bottom:6px;}
+[data-lang="zh"] .legal h1{font-family:'Noto Serif TC',serif;}
+.legal-date{font-size:0.68rem;color:var(--mu);margin-bottom:26px;}
+.legal h2{font-size:0.62rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--ol);font-weight:600;margin:26px 0 8px;}
+[data-lang="zh"] .legal h2{letter-spacing:0.1em;font-size:0.72rem;text-transform:none;}
+.legal p{font-size:0.86rem;color:var(--tm);line-height:1.85;margin-bottom:10px;}
+.legal-foot{margin-top:32px;padding-top:18px;border-top:1px solid var(--bd);}
+.legal-foot p{font-size:0.78rem;color:var(--mu);}
+
 /* ════ SPEAKER CARD ════ */
 .attr-line{padding:20px 0 20px;text-align:center;font-size:0.8rem;color:var(--mu);line-height:1.7;border-top:1px solid var(--bd);}
 .speaker-card{background:var(--sa);border-radius:13px;padding:16px;margin:20px 0 4px;}
@@ -301,10 +314,12 @@ details[open] summary::after{content:'▾';}
 #barpills{display:none;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:0 13px 9px;scrollbar-width:none;}
 #barpills::-webkit-scrollbar{display:none;}
 #barpills.sh{display:flex;}
-.pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.18);background:rgba(255,255,255,0.04);font-size:0.68rem;color:rgba(247,243,236,0.6);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;-webkit-tap-highlight-color:transparent;}
-.pill.ac{background:var(--gd);border-color:var(--gd);color:#fff;font-weight:600;}
-.pill.dn{border-color:rgba(196,169,106,0.35);color:rgba(196,169,106,0.62);}
-.pilln{font-size:0.56rem;opacity:0.65;}
+/* 對比度：呢排 pill 坐喺深橄欖底，三個狀態原本全部低過 WCAG AA（白字落金底得 2.3:1，
+   戶外太陽底下等於冇字）。以下數值全部量過渲染後嘅真實對比。 */
+.pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.04);font-size:0.68rem;color:rgba(247,243,236,0.88);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;-webkit-tap-highlight-color:transparent;}
+.pill.ac{background:var(--gd);border-color:var(--gd);color:var(--tx);font-weight:600;}
+.pill.dn{border-color:rgba(196,169,106,0.55);color:var(--gdl);}
+.pilln{font-size:0.56rem;} /* 冇 opacity：層級靠字級做，疊上去會拉低對比到 AA 以下 */
 
 /* ════ DRAWER ════ */
 #drov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s;}
@@ -482,7 +497,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     <div class="lib" id="jlib">
       <div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>
       <div class="jc" onclick="goJourney()">
-        <div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-card.jpg" loading="lazy"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
+        <div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-card.jpg" loading="lazy" alt="Grounding Walk at the Lower Hillside of KFBG"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
         <div class="jbody">
           <div class="jkick"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
           <div class="jtitle en">Grounding Walk at the Lower Hillside of KFBG</div>
@@ -492,8 +507,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
           <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">5 stops</span><span class="tc">5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
         </div>
       </div>
-      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy"/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc nst">上農場步道</div></div></div>
-      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch05.jpg" loading="lazy"/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc nst">林地靜境</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy" alt=""/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc nst">上農場步道</div></div></div>
+      <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch05.jpg" loading="lazy" alt=""/><div class="jnum">3</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 03</span><span class="tc">旅程 03</span></div><div class="jtitle en">Woodland Sanctuary</div><div class="jtitle tc nst">林地靜境</div></div></div>
     </div>
   </div>
 
@@ -514,6 +529,36 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     <div id="offbar"><span class="en">Offline — playing from cache</span><span class="tc">離線模式 — 從緩存播放</span></div>
     <div id="errbar"><span class="en">This chapter could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此章節載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
     <div class="jcon" id="jcon"></div>
+  </div>
+
+  <!-- PRIVACY -->
+  <div id="vp" class="view">
+    <div class="legal">
+      <h1 class="en">Privacy &amp; Cookies</h1>
+      <h1 class="tc nst">私隱與 Cookie</h1>
+      <p class="legal-date"><span class="en">Last updated 14 August 2026</span><span class="tc">最後更新：2026 年 8 月 14 日</span></p>
+
+      <h2 class="en">Records and analytics</h2>
+      <h2 class="tc nst">記錄與分析</h2>
+      <p class="en">Your interactions with this app are recorded for data analysis, so that the content can be improved. This includes technical information such as device type, browser and approximate area. We do not collect your name, email address or phone number, and we cannot identify you.</p>
+      <p class="tc">您在本應用程式內的互動會被記錄，用作數據分析，以改善內容。記錄範圍包括裝置類型、瀏覽器及大概地區等技術資料。當中不會收集您的姓名、電郵或電話號碼，我們亦無法辨識您的身分。</p>
+
+      <h2 class="en">Cookies</h2>
+      <h2 class="tc nst">Cookie</h2>
+      <p class="en">This app uses a third-party analytics service, which stores cookies on your device. The data is read in aggregate only. You may block or delete these cookies in your browser settings — the app works normally without them.</p>
+      <p class="tc">本應用程式使用第三方分析服務，會在您的裝置存放 cookie。相關資料只作整體分析。您可在瀏覽器設定中封鎖或刪除；即使封鎖，本應用程式仍可正常使用。</p>
+
+      <h2 class="en">Offline use</h2>
+      <h2 class="tc nst">離線使用</h2>
+      <p class="en">Downloaded audio is stored on your own device and is never uploaded. Deleting this app, or clearing this site's data in your browser, removes everything held on your device.</p>
+      <p class="tc">已下載的音頻儲存在您的裝置上，不會上傳。刪除本應用程式或在瀏覽器中清除本網站資料，即可移除裝置上儲存的一切。</p>
+
+      <div class="legal-foot">
+        <p class="en">This notice covers the Self-guided Audio Journey. KFBG's general website terms and privacy policy apply in addition.</p>
+        <p class="tc">本說明適用於自助語音旅程。嘉道理農場暨植物園網站的一般條款及私隱政策同時適用。</p>
+        <div class="drlink" onclick="openLink('terms')" style="margin-top:12px;"><span class="en">KFBG Terms &amp; Conditions</span><span class="tc">KFBG 條款及細則</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -586,6 +631,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <div class="drlink" onclick="openLink('donate')"><span class="en">Donate</span><span class="tc">捐款</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
     </div>
     <div class="drs"><div class="drsl"><span class="en">Follow us</span><span class="tc">關注我們</span></div><div class="drsoc" id="drsoc"></div></div>
+    <div class="drs">
+      <div class="drlink" onclick="goPrivacy()"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
   </div>
 </div>
 
@@ -637,6 +685,81 @@ const SANITY_CDN = `https://${SANITY_PROJECT}.apicdn.sanity.io/v2021-06-07/data/
 
 // ponytail: escape CMS strings only at HTML (innerHTML) sinks — textContent uses stay raw. Makes CMS interpolation XSS-safe.
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ════ ANALYTICS ════
+// Everything worth measuring here happens on a hillside with no signal, so a plain gtag install
+// would record "someone opened the page at the entrance" and nothing else. Two consequences:
+//   1. events are queued in localStorage whenever we can't send, and flushed on reconnect
+//   2. the gtag script itself may fail to load (offline cold start of the installed PWA), so we
+//      re-inject it when connectivity returns instead of silently never initialising
+const GA_ID='G-3YGC4LP6Y3';
+const GA_COOKIELESS=false; // ⚠️ set true to run without cookies while KFBG's consent policy is unresolved
+const GA_QUEUE='kfbg-ga-q';
+let gaReady=false, walkId=null;
+
+function setupGA(){
+  if(!GA_ID)return;
+  window.dataLayer=window.dataLayer||[];
+  window.gtag=window.gtag||function(){dataLayer.push(arguments);};
+  // ponytail: measured — client_storage:'none' does NOT stop GA4 writing _ga / _ga_<id>.
+  // Consent Mode is what actually produces cookieless pings, and it has to be queued into
+  // dataLayer BEFORE gtag.js loads, otherwise the library has already written its cookies.
+  if(GA_COOKIELESS)gtag('consent','default',{analytics_storage:'denied',ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied'});
+  loadGA();
+  window.addEventListener('online',()=>{loadGA();setTimeout(flushGA,1200);});
+  // last chance to drain before the tab goes away
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushGA();});
+}
+function loadGA(){
+  if(gaReady||document.getElementById('ga-src'))return;
+  const s=document.createElement('script');
+  s.id='ga-src';s.async=true;s.src=`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+  s.onload=()=>{
+    gaReady=true;
+    gtag('js',new Date());
+    gtag('config',GA_ID);
+    flushGA();
+  };
+  s.onerror=()=>{s.remove();}; // let a later 'online' retry
+  document.head.appendChild(s);
+}
+// walk_id stitches one walk together even when GA splits it across sessions.
+// Persisted, because a 90-minute walk means the PWA gets backgrounded and may be killed — an
+// in-memory id would turn one walk into several and make completion rate uncomputable.
+// Returns true only for a genuinely new walk, so resuming doesn't double-count journey_start.
+const GA_WALK='kfbg-walk', WALK_MAX_MS=6*3600*1000;
+let walkStart=0;
+function startWalk(){
+  try{
+    const w=JSON.parse(localStorage.getItem(GA_WALK)||'null');
+    if(w&&w.id&&Date.now()-w.t<WALK_MAX_MS){walkId=w.id;walkStart=w.t;return false;}
+  }catch(e){}
+  walkId='w'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  walkStart=Date.now();
+  try{localStorage.setItem(GA_WALK,JSON.stringify({id:walkId,t:walkStart}));}catch(e){}
+  return true;
+}
+function endWalk(){try{localStorage.removeItem(GA_WALK);}catch(e){}walkId=null;walkStart=0;}
+function track(name,params={}){
+  const ev={name,params:{...params,lang,walk_id:walkId||''},t:Date.now()};
+  if(gaReady&&navigator.onLine){gtag('event',ev.name,ev.params);return;}
+  // ponytail: navigator.onLine can report true with no real connectivity, so a few events will be
+  // sent into the void rather than queued. Acceptable for analytics; not worth a delivery receipt.
+  try{
+    const q=JSON.parse(localStorage.getItem(GA_QUEUE)||'[]');
+    q.push(ev);
+    localStorage.setItem(GA_QUEUE,JSON.stringify(q.slice(-300)));
+  }catch(e){}
+}
+function flushGA(){
+  if(!gaReady||!navigator.onLine)return;
+  let q;
+  try{q=JSON.parse(localStorage.getItem(GA_QUEUE)||'[]');}catch(e){return;}
+  if(!q.length)return;
+  try{localStorage.removeItem(GA_QUEUE);}catch(e){}
+  // gtag can't backdate, so carry the real age as a parameter and reconstruct order in analysis
+  q.forEach(ev=>gtag('event',ev.name,{...ev.params,queued_min_ago:Math.round((Date.now()-ev.t)/60000)}));
+}
 
 // Convert Sanity image reference to CDN URL
 function sanityImg(ref, w=800, h=450) {
@@ -717,6 +840,9 @@ function sanityToCH(j) {
     .map(c => ({
       id: c.chapter_number,
       a: c.audio_url,
+      // ponytail: editors already fill this in; nothing read it, so the UI showed —:—— until the
+      // file loaded. On the trail the length is what decides whether you start the stop.
+      dur: c.audio_duration_seconds,
       loc: {en: c.location_en, tc: c.location_tc},
       title: {en: c.full_title_en, tc: c.full_title_tc},
       sh: {en: c.short_title_en, tc: c.short_title_tc},
@@ -742,7 +868,7 @@ function sanityToSpeaker(j) {
 }
 
 // ════ DATA ════
-const LINKS={home:{en:'https://kfbg.org/en/',tc:'https://kfbg.org/tc/'},events:{en:'https://kfbg.org/en/event-calendar',tc:'https://kfbg.org/tc/event-calendar'},donate:{en:'https://kfbg.org/en/donation',tc:'https://kfbg.org/tc/donation'}};
+const LINKS={home:{en:'https://kfbg.org/en/',tc:'https://kfbg.org/tc/'},events:{en:'https://kfbg.org/en/event-calendar',tc:'https://kfbg.org/tc/event-calendar'},donate:{en:'https://kfbg.org/en/donation',tc:'https://kfbg.org/tc/donation'},terms:{en:'https://www.kfbg.org/en/other/terms-and-conditions',tc:'https://www.kfbg.org/tc/other/terms-and-conditions'}};
 const SOC=[
   {l:'Facebook',h:'https://www.facebook.com/KadoorieFarmAndBotanicGarden/',s:'<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>'},
   {l:'Instagram',h:'https://www.instagram.com/kfbg.official/',s:'<rect x="2" y="2" width="20" height="20" rx="5" ry="5" style="fill:none;stroke:#fff;stroke-width:1.5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" style="fill:none;stroke:#fff;stroke-width:1.5"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" style="stroke:#fff;stroke-width:2"/>'},
@@ -826,6 +952,7 @@ function init(){
   setupOffline();
   setupInstall();
   setupSW();
+  setupGA();
   checkDlState();
   _fsSetup();
   // Show environment badge
@@ -924,13 +1051,34 @@ function applyLang(l,save=true){
   document.getElementById('dlzh').classList.toggle('ac',l==='zh');
   setNavTitle();
   refreshPBText();
+  syncA11y();
 }
-function setLang(l){applyLang(l);}
+// ponytail: the icon-only buttons had no accessible name — a screen reader announced them as just
+// "button". Labels follow the current language, so this re-runs on language switch and after
+// buildChapters() replaces the chapter buttons.
+function syncA11y(){
+  const zh=lang==='zh';
+  const set=(sel,txt)=>document.querySelector(sel)?.setAttribute('aria-label',txt);
+  set('#nav-menu',    zh?'選單':'Menu');
+  set('#map-expand',  zh?'放大地圖':'Expand map');
+  set('#map-fs-close',zh?'關閉地圖':'Close map');
+  set('.drclose',     zh?'關閉選單':'Close menu');
+  set('#bar-toggle',  zh?'收起或展開播放器':'Collapse or expand player');
+  set('#pbt',         zh?'播放進度，可用左右方向鍵快轉':'Seek, use arrow keys');
+  CH.forEach((c,i)=>{
+    const t=(zh?c.sh.tc:c.sh.en)||'';
+    document.getElementById('cb'+i)?.setAttribute('aria-label',(zh?'播放 ':'Play ')+t);
+  });
+  syncBtns(playing);
+}
+function setLang(l){if(l!==lang)track('lang_switch',{from:lang,to:l});applyLang(l);}
 function setNavTitle(){
   const t=document.getElementById('nav-title');
   if(view==='journey'){
     const title=window._j1Title;
     t.textContent=title?(lang==='zh'?title.tc:title.en):(lang==='zh'?'連結大地':'Grounding Walk');
+  } else if(view==='privacy'){
+    t.textContent=lang==='zh'?'私隱與 Cookie':'Privacy & Cookies';
   } else {
     t.textContent='';
   }
@@ -946,6 +1094,7 @@ function goHome(){
   view='home';
   document.getElementById('vh').classList.add('on');
   document.getElementById('vj').classList.remove('on');
+  document.getElementById('vp').classList.remove('on');
   document.getElementById('nav-back').style.display='none';
   document.getElementById('pills-bar-wrap').style.display='none';
   document.getElementById('views').scrollTop=0;
@@ -953,9 +1102,11 @@ function goHome(){
   setNavTitle();
 }
 function goJourney(){
+  if(!walkId&&startWalk())track('journey_start',{journey_slug:'grounding-walk',chapters:CH.length});
   view='journey';
   document.getElementById('vj').classList.add('on');
   document.getElementById('vh').classList.remove('on');
+  document.getElementById('vp').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
   const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';}
   document.getElementById('views').scrollTop=0;
@@ -969,6 +1120,22 @@ function goJourney(){
       loadMapImage(mapSrc);
     }
   });
+}
+
+// ponytail: third view reuses the existing .view/.on machinery — no router, no new nav pattern.
+// Returning always goes home, which is where the drawer that opened it lives.
+function goPrivacy(){
+  drClose();
+  view='privacy';
+  document.getElementById('vp').classList.add('on');
+  document.getElementById('vh').classList.remove('on');
+  document.getElementById('vj').classList.remove('on');
+  document.getElementById('nav-back').style.display='flex';
+  document.getElementById('pills-bar-wrap').style.display='none';
+  document.body.classList.remove('journey-view');
+  document.getElementById('views').scrollTop=0;
+  setNavTitle();
+  track('privacy_view');
 }
 
 // ════ BUILD CHAPTER CONTENT ════
@@ -986,7 +1153,7 @@ function buildChapters(){
             <div class="ch-card-lbl"><span class="en">Ch.0${c.id} · ${esc(c.loc.en)}</span><span class="tc nst">第0${c.id}章 · ${esc(c.loc.tc)}</span></div>
             <div class="ch-card-name en">${esc(c.sh.en)}</div>
             <div class="ch-card-name tc nst">${esc(c.sh.tc)}</div>
-            <div class="ch-card-time" id="ct${i}">0:00 / —:——</div>
+            <div class="ch-card-time" id="ct${i}">0:00 / ${c.dur?fmt(c.dur):'—:——'}</div>
             <div class="ch-dlb" id="cdl${i}"><div class="ch-dlf" id="cdf${i}"></div></div>
             <div class="ch-card-seek" id="csk${i}"><div class="ch-card-seek-fill" id="csf${i}"></div></div>
           </div>
@@ -1052,6 +1219,7 @@ function buildChapters(){
     const b=document.getElementById('csk'+i);
     if(b)b.addEventListener('click',e=>chSeek(e,i));
   });
+  syncA11y(); // chapter buttons were just replaced — relabel them
 }
 
 // ════ PILLS ════
@@ -1066,15 +1234,22 @@ function scrollMap(){document.getElementById('mapw')?.scrollIntoView({behavior:'
 function loadCh(i,doPlay){
   ai=i;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
   localStorage.setItem('kfbg-pos',i);
-  refreshPBText();refreshPBProg(0,0);syncBtns(false);
+  refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
+  _justEnded=false;
   if(doPlay){
+    track('chapter_play',{chapter_number:CH[i].id,is_offline:!navigator.onLine,playlist_mode:plMode});
     showLd(i);
     let p=0;
     const iv=setInterval(()=>{p=Math.min(p+Math.random()*15,90);const f=document.getElementById('cdf'+i);if(f)f.style.width=p+'%';},180);
     aud.play().then(()=>{clearInterval(iv);setTimeout(()=>hideLd(i),300);playing=true;syncBtns(true);}).catch(()=>{clearInterval(iv);hideLd(i);playing=false;syncBtns(false);});
   }else{playing=false;syncBtns(false);}
 }
+let _justEnded=false;
 function jump(i,asPL){
+  // leaving a chapter part-way is the drop-off signal — where the content or the walk loses people
+  if(!_justEnded&&aud.duration&&aud.currentTime>5&&i!==ai){
+    track('chapter_abandon',{chapter_number:CH[ai].id,listened_pct:Math.round(aud.currentTime/aud.duration*100)});
+  }
   if(asPL!==undefined)plMode=asPL;
   const c=CH[i];const k=dk();
   const sh=document.getElementById('trsh');
@@ -1111,7 +1286,7 @@ function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.getElem
 function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
 function showLd(i){document.getElementById('cb'+i)?.classList.add('ld');const d=document.getElementById('cdl'+i);if(d){d.classList.add('sh');}}
 function hideLd(i){document.getElementById('cb'+i)?.classList.remove('ld');const d=document.getElementById('cdl'+i);if(d){d.classList.remove('sh');}}
-function syncBtns(on){document.getElementById('pbplay').classList.toggle('pl',on);CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));}
+function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.toggle('pl',on);pb.setAttribute('aria-label',lang==='zh'?(on?'暫停':'播放'):(on?'Pause':'Play'));CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));}
 aud.addEventListener('timeupdate',()=>{
   if(!aud.duration)return;
   const p=(aud.currentTime/aud.duration)*100;
@@ -1120,7 +1295,7 @@ aud.addEventListener('timeupdate',()=>{
   const ct=document.getElementById('ct'+ai);if(ct)ct.textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
 });
 aud.addEventListener('loadedmetadata',()=>{refreshPBProg(0,aud.duration);const ct=document.getElementById('ct'+ai);if(ct)ct.textContent='0:00 / '+fmt(aud.duration);});
-aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');}});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id});if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
 aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
 aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 // ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
@@ -1152,6 +1327,17 @@ function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Ma
 function initSeekBar(){
   const t=document.getElementById('pbt');
   let sk=false;
+  // ponytail: the seek track is a div, so it was unreachable without a pointer. role+tabindex+arrows
+  // make it operable; ±10s matches what the prev/next buttons already imply as a unit of movement.
+  t.setAttribute('role','slider');
+  t.setAttribute('tabindex','0');
+  t.addEventListener('keydown',e=>{
+    if(!aud.duration)return;
+    if(e.key==='ArrowLeft')aud.currentTime=Math.max(0,aud.currentTime-10);
+    else if(e.key==='ArrowRight')aud.currentTime=Math.min(aud.duration,aud.currentTime+10);
+    else return;
+    e.preventDefault();
+  });
   function seekTo(cx){
     if(!aud.duration)return;
     const r=t.getBoundingClientRect();
@@ -1211,6 +1397,7 @@ function initMap(){
     stopMomentum();
     mi=document.createElement('img');
     mi.className='mimg';
+    mi.alt=lang==='zh'?'旅程路線地圖':'Journey route map';
     mi.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;';
     mi.onload=()=>{
       const ph=document.getElementById('mapph');
@@ -1559,6 +1746,7 @@ function mapFullscreen(){
   if(ldg)ldg.style.display='flex';
 
   const fimg=document.createElement('img');
+  fimg.alt=lang==='zh'?'旅程路線地圖（全螢幕）':'Journey route map (full screen)';
   fimg.style.cssText='position:absolute;transform-origin:0 0;will-change:transform;max-width:none;display:block;opacity:0;';
   st.img=fimg;
 
@@ -1708,6 +1896,7 @@ async function runDl(files){
       }catch(e){failed++;}
       fill.style.width=Math.round(((i+1)/files.length)*100)+'%';
     }
+    track('audio_download',{files:files.length,failed_count:failed});
     if(failed){
       btn.disabled=false;
       checkDlState(); // whatever did land is real — let the user delete/retry from a true state
@@ -1789,6 +1978,7 @@ function setupInstall(){
   if(isAndroid){
     instTab('android', document.querySelector('.inst-tab:last-child'));
   }
+  window.addEventListener('appinstalled',()=>track('pwa_install',{platform:isIOS?'ios':(isAndroid?'android':'other')}));
   // Show native install button if beforeinstallprompt available
   window.addEventListener('beforeinstallprompt',e=>{
     e.preventDefault();
@@ -1890,7 +2080,7 @@ function tutShow(){
   document.getElementById('tut-bub').innerHTML=
     `<p><span class="en">${step.en}</span><span class="tc">${step.tc}</span></p>`+
     `<div class="tut-foot"><span class="tut-count">${_tutI+1} / ${TUT_STEPS.length}</span>`+
-    `<span class="tut-btns"><button class="tut-skip" type="button" onclick="endTour()"><span class="en">Skip</span><span class="tc">略過</span></button>`+
+    `<span class="tut-btns"><button class="tut-skip" type="button" onclick="endTour('skip')"><span class="en">Skip</span><span class="tc">略過</span></button>`+
     `<button class="tut-next" type="button" onclick="tutNext(event)">`+
     (last?'<span class="en">Done</span><span class="tc">完成</span>':'<span class="en">Next</span><span class="tc">下一步</span>')+
     `</button></span></div>`;
@@ -1911,8 +2101,9 @@ function tutPos(){
   if(y+h+170<vh){bub.style.top=(y+h+12)+'px';bub.style.bottom='auto';}
   else{bub.style.bottom=(vh-y+12)+'px';bub.style.top='auto';}
 }
-function tutNext(e){if(e&&e.stopPropagation)e.stopPropagation();if(_tutI>=TUT_STEPS.length-1)return endTour();_tutI++;tutShow();}
-function endTour(){
+function tutNext(e){if(e&&e.stopPropagation)e.stopPropagation();if(_tutI>=TUT_STEPS.length-1)return endTour('finish');_tutI++;tutShow();}
+function endTour(how){
+  if(_tutOn)track('tour_end',{how:how||'aborted',step_reached:_tutI+1,of:TUT_STEPS.length});
   _tutOn=false;
   const ov=document.getElementById('tut');if(ov)ov.style.display='none';
   drClose(); // 若停喺開咗選單嗰步，收埋
