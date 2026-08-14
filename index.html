@@ -695,6 +695,10 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const GA_ID='G-3YGC4LP6Y3';
 const GA_COOKIELESS=false; // ⚠️ set true to run without cookies while KFBG's consent policy is unresolved
 const GA_QUEUE='kfbg-ga-q';
+// ?ga_debug=1 routes this load into GA4 DebugView. The desktop Chrome extension can't help on a
+// phone, and measured: adding debug_mode in a later gtag('config') does nothing — the flag only
+// counts on the first config call, so it has to be decided here at startup.
+const GA_DEBUG=/[?&#]ga_debug=1/.test(location.search+location.hash);
 let gaReady=false, walkId=null;
 
 function setupGA(){
@@ -717,7 +721,7 @@ function loadGA(){
   s.onload=()=>{
     gaReady=true;
     gtag('js',new Date());
-    gtag('config',GA_ID);
+    gtag('config',GA_ID,GA_DEBUG?{debug_mode:true}:{});
     flushGA();
   };
   s.onerror=()=>{s.remove();}; // let a later 'online' retry
@@ -740,8 +744,12 @@ function startWalk(){
   return true;
 }
 function endWalk(){try{localStorage.removeItem(GA_WALK);}catch(e){}walkId=null;walkStart=0;}
+// journey_slug rides on every event, not just journey_start: GA4 events don't inherit each
+// other's parameters, so without this a second journey's chapter 3 would aggregate with the
+// first journey's chapter 3 and the drop-off funnel would be meaningless.
+let journeySlug='grounding-walk'; // replaced from the CMS as soon as journey data lands
 function track(name,params={}){
-  const ev={name,params:{...params,lang,walk_id:walkId||''},t:Date.now()};
+  const ev={name,params:{...params,lang,journey_slug:journeySlug,walk_id:walkId||''},t:Date.now()};
   if(gaReady&&navigator.onLine){gtag('event',ev.name,ev.params);return;}
   // ponytail: navigator.onLine can report true with no real connectivity, so a few events will be
   // sent into the void rather than queued. Acceptable for analytics; not worth a delivery receipt.
@@ -1038,6 +1046,7 @@ function applyJourneyData(journeys){
 
   // Update nav title from Sanity
   window._j1Title={en:j1.title_en,tc:j1.title_tc};
+  journeySlug=j1.slug?.current||journeySlug; // 唔好寫死——加旅程二嗰陣呢度唔改就會靜靜報錯 slug
 }
 
 // ════ LANG ════
@@ -1102,7 +1111,7 @@ function goHome(){
   setNavTitle();
 }
 function goJourney(){
-  if(!walkId&&startWalk())track('journey_start',{journey_slug:'grounding-walk',chapters:CH.length});
+  if(!walkId&&startWalk())track('journey_start',{chapters:CH.length});
   view='journey';
   document.getElementById('vj').classList.add('on');
   document.getElementById('vh').classList.remove('on');
