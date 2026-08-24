@@ -17,3 +17,11 @@ studio/node_modules/
 studio/dist/
 studio/.sanity/
 studio/backups/
+
+# Analytics dashboard — 伺服器端憑證同快取，一律不進版本控制
+# 🔴 本 repo 是 PUBLIC。service account key 一旦推上去等於把整個 GA 帳戶交出去。
+analytics/config.php
+analytics/*key*.json
+analytics/*credential*.json
+analytics/*service-account*.json
+analytics/cache/

@@ -1,0 +1,355 @@
+{
+ "generated": "2026-08-24T22:42:54+08:00",
+ "live": false,
+ "range": {
+  "start": {
+   "zh": "2026 年 8 月 14 日",
+   "en": "14 August 2026"
+  },
+  "end": {
+   "zh": "8 月 23 日",
+   "en": "23 August 2026"
+  },
+  "days": 10,
+  "asOf": {
+   "zh": "8 月 23 日",
+   "en": "23 August 2026"
+  }
+ },
+ "summary": [
+  {
+   "k": {
+    "zh": "訪客人數",
+    "en": "Visitors"
+   },
+   "v": "99",
+   "n": {
+    "zh": "不重複訪客",
+    "en": "Unique visitors"
+   }
+  },
+  {
+   "k": {
+    "zh": "使用次數",
+    "en": "Sessions"
+   },
+   "v": "120",
+   "n": {
+    "zh": "平均每天 12 次",
+    "en": "About 12 a day"
+   }
+  },
+  {
+   "k": {
+    "zh": "平均使用時間",
+    "en": "Average time in app"
+   },
+   "v": "2:27",
+   "n": {
+    "zh": "分：秒",
+    "en": "min : sec"
+   }
+  },
+  {
+   "k": {
+    "zh": "聽完整條路線",
+    "en": "Completed the route"
+   },
+   "v": "3",
+   "n": {
+    "zh": "經 QR code 進入的訪客",
+    "en": "Among QR code visitors"
+   }
+  }
+ ],
+ "daily": [
+  {
+   "d": "14",
+   "w": {
+    "zh": "五",
+    "en": "Fri"
+   },
+   "engaged": 13,
+   "quick": 4
+  },
+  {
+   "d": "15",
+   "w": {
+    "zh": "六",
+    "en": "Sat"
+   },
+   "engaged": 5,
+   "quick": 6
+  },
+  {
+   "d": "16",
+   "w": {
+    "zh": "日",
+    "en": "Sun"
+   },
+   "engaged": 5,
+   "quick": 5
+  },
+  {
+   "d": "17",
+   "w": {
+    "zh": "一",
+    "en": "Mon"
+   },
+   "engaged": 12,
+   "quick": 5
+  },
+  {
+   "d": "18",
+   "w": {
+    "zh": "二",
+    "en": "Tue"
+   },
+   "engaged": 7,
+   "quick": 2
+  },
+  {
+   "d": "19",
+   "w": {
+    "zh": "三",
+    "en": "Wed"
+   },
+   "engaged": 4,
+   "quick": 4
+  },
+  {
+   "d": "20",
+   "w": {
+    "zh": "四",
+    "en": "Thu"
+   },
+   "engaged": 4,
+   "quick": 6
+  },
+  {
+   "d": "21",
+   "w": {
+    "zh": "五",
+    "en": "Fri"
+   },
+   "engaged": 3,
+   "quick": 2
+  },
+  {
+   "d": "22",
+   "w": {
+    "zh": "六",
+    "en": "Sat"
+   },
+   "engaged": 3,
+   "quick": 4
+  },
+  {
+   "d": "23",
+   "w": {
+    "zh": "日",
+    "en": "Sun"
+   },
+   "engaged": 18,
+   "quick": 8
+  }
+ ],
+ "funnel": [
+  {
+   "label": {
+    "zh": "掃描 QR code 進入",
+    "en": "Arrived via QR code"
+   },
+   "v": 84,
+   "pct": "100%"
+  },
+  {
+   "label": {
+    "zh": "進入導賞路線",
+    "en": "Opened the route"
+   },
+   "v": 27,
+   "pct": "32%"
+  },
+  {
+   "label": {
+    "zh": "實際播放音頻",
+    "en": "Played audio"
+   },
+   "v": 23,
+   "pct": "27%"
+  },
+  {
+   "label": {
+    "zh": "下載離線收聽",
+    "en": "Downloaded for offline"
+   },
+   "v": 8,
+   "pct": "10%"
+  },
+  {
+   "label": {
+    "zh": "完成整條路線",
+    "en": "Completed the route"
+   },
+   "v": 3,
+   "pct": "4%"
+  }
+ ],
+ "chapters": [
+  {
+   "label": {
+    "zh": "第 1 章",
+    "en": "Ch 1"
+   },
+   "complete": 15,
+   "abandon": 34
+  },
+  {
+   "label": {
+    "zh": "第 2 章",
+    "en": "Ch 2"
+   },
+   "complete": 9,
+   "abandon": 12
+  },
+  {
+   "label": {
+    "zh": "第 3 章",
+    "en": "Ch 3"
+   },
+   "complete": 6,
+   "abandon": 6
+  },
+  {
+   "label": {
+    "zh": "第 4 章",
+    "en": "Ch 4"
+   },
+   "complete": 5,
+   "abandon": 6
+  },
+  {
+   "label": {
+    "zh": "第 5 章",
+    "en": "Ch 5"
+   },
+   "complete": 5,
+   "abandon": 5
+  }
+ ],
+ "facts": [
+  {
+   "v": {
+    "zh": "21.9%",
+    "en": "21.9%"
+   },
+   "k": {
+    "zh": "中途離開時的平均收聽進度",
+    "en": "Average progress when a chapter is abandoned"
+   },
+   "n": {
+    "zh": "以 chapter_abandon 事件計",
+    "en": "From chapter_abandon events"
+   }
+  },
+  {
+   "v": {
+    "zh": "8 人",
+    "en": "8"
+   },
+   "k": {
+    "zh": "下載音頻離線收聽",
+    "en": "Downloaded audio for offline use"
+   },
+   "n": {
+    "zh": "10% QR code 訪客",
+    "en": "10% of QR code visitors"
+   }
+  },
+  {
+   "v": {
+    "zh": "8 人",
+    "en": "8"
+   },
+   "k": {
+    "zh": "從主畫面圖示開啟",
+    "en": "Opened from a home-screen icon"
+   },
+   "n": {
+    "zh": "已把應用程式加到主畫面",
+    "en": "Have added the app to their home screen"
+   }
+  },
+  {
+   "v": {
+    "zh": "43 : 2",
+    "en": "43 : 2"
+   },
+   "k": {
+    "zh": "中文對英文使用者",
+    "en": "Chinese to English users"
+   },
+   "n": {
+    "zh": "以有播放行為的訪客計",
+    "en": "Among visitors who played audio"
+   }
+  }
+ ],
+ "sources": [
+  {
+   "name": {
+    "zh": "園區 QR code",
+    "en": "On-site QR code"
+   },
+   "tag": null,
+   "sessions": 102,
+   "pct": "85%",
+   "avg": "1:34",
+   "hi": true
+  },
+  {
+   "name": {
+    "zh": "直接輸入網址",
+    "en": "Direct URL"
+   },
+   "tag": {
+    "zh": "內部測試",
+    "en": "Internal testing"
+   },
+   "sessions": 15,
+   "pct": "13%",
+   "avg": "8:19",
+   "hi": false
+  },
+  {
+   "name": {
+    "zh": "其他",
+    "en": "Other"
+   },
+   "tag": null,
+   "sessions": 3,
+   "pct": "3%",
+   "avg": "—",
+   "hi": false
+  }
+ ],
+ "derived": {
+  "qrShare": "85%",
+  "engagedPct": "62%",
+  "internalSessions": 15,
+  "internalAvg": "8:19",
+  "qrAvg": "1:34",
+  "internalMultiple": 5,
+  "busiest": {
+   "sessions": 26,
+   "engaged": 18,
+   "label": {
+    "zh": "8 月 23 日（星期日）",
+    "en": "23 August (Sun)"
+   }
+  },
+  "listenedPct": "21.9%",
+  "playRatio": 4
+ }
+}

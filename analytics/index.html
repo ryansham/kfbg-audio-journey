@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="color-scheme" content="light">
+<title>Audio Journey 數據簡報</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap">
+<style>
+/* 淺色單一主題。刻意不做深色版：這是一份給團隊傳閱、也會被列印的報告，
+   單一外觀讓每個人看到的、以及貼進簡報裡的，都是同一個樣子。
+   所有顏色都明寫，不依賴瀏覽器主題。 */
+:root{
+  --page:#EFEAE1; --card:#F7F3EC; --card-2:#E9E4DA;
+  --ink:#1E2418; --ink-2:#565E4B; --ink-3:#7A7A6A;
+  --rule:#D8D3CB; --rule-soft:#E2DDD4;
+  --data-strong:#3D6226; --data-pale:#8FB877;
+  --accent:#8A6414; --accent-line:#B0801F; --accent-bg:rgba(176,128,31,0.10);
+  --f0:#8FB877; --f1:#6A9A4E; --f2:#4C7A30; --f3:#3D6226; --f4:#2E4A1C;
+  --serif:'Noto Serif TC',Georgia,'Songti TC',serif;
+  --sans:'DM Sans','Noto Sans TC',-apple-system,BlinkMacSystemFont,'PingFang TC','Microsoft JhengHei',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--page);color:var(--ink);font-family:var(--sans);font-weight:300;line-height:1.75;-webkit-font-smoothing:antialiased;}
+:focus-visible{outline:2px solid var(--accent-line);outline-offset:3px;border-radius:4px;}
+html[lang="en"] body{line-height:1.68;}
+
+/* ── 密碼閘 ── */
+#gate{position:fixed;inset:0;z-index:100;background:var(--page);display:grid;place-items:center;padding:24px;}
+#gate form{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:30px 30px 34px;width:min(400px,100%);display:flex;flex-direction:column;gap:15px;}
+#gate .eyebrow{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
+#gate h1{font-family:var(--serif);font-size:1.4rem;font-weight:600;line-height:1.35;}
+#gate p{font-size:.87rem;color:var(--ink-2);}
+#gate input{font-family:var(--sans);font-size:1rem;padding:11px 14px;border:1px solid var(--rule);border-radius:9px;background:var(--page);color:var(--ink);width:100%;}
+#gate button[type=submit]{font-family:var(--sans);font-size:.95rem;font-weight:500;padding:11px 18px;border:none;border-radius:9px;background:var(--data-strong);color:var(--card);cursor:pointer;}
+#gate button[type=submit]:hover{filter:brightness(1.12);}
+#gate .err{font-size:.85rem;color:var(--accent);min-height:1.3em;}
+#app[hidden]{display:none;}
+
+/* ── 語言切換 ── */
+.langsw{display:inline-flex;border:1px solid var(--rule);border-radius:99px;overflow:hidden;background:var(--card);flex-shrink:0;}
+.langsw button{font-family:var(--sans);font-size:.78rem;font-weight:500;padding:5px 13px;border:none;background:none;color:var(--ink-3);cursor:pointer;line-height:1.7;}
+.langsw button[aria-pressed="true"]{background:var(--data-strong);color:var(--card);}
+.langsw button:hover:not([aria-pressed="true"]){color:var(--ink);}
+
+.wrap{max-width:940px;margin:0 auto;padding:40px 20px 72px;display:flex;flex-direction:column;gap:34px;}
+
+/* ── HEADER ── */
+header{display:flex;flex-direction:column;gap:12px;padding-bottom:26px;border-bottom:2px solid var(--ink);}
+.htop{display:flex;justify-content:space-between;align-items:center;gap:16px;}
+.eyebrow{font-size:.7rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
+h1{font-family:var(--serif);font-weight:700;font-size:clamp(1.8rem,4.4vw,2.6rem);line-height:1.2;text-wrap:balance;letter-spacing:.01em;}
+.stamp{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;font-size:.83rem;color:var(--ink-2);font-variant-numeric:tabular-nums;}
+.stamp b{font-weight:500;color:var(--ink);}
+#refresh{font-family:var(--sans);font-size:.83rem;font-weight:500;padding:6px 15px;border:1px solid var(--rule);border-radius:99px;background:var(--card);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
+#refresh:hover:not(:disabled){border-color:var(--data-strong);color:var(--data-strong);}
+#refresh:disabled{opacity:.55;cursor:progress;}
+#refresh svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;}
+#rstatus{font-size:.8rem;color:var(--ink-3);}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.72rem;font-weight:500;padding:2px 10px;border-radius:99px;border:1px solid var(--rule);color:var(--ink-3);}
+.pill::before{content:"";width:6px;height:6px;border-radius:99px;background:var(--ink-3);}
+.pill.live{color:var(--data-strong);border-color:var(--data-pale);}
+.pill.live::before{background:var(--data-strong);}
+
+/* ── SECTION ── */
+section{display:flex;flex-direction:column;gap:16px;}
+h2{font-family:var(--serif);font-weight:600;font-size:1.3rem;line-height:1.4;display:flex;align-items:baseline;gap:12px;}
+h2::after{content:"";flex:1;height:1px;background:var(--rule);}
+.lede{font-size:.96rem;color:var(--ink-2);max-width:64ch;}
+.lede strong{font-weight:500;color:var(--ink);}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(172px,1fr));gap:12px;}
+.tile{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:20px 18px;display:flex;flex-direction:column;gap:5px;}
+.tile .k{font-size:.76rem;letter-spacing:.06em;color:var(--ink-3);}
+.tile .v{font-family:var(--serif);font-weight:700;font-size:2.15rem;line-height:1.05;font-variant-numeric:tabular-nums;color:var(--data-strong);}
+.tile .n{font-size:.78rem;color:var(--ink-3);}
+
+.note{background:var(--accent-bg);border:1px solid var(--accent-line);border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;gap:12px;}
+.note h2{font-size:1.06rem;color:var(--accent);}
+.note h2::after{background:var(--accent-line);opacity:.4;}
+.note ol{padding-left:1.3em;display:flex;flex-direction:column;gap:9px;font-size:.92rem;color:var(--ink);}
+.note li::marker{color:var(--accent);font-weight:500;}
+
+.card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px;}
+.chart{overflow-x:auto;}
+.chart svg{display:block;width:100%;min-width:440px;height:auto;}
+.grid{stroke:var(--rule-soft);stroke-width:1;}
+.ax{fill:var(--ink-3);font-family:var(--sans);font-size:11px;font-variant-numeric:tabular-nums;}
+.val{fill:var(--ink-2);font-family:var(--sans);font-size:11.5px;font-weight:500;font-variant-numeric:tabular-nums;}
+.d-strong{fill:var(--data-strong);}
+.d-pale{fill:var(--data-pale);}
+.f0{fill:var(--f0);}.f1{fill:var(--f1);}.f2{fill:var(--f2);}.f3{fill:var(--f3);}.f4{fill:var(--f4);}
+.flab{fill:var(--ink);font-family:var(--sans);font-size:12.5px;}
+.fval{fill:var(--ink);font-family:var(--sans);font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;}
+.fpct{fill:var(--ink-3);font-weight:400;font-size:11.5px;}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.83rem;color:var(--ink-2);}
+.legend span{display:flex;align-items:center;gap:7px;}
+.sw{width:13px;height:13px;border-radius:3px;flex-shrink:0;}
+.cap{font-size:.82rem;color:var(--ink-3);max-width:66ch;}
+
+.tw{overflow-x:auto;}
+table{border-collapse:collapse;width:100%;min-width:340px;font-size:.9rem;font-variant-numeric:tabular-nums;}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--rule-soft);}
+th{font-weight:500;font-size:.76rem;letter-spacing:.06em;color:var(--ink-3);text-transform:uppercase;}
+td.n,th.n{text-align:right;}
+td.n{font-weight:500;}
+tr:last-child td{border-bottom:none;}
+tbody tr.hi td{background:var(--card-2);}
+.tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;border:1px solid var(--rule);color:var(--ink-3);margin-left:7px;vertical-align:1px;}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(232px,1fr));gap:12px;}
+.fact{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:17px 18px;display:flex;flex-direction:column;gap:3px;}
+.fact .v{font-family:var(--serif);font-size:1.45rem;font-weight:700;color:var(--data-strong);font-variant-numeric:tabular-nums;line-height:1.2;}
+.fact .k{font-size:.85rem;color:var(--ink-2);}
+.fact .n{font-size:.76rem;color:var(--ink-3);}
+
+.acts{display:flex;flex-direction:column;gap:11px;counter-reset:a;}
+.act{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:17px 20px;display:flex;gap:15px;align-items:flex-start;}
+.act::before{counter-increment:a;content:counter(a);font-family:var(--serif);font-weight:700;font-size:.95rem;color:var(--card);background:var(--data-strong);width:25px;height:25px;border-radius:99px;display:grid;place-items:center;flex-shrink:0;margin-top:2px;}
+.act p{font-size:.93rem;}
+.act b{font-weight:500;}
+
+.state{background:var(--card);border:1px dashed var(--rule);border-radius:14px;padding:30px 24px;text-align:center;color:var(--ink-3);font-size:.9rem;}
+.state.bad{border-color:var(--accent-line);color:var(--accent);border-style:solid;}
+
+footer{border-top:1px solid var(--rule);padding-top:20px;font-size:.8rem;color:var(--ink-3);display:flex;flex-direction:column;gap:5px;}
+@media (max-width:560px){.wrap{padding:28px 15px 56px;gap:28px;}.tile .v{font-size:1.85rem;}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+@media print{
+  body{background:#fff;}
+  .langsw,#refresh,#rstatus{display:none;}
+  .card,.tile,.fact,.act,.note{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <form id="gform" autocomplete="off">
+    <div class="langsw" style="align-self:flex-start;">
+      <button type="button" data-lang="zh" aria-pressed="true">繁中</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <div class="eyebrow" data-t="gateEyebrow"></div>
+    <h1 data-t="gateTitle"></h1>
+    <p data-t="gateBlurb"></p>
+    <input id="pw" type="password" inputmode="text">
+    <div class="err" id="gerr" role="alert"></div>
+    <button type="submit" data-t="gateBtn"></button>
+  </form>
+</div>
+
+<div id="app" hidden>
+<div class="wrap">
+
+<header>
+  <div class="htop">
+    <div class="eyebrow" data-t="eyebrow"></div>
+    <div class="langsw">
+      <button type="button" data-lang="zh" aria-pressed="true">繁中</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+  <h1 data-t="title"></h1>
+  <div class="stamp">
+    <span><span data-t="periodLabel"></span> <b id="s-range">—</b></span>
+    <span id="s-mode" class="pill"></span>
+    <button id="refresh" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
+      <span data-t="refreshBtn"></span>
+    </button>
+    <span id="rstatus" role="status"></span>
+  </div>
+</header>
+
+<div id="body-slot"><div class="state" data-t="loading"></div></div>
+
+<footer>
+  <div data-t="src"></div>
+  <div><span data-t="genLabel"></span> <span id="s-gen">—</span></div>
+</footer>
+
+</div>
+</div>
+
+<script>
+/* ── 數據來源 ────────────────────────────────────────────────────────────────
+   依序嘗試：先問 ga-proxy.php（伺服器端即時查 GA4），失敗才退回 data.json
+   （最後一次人手匯出的快照）。這樣即使 proxy 未設定好或 GA 暫時打不通，
+   同事仍然看得到一份標明日期的數據，而不是一個空白頁。               */
+const DATA_SOURCES = ['ga-proxy.php', 'data.json'];
+
+/* ── 通行密碼 ────────────────────────────────────────────────────────────────
+   ⚠️ 這是前端阻嚇，不是保安措施：任何人檢視網頁原始碼都能讀到數字，也可以
+   略過這道關卡。真正的存取控制請在 DirectAdmin 的「Password Protected
+   Directories」為 /analytics/ 開啟。一旦在伺服器層設好，把 REQUIRE_PASSWORD
+   改成 false，訪客就只需輸入一次密碼，不會被問兩次。                          */
+const REQUIRE_PASSWORD = true;
+const PW_HASH = '4843ecc9';
+const fnv = s => { let h = 0x811c9dc5;
+  for (const ch of new TextEncoder().encode(s)) { h ^= ch; h = Math.imul(h, 0x01000193) >>> 0; }
+  return h.toString(16).padStart(8, '0'); };
+
+/* ── 文案 ──
+   凡是句子裡的數字，一律由 data.derived 帶進來。寫死在這裡的話，數據一即時
+   更新，文字就會跟旁邊的圖表互相矛盾。                                        */
+const T = {
+  zh: {
+    htmlLang: 'zh-Hant', locale: 'zh-HK', funnelPad: 136,
+    gateEyebrow: 'KFBG · 內部文件', gateTitle: 'Audio Journey 數據簡報',
+    gateBlurb: '本頁供項目團隊內部參閱，請輸入通行密碼。', gateBtn: '開啟',
+    pwPlaceholder: '通行密碼', pwBad: '密碼不正確，請再試一次。',
+    eyebrow: 'KFBG · 自助語音旅程', title: 'Audio Journey 使用情況簡報',
+    periodLabel: '統計期間', refreshBtn: '重新載入數據',
+    genLabel: '數據讀取時間：', loading: '正在載入數據…',
+    modeLive: '即時數據', modeSnapshot: '人手匯出快照',
+    src: '資料來源：Google Analytics 4（資源編號 549905025），數字由 Analytics Data API 讀取。',
+    reading: '正在讀取…', updated: '已更新到最新數據。', nochange: '數據未有更新，仍是目前這一份。',
+    offline: '裝置目前離線，無法讀取數據。回復連線後請再按一次。',
+    failed: e => `讀取數據失敗（${e}）。請稍後再按一次；持續失敗請通知 Ryan。`,
+    days: n => `（${n} 天）`, rangeJoin: ' 至 ',
+    h_overview: '整體概況', h_note: '閱讀這份數據之前', h_daily: '每天使用情況',
+    h_funnel: 'QR code 訪客走到哪一步', h_chapters: '各章節收聽結果',
+    h_other: '其他觀察', h_actions: '建議跟進',
+    lede_overview: (d, x) => `${d.range.days} 天內共 ${d.summary[0].v} 位訪客使用過。對一次性的園區導賞來說，訪客不重複使用屬於正常。<strong>${x.qrShare} 的使用次數來自掃描園區 QR code</strong>，代表這個入口本身運作正常，人流進得到。`,
+    notes: (d, x) => [
+      '<b>沒有 8 月 13 日的數字。</b>分析系統 8 月 14 日中午才開始收集，之前的使用情況沒有記錄。',
+      `<b>「直接輸入網址」的 ${x.internalSessions} 次幾乎全部是我們自己測試。</b>這批訪問平均停留 ${x.internalAvg}，是一般訪客的${x.internalMultiple ? x.internalMultiple + ' 倍' : '數倍'}，行為明顯不同。系統尚未設定排除內部流量，所以下面凡是比率數字，我們都只計算經 QR code 進入的訪客。`,
+      '<b>播放次數之前被少計了。</b>程式有一個路徑沒有記錄播放動作，8 月 24 日已修正。修正後播放數字會明顯上升，那是計算方式改好，不是訪客行為改變。',
+      `<b>樣本只有 ${d.range.days} 天、${d.summary[0].v} 人。</b>請看整體走勢，不要解讀百分比的小數變化。`,
+      '<b>系統內有一個名為 tour_end 的項目，與導賞路線無關</b>，那是開場的操作教學提示。如果直接查看分析後台，請不要把它當成完成人數。',
+    ],
+    lg_engaged: '有實際使用（停留超過 10 秒）', lg_quick: '打開後很快離開',
+    lg_complete: '聽完整章', lg_abandon: '中途離開',
+    cap_daily: (d, x) => `橫軸為日期與星期。${x.busiest ? `${x.busiest.label.zh}是最高的一天，共 ${x.busiest.sessions} 次，當中 ${x.busiest.engaged} 次有實際使用。` : ''}樣本仍然很小，請看整體高低，不要單看某一天。`,
+    cap_funnel: n => `只計算經園區 QR code 進入的 ${n} 位訪客。每一層都是實際人數，百分比以 ${n} 人為基數。`,
+    cap_chapters: '數字為次數，非人數（同一位訪客可重複收聽）。第一章的「中途離開」偏高，部分原因是程式會在訪客打開應用程式時預先載入第一章，因此有些記錄其實是「打開了但沒有繼續」。',
+    lede_funnel: (d, x) => `<strong>每 ${x.playRatio ? x.playRatio : '幾'} 位掃描 QR code 的訪客，只有一位真正按下播放。</strong>這是目前最值得處理的一點。頁面載入正常，不是技術故障；比較可能是進入後不夠清楚下一步要做什麼，或者現場環境不方便即時收聽。`,
+    lede_chapters: (d, x) => `聽完的次數逐章遞減：<strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>。訪客中途退出某一章時，平均只聽了該章的 ${x.listenedPct}。`,
+    t_sources: '訪客來源', th_source: '來源', th_sessions: '使用次數', th_pct: '佔比', th_avg: '平均使用時間',
+    acts: (d, x) => [
+      '<b>檢視現場 QR code 旁的指示，以及頁面第一屏。</b>目標是讓訪客一進入就知道要按哪裡。這是流失最大的一關。',
+      `<b>檢視第一章的開頭。</b>聽完次數由第一章的 ${d.chapters[0] ? d.chapters[0].complete : '—'} 跌到第二章的 ${d.chapters[1] ? d.chapters[1].complete : '—'}，是章節之間最大的一次跌幅。`,
+      '<b>在分析系統設定排除內部流量。</b>我們自己的測試正混在數據裡，而已經混入的部分無法事後清除，越早設定越好。',
+      `<b>再觀察兩至三星期才下定論。</b>目前 ${d.range.days} 天、${d.summary[0].v} 人的樣本，數字仍會明顯波動。`,
+    ],
+    tipDaily: (dd, w, tot, eng) => `${dd} 日（星期${w}）：共 ${tot} 次，其中 ${eng} 次有實際使用`,
+    tipChapter: (l, c, a) => `${l}：聽完整章 ${c} 次、中途離開 ${a} 次`,
+    tipFunnel: (l, v, p) => `${l}：${v} 人，佔掃碼訪客 ${p}`,
+  },
+  en: {
+    htmlLang: 'en', locale: 'en-GB', funnelPad: 176,
+    gateEyebrow: 'KFBG · Internal', gateTitle: 'Audio Journey Usage Report',
+    gateBlurb: 'This page is for the project team. Please enter the access password.', gateBtn: 'Open',
+    pwPlaceholder: 'Access password', pwBad: 'Wrong password. Please try again.',
+    eyebrow: 'KFBG · Self-guided Audio Journey', title: 'Audio Journey Usage Report',
+    periodLabel: 'Period', refreshBtn: 'Reload data',
+    genLabel: 'Figures read at:', loading: 'Loading data…',
+    modeLive: 'Live figures', modeSnapshot: 'Exported snapshot',
+    src: 'Source: Google Analytics 4 (property 549905025), read directly from the Analytics Data API.',
+    reading: 'Loading…', updated: 'Updated to the latest figures.', nochange: 'No new figures — this is still the current set.',
+    offline: 'You appear to be offline, so the figures could not be loaded. Please try again once you reconnect.',
+    failed: e => `Could not load the figures (${e}). Please try again shortly, and tell Ryan if it keeps failing.`,
+    days: n => ` (${n} days)`, rangeJoin: ' – ',
+    h_overview: 'Overview', h_note: 'Before you read these figures', h_daily: 'Daily usage',
+    h_funnel: 'How far QR code visitors get', h_chapters: 'Listening results by chapter',
+    h_other: 'Other observations', h_actions: 'Suggested follow-up',
+    lede_overview: (d, x) => `${d.summary[0].v} visitors used the app over ${d.range.days} days. For a one-off visit to the Farm, visitors not coming back is what we would expect. <strong>${x.qrShare} of sessions came from scanning the on-site QR code</strong>, so that entry point is working: people are getting in.`,
+    notes: (d, x) => [
+      '<b>There are no figures for 13 August.</b> Analytics only began collecting at midday on 14 August, so anything before that was not recorded.',
+      `<b>The ${x.internalSessions} "direct URL" sessions are almost entirely our own testing.</b> They averaged ${x.internalAvg}, ${x.internalMultiple ? x.internalMultiple + ' times' : 'several times'} a typical visitor, so the behaviour is clearly different. Internal traffic is not yet filtered out, so every rate below counts only visitors who arrived by QR code.`,
+      '<b>Plays were previously undercounted.</b> One route through the app did not record the play action. This was fixed on 24 August. Play figures will rise noticeably afterwards, which is the counting being corrected rather than visitor behaviour changing.',
+      `<b>The sample is only ${d.range.days} days and ${d.summary[0].v} people.</b> Read the overall direction, not small movements in the percentages.`,
+      '<b>Analytics contains an item called tour_end that has nothing to do with the audio route</b> — it is the opening how-to-use prompt. If you look at the analytics back end directly, please do not read it as a completion count.',
+    ],
+    lg_engaged: 'Genuine use (over 10 seconds)', lg_quick: 'Opened, then left quickly',
+    lg_complete: 'Chapter finished', lg_abandon: 'Left part-way',
+    cap_daily: (d, x) => `The axis shows date and weekday. ${x.busiest ? `${x.busiest.label.en} was the busiest day with ${x.busiest.sessions} sessions, ${x.busiest.engaged} of them genuine use. ` : ''}The sample is still small, so read the overall shape rather than any single day.`,
+    cap_funnel: n => `Counts only the ${n} visitors who arrived by on-site QR code. Each row is a headcount; percentages are of those ${n} people.`,
+    cap_chapters: 'Figures are counts, not people, since one visitor may listen more than once. Chapter 1 shows a high "left part-way" figure partly because the app pre-loads chapter 1 when it opens, so some records are really "opened but did not continue".',
+    lede_funnel: (d, x) => `<strong>Only one in ${x.playRatio ? x.playRatio : 'a few'} visitors who scan the QR code actually presses play.</strong> This is the point most worth addressing. The page loads correctly, so this is not a technical fault; more likely it is not clear enough what to do next, or the setting makes listening there and then awkward.`,
+    lede_chapters: (d, x) => `Completions fall away chapter by chapter: <strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>. When a visitor leaves a chapter part-way, they have on average heard ${x.listenedPct} of it.`,
+    t_sources: 'Where visitors came from', th_source: 'Source', th_sessions: 'Sessions', th_pct: 'Share', th_avg: 'Average time',
+    acts: (d, x) => [
+      '<b>Review the wording beside the on-site QR code, and the first screen of the app.</b> The aim is that a visitor knows what to tap the moment they arrive. This is where most people are lost.',
+      `<b>Review the opening of chapter 1.</b> Completions fall from ${d.chapters[0] ? d.chapters[0].complete : '—'} in chapter 1 to ${d.chapters[1] ? d.chapters[1].complete : '—'} in chapter 2, the largest drop between any two chapters.`,
+      '<b>Set up internal traffic filtering in Analytics.</b> Our own testing is mixed into the figures, and what is already mixed in cannot be removed afterwards, so the sooner this is set the better.',
+      `<b>Wait another two or three weeks before drawing conclusions.</b> With ${d.range.days} days and ${d.summary[0].v} people, the figures will still move about a fair amount.`,
+    ],
+    tipDaily: (dd, w, tot, eng) => `${dd} (${w}): ${tot} sessions, ${eng} of them genuine use`,
+    tipChapter: (l, c, a) => `${l}: finished ${c} times, left part-way ${a} times`,
+    tipFunnel: (l, v, p) => `${l}: ${v} people, ${p} of QR code visitors`,
+  },
+};
+
+let LANG = 'zh', DATA = null, lastGenerated = null;
+const t = () => T[LANG];
+const L = o => (o && typeof o === 'object' && 'zh' in o) ? o[LANG] : o;
+const $ = id => document.getElementById(id);
+/* #pw 同 #gerr 只在密碼閘未拆之前存在。切語言在開閘前後都會執行，所以寫入文字
+   一律經這個 setter，不要直接摸 .textContent —— 否則開閘之後切語言會在半路
+   丟錯，LANG 改了但版面沒有重畫。 */
+const setText = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ── 圖表 ── */
+function stackedBars(rows, { h = 270, ticks, ml = 44, mr = 12, mt = 24, mb = 46 } = {}) {
+  const w = 720, top = ticks[ticks.length - 1], pw = w - ml - mr, ph = h - mt - mb;
+  const slot = pw / rows.length, bw = Math.min(40, slot * 0.62), unit = ph / top;
+  let o = '';
+  for (const tk of ticks) {
+    const y = mt + ph - tk * unit;
+    o += `<line class="grid" x1="${ml}" y1="${y.toFixed(1)}" x2="${w - mr}" y2="${y.toFixed(1)}"/>`
+       + `<text class="ax" x="${ml - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end">${tk}</text>`;
+  }
+  rows.forEach((r, i) => {
+    const x = ml + i * slot + (slot - bw) / 2, sh = r.strong * unit, sy = mt + ph - sh;
+    o += `<rect class="d-strong" x="${x.toFixed(1)}" y="${sy.toFixed(1)}" width="${bw.toFixed(1)}" height="${sh.toFixed(1)}" rx="3"><title>${esc(r.tip)}</title></rect>`;
+    if (r.pale > 0) {
+      const hh = Math.max(r.pale * unit - 2, 0);
+      o += `<rect class="d-pale" x="${x.toFixed(1)}" y="${(sy - 2 - hh).toFixed(1)}" width="${bw.toFixed(1)}" height="${hh.toFixed(1)}" rx="3"><title>${esc(r.tip)}</title></rect>`;
+    }
+    o += `<text class="val" x="${(x + bw / 2).toFixed(1)}" y="${(mt + ph - (r.strong + r.pale) * unit - 8).toFixed(1)}" text-anchor="middle">${r.strong + r.pale}</text>`
+       + `<text class="ax" x="${(x + bw / 2).toFixed(1)}" y="${h - mb + 20}" text-anchor="middle">${esc(r.label)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" preserveAspectRatio="xMidYMid meet">${o}</svg>`;
+}
+
+function funnelChart(rows) {
+  const w = 720, ml = t().funnelPad, mr = 84, bh = 32, gap = 12;
+  const h = 8 + rows.length * (bh + gap) - gap + 8, max = rows[0].v || 1;
+  let o = '';
+  rows.forEach((r, i) => {
+    const y = 8 + i * (bh + gap), bw = (w - ml - mr) * r.v / max, lab = L(r.label);
+    o += `<rect class="f${i}" x="${ml}" y="${y}" width="${Math.max(bw, 2).toFixed(1)}" height="${bh}" rx="4"><title>${esc(t().tipFunnel(lab, r.v, r.pct))}</title></rect>`
+       + `<text class="flab" x="${ml - 12}" y="${y + bh / 2 + 5}" text-anchor="end">${esc(lab)}</text>`
+       + `<text class="fval" x="${(ml + Math.max(bw, 2) + 10).toFixed(1)}" y="${y + bh / 2 + 5}">${r.v}<tspan class="fpct"> · ${esc(r.pct)}</tspan></text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${h}" role="img" preserveAspectRatio="xMidYMid meet">${o}</svg>`;
+}
+
+/* ── 靜態文字（閘、頁首、頁尾）── */
+function paintChrome() {
+  const T_ = t();
+  document.documentElement.lang = T_.htmlLang;
+  document.title = T_.gateTitle;
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const v = T_[el.dataset.t]; if (typeof v === 'string') el.textContent = v;
+  });
+  const pw = $('pw');
+  if (pw) { pw.placeholder = T_.pwPlaceholder; pw.setAttribute('aria-label', T_.pwPlaceholder); }
+  document.querySelectorAll('.langsw button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+}
+
+/* ── 版面 ── */
+function render() {
+  const d = DATA; if (!d) return;
+  const T_ = t(), x = d.derived || {};
+  paintChrome();
+
+  $('s-range').textContent = L(d.range.start) + T_.rangeJoin + L(d.range.end) + T_.days(d.range.days);
+  $('s-gen').textContent = new Date(d.generated).toLocaleString(T_.locale, { dateStyle: 'long', timeStyle: 'short' });
+  const mode = $('s-mode');
+  mode.textContent = d.live ? T_.modeLive : T_.modeSnapshot;
+  mode.className = 'pill' + (d.live ? ' live' : '');
+
+  const daily = d.daily.map(r => ({ label: `${r.d} ${L(r.w)}`, strong: r.engaged, pale: r.quick,
+    tip: T_.tipDaily(r.d, L(r.w), r.engaged + r.quick, r.engaged) }));
+  const chapters = d.chapters.map(r => ({ label: L(r.label), strong: r.complete, pale: r.abandon,
+    tip: T_.tipChapter(L(r.label), r.complete, r.abandon) }));
+  const ticksTo = m => { const step = m <= 12 ? 4 : 10, out = [];
+    for (let v = 0; v <= Math.max(Math.ceil(m / step) * step, step); v += step) out.push(v); return out; };
+  const maxOf = a => a.length ? Math.max(...a.map(r => r.strong + r.pale)) : 0;
+
+  $('body-slot').innerHTML = `
+<section>
+  <h2>${T_.h_overview}</h2>
+  <div class="tiles">${d.summary.map(s =>
+    `<div class="tile"><div class="k">${esc(L(s.k))}</div><div class="v">${esc(s.v)}</div><div class="n">${esc(L(s.n))}</div></div>`).join('')}</div>
+  <p class="lede">${T_.lede_overview(d, x)}</p>
+</section>
+
+<div class="note">
+  <h2>${T_.h_note}</h2>
+  <ol>${T_.notes(d, x).map(n => `<li>${n}</li>`).join('')}</ol>
+</div>
+
+<section>
+  <h2>${T_.h_daily}</h2>
+  <div class="card">
+    <div class="chart">${stackedBars(daily, { ticks: ticksTo(maxOf(daily)) })}</div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--data-strong)"></i>${T_.lg_engaged}</span>
+      <span><i class="sw" style="background:var(--data-pale)"></i>${T_.lg_quick}</span>
+    </div>
+    <p class="cap">${T_.cap_daily(d, x)}</p>
+  </div>
+</section>
+
+<section>
+  <h2>${T_.h_funnel}</h2>
+  <div class="card">
+    <div class="chart">${funnelChart(d.funnel)}</div>
+    <p class="cap">${T_.cap_funnel(d.funnel[0].v)}</p>
+  </div>
+  <p class="lede">${T_.lede_funnel(d, x)}</p>
+</section>
+
+<section>
+  <h2>${T_.h_chapters}</h2>
+  <div class="card">
+    <div class="chart">${stackedBars(chapters, { h: 280, ticks: ticksTo(maxOf(chapters)) })}</div>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--data-strong)"></i>${T_.lg_complete}</span>
+      <span><i class="sw" style="background:var(--data-pale)"></i>${T_.lg_abandon}</span>
+    </div>
+    <p class="cap">${T_.cap_chapters}</p>
+  </div>
+  <p class="lede">${T_.lede_chapters(d, x)}</p>
+</section>
+
+<section>
+  <h2>${T_.h_other}</h2>
+  <div class="facts">${d.facts.map(f =>
+    `<div class="fact"><div class="v">${esc(L(f.v))}</div><div class="k">${esc(L(f.k))}</div><div class="n">${esc(L(f.n))}</div></div>`).join('')}</div>
+  <div class="card">
+    <div class="tw">
+      <table>
+        <caption class="cap" style="text-align:left;padding-bottom:10px;">${T_.t_sources}</caption>
+        <thead><tr><th>${T_.th_source}</th><th class="n">${T_.th_sessions}</th><th class="n">${T_.th_pct}</th><th class="n">${T_.th_avg}</th></tr></thead>
+        <tbody>${d.sources.map(s =>
+          `<tr class="${s.hi ? 'hi' : ''}"><td>${esc(L(s.name))}${s.tag ? `<span class="tag">${esc(L(s.tag))}</span>` : ''}</td>` +
+          `<td class="n">${s.sessions}</td><td class="n">${esc(s.pct)}</td><td class="n">${esc(s.avg)}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>${T_.h_actions}</h2>
+  <div class="acts">${T_.acts(d, x).map(a => `<div class="act"><p>${a}</p></div>`).join('')}</div>
+</section>`;
+}
+
+/* ── 載入 ── */
+async function fetchFirstAvailable() {
+  let lastErr = null;
+  for (const url of DATA_SOURCES) {
+    try {
+      const res = await fetch(`${url}?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const d = await res.json();
+      if (d && d.error) throw new Error(d.message || d.error);
+      if (!d || !d.summary) throw new Error('回應格式不正確');
+      return d;
+    } catch (e) { lastErr = e; }
+  }
+  throw lastErr || new Error('no source');
+}
+
+async function load({ manual = false } = {}) {
+  const btn = $('refresh');
+  if (manual) { btn.disabled = true; setText('rstatus', t().reading); }
+  try {
+    const d = await fetchFirstAvailable();
+    const changed = lastGenerated !== null && d.generated !== lastGenerated;
+    DATA = d; lastGenerated = d.generated;
+    render();
+    if (manual) setText('rstatus', changed ? t().updated : t().nochange);
+  } catch (e) {
+    const msg = navigator.onLine === false ? t().offline : t().failed(e.message);
+    // 判斷準則是「畫面上有沒有真內容」，不是「變數有沒有值」——
+    // render() 自己丟錯時 DATA 已經賦了值，靠變數判斷會把錯誤吞掉，永遠停在「載入中」。
+    if (!$('body-slot').querySelector('section')) $('body-slot').innerHTML = `<div class="state bad">${esc(msg)}</div>`;
+    else if (manual) setText('rstatus', msg);
+  } finally {
+    if (manual) btn.disabled = false;
+  }
+}
+
+/* ── 語言 ── */
+function setLang(l) {
+  LANG = (l === 'en') ? 'en' : 'zh';
+  try { localStorage.setItem('aj-lang', LANG); } catch (_) {}
+  setText('gerr', '');
+  setText('rstatus', '');
+  if (DATA) render(); else paintChrome();
+}
+document.querySelectorAll('.langsw button').forEach(b =>
+  b.addEventListener('click', () => setLang(b.dataset.lang)));
+
+/* ── 開閘 ── */
+function open_() { const g = $('gate'); if (g) g.remove(); $('app').hidden = false; load(); }
+$('gform').addEventListener('submit', e => {
+  e.preventDefault();
+  if (fnv($('pw').value) === PW_HASH) { try { sessionStorage.setItem('aj-ok', '1'); } catch (_) {} open_(); }
+  else { setText('gerr', t().pwBad); $('pw').select(); }
+});
+$('refresh').addEventListener('click', () => load({ manual: true }));
+
+/* ── 啟動 ──
+   預設繁中：讀者是 KFBG 香港團隊，而香港辦公室的瀏覽器多數報 en-US。
+   英文版由讀者自行切換，選擇會記住。 */
+let saved = null;
+try { saved = localStorage.getItem('aj-lang'); } catch (_) {}
+setLang(saved || 'zh');
+
+let unlocked = !REQUIRE_PASSWORD;
+try { unlocked = unlocked || sessionStorage.getItem('aj-ok') === '1'; } catch (_) {}
+if (unlocked) open_(); else $('pw').focus();
+</script>
+</body>
+</html>
