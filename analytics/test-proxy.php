@@ -151,5 +151,22 @@ array_walk_recursive($out, function ($v, $k) use (&$missing) {
 check('冇空白翻譯', count($missing), 0);
 check('GA 呼叫次數（應為 2 批）', $calls, 2);
 
+echo "\n來源百分比要加埋等於 100%（GA 逐個來源 dedup，加起來會多過總數）\n";
+// 實測數字：110+19+10 = 139，但 GA 報總數 133。用總數做分母會出 83+14+8 = 105%。
+$mismatchA = $batchA; $mismatchB = $batchB;
+$mismatchA[0] = rep(["" => [133, 105, 74, 17800]], 0);
+$mismatchA[2] = rep([
+    "btl / qr-code"     => [110, 88, 9570],
+    "(direct) / (none)" => [19, 17, 7490],
+    "(not set)"         => [10, 9, 60],
+], 1);
+$n2 = 0;
+$out2 = buildPayload(function (array $r) use (&$n2, $mismatchA, $mismatchB) {
+    return ++$n2 === 1 ? $mismatchA : $mismatchB;
+}, "2026-08-14", "2026-08-24", new DateTimeZone("Asia/Hong_Kong"));
+$pcts = array_map(function ($r) { return (int)rtrim($r["pct"], "%"); }, $out2["sources"]);
+check("各來源百分比合計", array_sum($pcts), 100);
+check("文字同表格用同一個分母", $out2["derived"]["qrShare"], $out2["sources"][0]["pct"]);
+
 printf("\n%s  通過 %d／失敗 %d\n\n", $fail === 0 ? '✅ 全部通過' : '❌ 有檢查失敗', $pass, $fail);
 exit($fail === 0 ? 0 : 1);

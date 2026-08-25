@@ -174,6 +174,8 @@ const DATA_SOURCES = ['ga-proxy.php', 'data.json'];
    /analytics/ 開啟 Basic Auth，訪客在頁面載入之前就要通過。頁面本身不再
    自設密碼框 —— 兩層密碼只會讓同事被問兩次。 */
 
+/* ⚠️ v51 一上正式網站，注意事項第 3 條（播放次數偏低）就唔再啱，記得改返。
+      同一時間第 5 條（tour_end）都要改，因為嗰個事件已經改名做 tutorial_end。 */
 /* ── 文案 ──
    凡是句子裡的數字，一律由 data.derived 帶進來。寫死在這裡的話，數據一即時
    更新，文字就會跟旁邊的圖表互相矛盾。                                        */
@@ -196,7 +198,7 @@ const T = {
     notes: (d, x) => [
       '<b>沒有 8 月 13 日的數字。</b>分析系統 8 月 14 日中午才開始收集，之前的使用情況沒有記錄。',
       `<b>「直接輸入網址」的 ${x.internalSessions} 次幾乎全部是我們自己測試。</b>這批訪問平均停留 ${x.internalAvg}，是一般訪客的${x.internalMultiple ? x.internalMultiple + ' 倍' : '數倍'}，行為明顯不同。系統尚未設定排除內部流量，所以下面凡是比率數字，我們都只計算經 QR code 進入的訪客。`,
-      '<b>播放次數之前被少計了。</b>程式有一個路徑沒有記錄播放動作，8 月 24 日已修正。修正後播放數字會明顯上升，那是計算方式改好，不是訪客行為改變。',
+      '<b>「實際播放音頻」的人數目前偏低。</b>程式有一條路徑沒有記錄播放動作，修正已經寫好，但尚未更新到正式網站。更新之後這個數字會明顯上升，那是計算方式改好，不是訪客行為改變。',
       `<b>樣本只有 ${d.range.days} 天、${d.summary[0].v} 人。</b>請看整體走勢，不要解讀百分比的小數變化。`,
       '<b>系統內有一個名為 tour_end 的項目，與導賞路線無關</b>，那是開場的操作教學提示。如果直接查看分析後台，請不要把它當成完成人數。',
     ],
@@ -237,7 +239,7 @@ const T = {
     notes: (d, x) => [
       '<b>There are no figures for 13 August.</b> Analytics only began collecting at midday on 14 August, so anything before that was not recorded.',
       `<b>The ${x.internalSessions} "direct URL" sessions are almost entirely our own testing.</b> They averaged ${x.internalAvg}, ${x.internalMultiple ? x.internalMultiple + ' times' : 'several times'} a typical visitor, so the behaviour is clearly different. Internal traffic is not yet filtered out, so every rate below counts only visitors who arrived by QR code.`,
-      '<b>Plays were previously undercounted.</b> One route through the app did not record the play action. This was fixed on 24 August. Play figures will rise noticeably afterwards, which is the counting being corrected rather than visitor behaviour changing.',
+      '<b>The "Played audio" figure is currently too low.</b> One route through the app does not record the play action. The fix is written but not yet live on the site. Once it is, this figure will rise noticeably — that is the counting being corrected, not visitor behaviour changing.',
       `<b>The sample is only ${d.range.days} days and ${d.summary[0].v} people.</b> Read the overall direction, not small movements in the percentages.`,
       '<b>Analytics contains an item called tour_end that has nothing to do with the audio route</b> — it is the opening how-to-use prompt. If you look at the analytics back end directly, please do not read it as a completion count.',
     ],

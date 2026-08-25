@@ -66,9 +66,11 @@ if (!$force && is_readable($cacheFile) && (time() - filemtime($cacheFile)) < $CA
 // ── 主流程 ──────────────────────────────────────────────────────────────────
 try {
     $token = getAccessToken($KEY_FILE, $CACHE_DIR);
-    $end   = (new DateTime('yesterday', $TZ))->format('Y-m-d');  // 昨天為止：GA 對最近一天
-                                                                  // 的互動數字仍在處理，收今天
-                                                                  // 會拿到偏低而且會變的數。
+    // 收到「前日」為止，不是昨天。
+    // 實測：08-24 查 08-23，互動數字是 0；08-25 再查同一天，變成 18。GA 對最近
+    // 一天的互動要一日以上才處理完，期間會回 0。收昨天的話，圖表最後一條柱會
+    // 變成「當天所有人一開就走」，看起來像出了大事，其實只是數據未算好。
+    $end   = (new DateTime('-2 days', $TZ))->format('Y-m-d');
     $fetch   = function (array $requests) use ($token, $PROPERTY_ID) {
         return gaBatch($token, $PROPERTY_ID, $requests);
     };
@@ -276,7 +278,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
 
     $qrSessions = (int)pick($srcRows, $QR, 0);
     $qrUsers    = (int)pick($srcRows, $QR, 1);
-    $qrShare    = $sessions > 0 ? (int)round($qrSessions / $sessions * 100) : 0;
+    $qrShare    = 0;  // 下面用 $srcTotal 算，同表格同一個分母，文字先至同表格夾得埋
 
     // ── 每日 ──
     $wZh = ['日','一','二','三','四','五','六'];
@@ -329,6 +331,13 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         $QR                 => bi('園區 QR code', 'On-site QR code'),
         '(direct) / (none)' => bi('直接輸入網址', 'Direct URL'),
     ];
+    // 分母用「各來源加總」，不是 GA 的總 session 數。
+    // GA 逐個來源查會各自 dedup，加起來可以多過總數（實測 110+19+10=139 對 133），
+    // 用總數做分母的話表格會出現 83%+14%+8%=105%，同事一加就不信這份報告。
+    $srcTotal = 0;
+    foreach ($srcRows as $m) { $srcTotal += (int)$m[0]; }
+    if ($srcTotal <= 0) $srcTotal = max($sessions, 1);
+
     $sources = []; $otherSessions = 0; $internal = ['sessions' => 0, 'avg' => '—'];
     foreach ($srcRows as $name => $m) {
         $s = (int)$m[0];
@@ -340,14 +349,14 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             'name' => $srcName[$name],
             'tag'  => $isInternal ? bi('內部測試', 'Internal testing') : null,
             'sessions' => $s,
-            'pct' => $sessions > 0 ? round($s / $sessions * 100) . '%' : '—',
+            'pct' => round($s / $srcTotal * 100) . '%',
             'avg' => $avg,
             'hi'  => !$isInternal,
         ];
     }
     if ($otherSessions > 0) {
         $sources[] = ['name' => bi('其他', 'Other'), 'tag' => null, 'sessions' => $otherSessions,
-                      'pct' => $sessions > 0 ? round($otherSessions / $sessions * 100) . '%' : '—',
+                      'pct' => round($otherSessions / $srcTotal * 100) . '%',
                       'avg' => '—', 'hi' => false];
     }
 
@@ -408,7 +417,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         // 文案要用的數字。放在這裡而不是寫死在 HTML —— 數據一即時更新，寫死的句子
         // 就會跟圖表打架。
         'derived' => [
-            'qrShare'          => $qrShare . '%',
+            'qrShare'          => round($qrSessions / $srcTotal * 100) . '%',
             'engagedPct'       => $sessions > 0 ? round($engaged / $sessions * 100) . '%' : '—',
             'internalSessions' => $internal['sessions'],
             'internalAvg'      => $internal['avg'],
