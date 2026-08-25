@@ -93,7 +93,15 @@ try {
 // ════════════════════════════════════════════════════════════════════════════
 
 function fail(string $msg, string $code): void {
-    http_response_code(503);
+    // 🔴 一律回 200，即使係錯誤。
+    //
+    // 呢部 server（DirectAdmin／Apache）會把任何 4xx／5xx 回應嘅內容換走，
+    // 塞返佢自己嗰版「Service Unavailable」頁。即係我哋寫嘅診斷訊息會被丟掉，
+    // 用家只見到一句同真正原因無關嘅通用錯誤，反而更難查。
+    //
+    // 所以錯誤靠 body 入面嘅 "error" 欄位表達，唔靠 HTTP 狀態碼。
+    // 前端本身就係讀 d.error（index.html 的 fetchFirstAvailable），不受影響。
+    http_response_code(200);
     echo json_encode(['error' => $code, 'message' => $msg], JSON_UNESCAPED_UNICODE);
     exit;
 }
