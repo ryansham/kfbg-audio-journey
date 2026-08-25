@@ -86,22 +86,24 @@ curl -s "https://audio-journey.kfbg.org/analytics/ga-proxy.php" | head -c 200
 
 ## 存取控制
 
-### 建議：DirectAdmin 真閘
+由 DirectAdmin 的 Basic Auth 把關，設定在：
 
 ```
 DirectAdmin → Advanced Features → Password Protected Directories
-→ 選 public_html/analytics → 設使用者名稱與密碼
+→ public_html/analytics
 ```
 
-設好之後，把 `index.html` 內的 `REQUIRE_PASSWORD` 改成 `false`，訪客就只會被問一次密碼。
+訪客在頁面載入之前就要通過，所以 `index.html` 內不再自設密碼框（兩層密碼只會讓同事被問兩次）。
 
-### 目前：頁內密碼
+已驗證（2026-08-25）：
 
-🔴 **不是保安措施，只是阻嚇。** 任何人檢視原始碼都看得到所有數字，也可以直接略過密碼框。適合防止連結被隨手轉發，不適合保護真正敏感的東西。
+| 網址 | 回應 |
+|---|---|
+| `/analytics/` | 401 |
+| `/analytics/ga-proxy.php` | 401 |
+| `/analytics/config.php` | 403（被 `.htaccess` 擋死，連問密碼都不問）|
 
-這份報告全是彙總訪客數據、沒有個人資料，阻嚇級別大致夠用 —— 但真閘就在上面，兩分鐘的事。
-
-要改密碼：算新的 FNV-1a 32-bit hash，換掉 `index.html` 內的 `PW_HASH`。
+要改密碼，在同一個 DirectAdmin 畫面改，不用動任何檔案。
 
 ---
 

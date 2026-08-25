@@ -28,16 +28,6 @@ body{background:var(--page);color:var(--ink);font-family:var(--sans);font-weight
 :focus-visible{outline:2px solid var(--accent-line);outline-offset:3px;border-radius:4px;}
 html[lang="en"] body{line-height:1.68;}
 
-/* ── 密碼閘 ── */
-#gate{position:fixed;inset:0;z-index:100;background:var(--page);display:grid;place-items:center;padding:24px;}
-#gate form{background:var(--card);border:1px solid var(--rule);border-radius:16px;padding:30px 30px 34px;width:min(400px,100%);display:flex;flex-direction:column;gap:15px;}
-#gate .eyebrow{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3);}
-#gate h1{font-family:var(--serif);font-size:1.4rem;font-weight:600;line-height:1.35;}
-#gate p{font-size:.87rem;color:var(--ink-2);}
-#gate input{font-family:var(--sans);font-size:1rem;padding:11px 14px;border:1px solid var(--rule);border-radius:9px;background:var(--page);color:var(--ink);width:100%;}
-#gate button[type=submit]{font-family:var(--sans);font-size:.95rem;font-weight:500;padding:11px 18px;border:none;border-radius:9px;background:var(--data-strong);color:var(--card);cursor:pointer;}
-#gate button[type=submit]:hover{filter:brightness(1.12);}
-#gate .err{font-size:.85rem;color:var(--accent);min-height:1.3em;}
 #app[hidden]{display:none;}
 
 /* ── 語言切換 ── */
@@ -138,19 +128,6 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:.8rem;color:v
 </head>
 <body>
 
-<div id="gate">
-  <form id="gform" autocomplete="off">
-    <div class="langsw" style="align-self:flex-start;">
-      <button type="button" data-lang="zh" aria-pressed="true">繁中</button>
-      <button type="button" data-lang="en" aria-pressed="false">EN</button>
-    </div>
-    <div class="eyebrow" data-t="gateEyebrow"></div>
-    <h1 data-t="gateTitle"></h1>
-    <p data-t="gateBlurb"></p>
-    <input id="pw" type="password" inputmode="text">
-    <div class="err" id="gerr" role="alert"></div>
-    <button type="submit" data-t="gateBtn"></button>
-  </form>
 </div>
 
 <div id="app" hidden>
@@ -193,26 +170,16 @@ footer{border-top:1px solid var(--rule);padding-top:20px;font-size:.8rem;color:v
    同事仍然看得到一份標明日期的數據，而不是一個空白頁。               */
 const DATA_SOURCES = ['ga-proxy.php', 'data.json'];
 
-/* ── 通行密碼 ────────────────────────────────────────────────────────────────
-   ⚠️ 這是前端阻嚇，不是保安措施：任何人檢視網頁原始碼都能讀到數字，也可以
-   略過這道關卡。真正的存取控制請在 DirectAdmin 的「Password Protected
-   Directories」為 /analytics/ 開啟。一旦在伺服器層設好，把 REQUIRE_PASSWORD
-   改成 false，訪客就只需輸入一次密碼，不會被問兩次。                          */
-const REQUIRE_PASSWORD = true;
-const PW_HASH = '4843ecc9';
-const fnv = s => { let h = 0x811c9dc5;
-  for (const ch of new TextEncoder().encode(s)) { h ^= ch; h = Math.imul(h, 0x01000193) >>> 0; }
-  return h.toString(16).padStart(8, '0'); };
+/* 存取控制交給伺服器：DirectAdmin 的 Password Protected Directories 已為
+   /analytics/ 開啟 Basic Auth，訪客在頁面載入之前就要通過。頁面本身不再
+   自設密碼框 —— 兩層密碼只會讓同事被問兩次。 */
 
 /* ── 文案 ──
    凡是句子裡的數字，一律由 data.derived 帶進來。寫死在這裡的話，數據一即時
    更新，文字就會跟旁邊的圖表互相矛盾。                                        */
 const T = {
   zh: {
-    htmlLang: 'zh-Hant', locale: 'zh-HK', funnelPad: 136,
-    gateEyebrow: 'KFBG · 內部文件', gateTitle: 'Audio Journey 數據簡報',
-    gateBlurb: '本頁供項目團隊內部參閱，請輸入通行密碼。', gateBtn: '開啟',
-    pwPlaceholder: '通行密碼', pwBad: '密碼不正確，請再試一次。',
+    htmlLang: 'zh-Hant', locale: 'zh-HK', funnelPad: 136, docTitle: 'Audio Journey 數據簡報',
     eyebrow: 'KFBG · 自助語音旅程', title: 'Audio Journey 使用情況簡報',
     periodLabel: '統計期間', refreshBtn: '重新載入數據',
     genLabel: '數據讀取時間：', loading: '正在載入數據…',
@@ -253,9 +220,7 @@ const T = {
   },
   en: {
     htmlLang: 'en', locale: 'en-GB', funnelPad: 176,
-    gateEyebrow: 'KFBG · Internal', gateTitle: 'Audio Journey Usage Report',
-    gateBlurb: 'This page is for the project team. Please enter the access password.', gateBtn: 'Open',
-    pwPlaceholder: 'Access password', pwBad: 'Wrong password. Please try again.',
+    docTitle: 'Audio Journey Usage Report',
     eyebrow: 'KFBG · Self-guided Audio Journey', title: 'Audio Journey Usage Report',
     periodLabel: 'Period', refreshBtn: 'Reload data',
     genLabel: 'Figures read at:', loading: 'Loading data…',
@@ -346,12 +311,10 @@ function funnelChart(rows) {
 function paintChrome() {
   const T_ = t();
   document.documentElement.lang = T_.htmlLang;
-  document.title = T_.gateTitle;
+  document.title = T_.docTitle;
   document.querySelectorAll('[data-t]').forEach(el => {
     const v = T_[el.dataset.t]; if (typeof v === 'string') el.textContent = v;
   });
-  const pw = $('pw');
-  if (pw) { pw.placeholder = T_.pwPlaceholder; pw.setAttribute('aria-label', T_.pwPlaceholder); }
   document.querySelectorAll('.langsw button').forEach(b =>
     b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
 }
@@ -486,20 +449,15 @@ async function load({ manual = false } = {}) {
 function setLang(l) {
   LANG = (l === 'en') ? 'en' : 'zh';
   try { localStorage.setItem('aj-lang', LANG); } catch (_) {}
-  setText('gerr', '');
   setText('rstatus', '');
   if (DATA) render(); else paintChrome();
 }
 document.querySelectorAll('.langsw button').forEach(b =>
   b.addEventListener('click', () => setLang(b.dataset.lang)));
 
-/* ── 開閘 ── */
-function open_() { const g = $('gate'); if (g) g.remove(); $('app').hidden = false; load(); }
-$('gform').addEventListener('submit', e => {
-  e.preventDefault();
-  if (fnv($('pw').value) === PW_HASH) { try { sessionStorage.setItem('aj-ok', '1'); } catch (_) {} open_(); }
-  else { setText('gerr', t().pwBad); $('pw').select(); }
-});
+/* 頁面載入即顯示：Basic Auth 已在伺服器層把關。 */
+function open_() { $('app').hidden = false; load(); }
+
 $('refresh').addEventListener('click', () => load({ manual: true }));
 
 /* ── 啟動 ──
@@ -509,9 +467,7 @@ let saved = null;
 try { saved = localStorage.getItem('aj-lang'); } catch (_) {}
 setLang(saved || 'zh');
 
-let unlocked = !REQUIRE_PASSWORD;
-try { unlocked = unlocked || sessionStorage.getItem('aj-ok') === '1'; } catch (_) {}
-if (unlocked) open_(); else $('pw').focus();
+open_();
 </script>
 </body>
 </html>
