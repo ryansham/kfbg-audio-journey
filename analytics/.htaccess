@@ -1,3 +1,19 @@
+# ⚠️⚠️ 上載這個檔會關掉密碼保護 ⚠️⚠️
+#
+# DirectAdmin 的 Password Protected Directories 把 AuthType／AuthUserFile 那幾行
+# 寫進「這個檔案」。上載 repo 版本 = 蓋走它們 = /analytics/ 立即變成全世界打得開。
+# 2026-08-26 就是這樣中招的：上載之後 curl 回 200 而不是 401。
+#
+# 所以：這個檔平時不要上載。真的改過規則要上載的話，三步缺一不可：
+#   1. 上載 .htaccess
+#   2. DirectAdmin → Advanced Features → Password Protected Directories
+#      → public_html/analytics → 重新設定一次（它會把 auth 那幾行加回去）
+#   3. 驗：curl -o /dev/null -w "%{http_code}" https://audio-journey.kfbg.org/analytics/
+#      一定要回 401。回 200 就是第 2 步未做。
+#
+# auth 那幾行不寫在這裡，是因為 .htpasswd 的絕對路徑是這部伺服器獨有的，
+# 而這個 repo 是公開的。
+
 # KFBG Audio Journey — /analytics/ 目錄設定
 # 位置：public_html/analytics/.htaccess
 #
@@ -10,7 +26,10 @@
 # 🔴 config.php 內有 service account 金鑰的路徑；cache/ 內有生效中的 GA access
 #    token。PHP 正常運作時 config.php 不會輸出內容，但 PHP 一旦故障或被停用，
 #    伺服器就會把它當純文字送出去。所以明文擋死，不倚賴 PHP 一定正常。
-<FilesMatch "^(config\.php|config\.sample\.php|test-proxy\.php|build_data\.py)$">
+# 開發用的檔案。用「這一類」而不是「今日這幾個」來擋 —— 逐個列的話，
+# 將來加一個新的測試或工具檔就會靜靜地漏網，而漏網不會有任何訊號。
+# 應該送出去的只有三個：index.html、ga-proxy.php、data.json。
+<FilesMatch "^(config.*\.php|test-.*|check\.py|build_data\.py|.*\.(py|mjs|md|orig|bak)|\.DS_Store)$">
   <IfModule mod_authz_core.c>
     Require all denied
   </IfModule>
@@ -57,5 +76,4 @@
 #     → 選 public_html/analytics → 設定使用者名稱與密碼
 # 介面會自動建立 .htpasswd 並填上正確的絕對路徑，省卻猜路徑出錯。
 #
-# 設定好之後，把 index.html 內的 REQUIRE_PASSWORD 改成 false，
-# 訪客就只會被問一次密碼，不會先過瀏覽器彈窗、再過網頁密碼框。
+# 頁面本身不再自設密碼框，所以訪客只會被問一次。

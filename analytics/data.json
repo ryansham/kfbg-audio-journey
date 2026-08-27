@@ -1,5 +1,5 @@
 {
- "generated": "2026-08-24T22:42:54+08:00",
+ "generated": "2026-08-27T12:52:32+08:00",
  "live": false,
  "range": {
   "start": {
@@ -7,14 +7,19 @@
    "en": "14 August 2026"
   },
   "end": {
-   "zh": "8 月 23 日",
-   "en": "23 August 2026"
+   "zh": "8 月 24 日",
+   "en": "24 August 2026"
   },
-  "days": 10,
+  "days": 11,
   "asOf": {
-   "zh": "8 月 23 日",
-   "en": "23 August 2026"
-  }
+   "zh": "8 月 24 日",
+   "en": "24 August 2026"
+  },
+  "from": "2026-08-14",
+  "to": "2026-08-24",
+  "min": "2026-08-14",
+  "max": "2026-08-24",
+  "clamped": false
  },
  "summary": [
   {
@@ -22,7 +27,7 @@
     "zh": "訪客人數",
     "en": "Visitors"
    },
-   "v": "99",
+   "v": "106",
    "n": {
     "zh": "不重複訪客",
     "en": "Unique visitors"
@@ -33,7 +38,7 @@
     "zh": "使用次數",
     "en": "Sessions"
    },
-   "v": "120",
+   "v": "134",
    "n": {
     "zh": "平均每天 12 次",
     "en": "About 12 a day"
@@ -44,7 +49,7 @@
     "zh": "平均使用時間",
     "en": "Average time in app"
    },
-   "v": "2:27",
+   "v": "2:14",
    "n": {
     "zh": "分：秒",
     "en": "min : sec"
@@ -64,6 +69,7 @@
  ],
  "daily": [
   {
+   "iso": "2026-08-14",
    "d": "14",
    "w": {
     "zh": "五",
@@ -73,6 +79,7 @@
    "quick": 4
   },
   {
+   "iso": "2026-08-15",
    "d": "15",
    "w": {
     "zh": "六",
@@ -82,6 +89,7 @@
    "quick": 6
   },
   {
+   "iso": "2026-08-16",
    "d": "16",
    "w": {
     "zh": "日",
@@ -91,6 +99,7 @@
    "quick": 5
   },
   {
+   "iso": "2026-08-17",
    "d": "17",
    "w": {
     "zh": "一",
@@ -100,6 +109,7 @@
    "quick": 5
   },
   {
+   "iso": "2026-08-18",
    "d": "18",
    "w": {
     "zh": "二",
@@ -109,6 +119,7 @@
    "quick": 2
   },
   {
+   "iso": "2026-08-19",
    "d": "19",
    "w": {
     "zh": "三",
@@ -118,6 +129,7 @@
    "quick": 4
   },
   {
+   "iso": "2026-08-20",
    "d": "20",
    "w": {
     "zh": "四",
@@ -127,6 +139,7 @@
    "quick": 6
   },
   {
+   "iso": "2026-08-21",
    "d": "21",
    "w": {
     "zh": "五",
@@ -136,6 +149,7 @@
    "quick": 2
   },
   {
+   "iso": "2026-08-22",
    "d": "22",
    "w": {
     "zh": "六",
@@ -145,6 +159,7 @@
    "quick": 4
   },
   {
+   "iso": "2026-08-23",
    "d": "23",
    "w": {
     "zh": "日",
@@ -152,6 +167,16 @@
    },
    "engaged": 18,
    "quick": 8
+  },
+  {
+   "iso": "2026-08-24",
+   "d": "24",
+   "w": {
+    "zh": "一",
+    "en": "Mon"
+   },
+   "engaged": 10,
+   "quick": 4
   }
  ],
  "funnel": [
@@ -160,7 +185,7 @@
     "zh": "掃描 QR code 進入",
     "en": "Arrived via QR code"
    },
-   "v": 84,
+   "v": 88,
    "pct": "100%"
   },
   {
@@ -168,7 +193,7 @@
     "zh": "進入導賞路線",
     "en": "Opened the route"
    },
-   "v": 27,
+   "v": 28,
    "pct": "32%"
   },
   {
@@ -176,15 +201,15 @@
     "zh": "實際播放音頻",
     "en": "Played audio"
    },
-   "v": 23,
-   "pct": "27%"
+   "v": 25,
+   "pct": "28%"
   },
   {
    "label": {
     "zh": "下載離線收聽",
     "en": "Downloaded for offline"
    },
-   "v": 8,
+   "v": 9,
    "pct": "10%"
   },
   {
@@ -193,7 +218,7 @@
     "en": "Completed the route"
    },
    "v": 3,
-   "pct": "4%"
+   "pct": "3%"
   }
  ],
  "chapters": [
@@ -202,8 +227,8 @@
     "zh": "第 1 章",
     "en": "Ch 1"
    },
-   "complete": 15,
-   "abandon": 34
+   "complete": 16,
+   "abandon": 38
   },
   {
    "label": {
@@ -218,8 +243,8 @@
     "zh": "第 3 章",
     "en": "Ch 3"
    },
-   "complete": 6,
-   "abandon": 6
+   "complete": 7,
+   "abandon": 7
   },
   {
    "label": {
@@ -238,11 +263,78 @@
    "abandon": 5
   }
  ],
+ "chaptersUnknown": {
+  "complete": 5,
+  "abandon": 4
+ },
+ "devices": [
+  {
+   "name": {
+    "zh": "iPhone／iPad",
+    "en": "iPhone / iPad"
+   },
+   "sessions": 79,
+   "pct": "58%"
+  },
+  {
+   "name": {
+    "zh": "Android 手機",
+    "en": "Android phone"
+   },
+   "sessions": 42,
+   "pct": "31%"
+  },
+  {
+   "name": {
+    "zh": "桌面電腦",
+    "en": "Desktop computer"
+   },
+   "sessions": 14,
+   "pct": "10%"
+  },
+  {
+   "name": {
+    "zh": "其他",
+    "en": "Other"
+   },
+   "sessions": 1,
+   "pct": "1%"
+  }
+ ],
+ "places": [
+  {
+   "name": {
+    "zh": "香港",
+    "en": "Hong Kong"
+   },
+   "sessions": 122,
+   "pct": "90%",
+   "hi": true
+  },
+  {
+   "name": {
+    "zh": "日本",
+    "en": "Japan"
+   },
+   "sessions": 10,
+   "pct": "7%",
+   "hi": false
+  },
+  {
+   "name": {
+    "zh": "中國內地",
+    "en": "Mainland China"
+   },
+   "sessions": 4,
+   "pct": "3%",
+   "hi": false
+  }
+ ],
  "facts": [
   {
    "v": {
-    "zh": "21.9%",
-    "en": "21.9%"
+    "zh": "20.5%",
+    "en": "20.5%"
    },
    "k": {
     "zh": "中途離開時的平均收聽進度",
@@ -255,8 +347,8 @@
   },
   {
    "v": {
-    "zh": "8 人",
-    "en": "8"
+    "zh": "9 人",
+    "en": "9"
    },
    "k": {
     "zh": "下載音頻離線收聽",
@@ -269,8 +361,8 @@
   },
   {
    "v": {
-    "zh": "8 人",
-    "en": "8"
+    "zh": "9 人",
+    "en": "9"
    },
    "k": {
     "zh": "從主畫面圖示開啟",
@@ -283,8 +375,8 @@
   },
   {
    "v": {
-    "zh": "43 : 2",
-    "en": "43 : 2"
+    "zh": "32 : 2",
+    "en": "32 : 2"
    },
    "k": {
     "zh": "中文對英文使用者",
@@ -303,9 +395,9 @@
     "en": "On-site QR code"
    },
    "tag": null,
-   "sessions": 102,
-   "pct": "85%",
-   "avg": "1:34",
+   "sessions": 111,
+   "pct": "83%",
+   "avg": "1:28",
    "hi": true
   },
   {
@@ -317,9 +409,9 @@
     "zh": "內部測試",
     "en": "Internal testing"
    },
-   "sessions": 15,
-   "pct": "13%",
-   "avg": "8:19",
+   "sessions": 20,
+   "pct": "15%",
+   "avg": "6:17",
    "hi": false
   },
   {
@@ -329,18 +421,18 @@
    },
    "tag": null,
    "sessions": 3,
-   "pct": "3%",
+   "pct": "2%",
    "avg": "—",
    "hi": false
   }
  ],
  "derived": {
-  "qrShare": "85%",
-  "engagedPct": "62%",
-  "internalSessions": 15,
-  "internalAvg": "8:19",
-  "qrAvg": "1:34",
-  "internalMultiple": 5,
+  "qrShare": "83%",
+  "engagedPct": "63%",
+  "internalSessions": 20,
+  "internalAvg": "6:17",
+  "qrAvg": "1:28",
+  "internalMultiple": 4,
   "busiest": {
    "sessions": 26,
    "engaged": 18,
@@ -349,7 +441,7 @@
     "en": "23 August (Sun)"
    }
   },
-  "listenedPct": "21.9%",
+  "listenedPct": "20.5%",
   "playRatio": 4
  }
 }

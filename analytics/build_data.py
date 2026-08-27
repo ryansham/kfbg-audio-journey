@@ -11,7 +11,7 @@ proxy 出事，同事看到的就是這一份。
 一起上載。輸出的結構必須與 ga-proxy.php 的 buildPayload() 完全一致，否則前端
 退回快照時會出現欄位對不上。
 """
-import json, datetime
+import json, datetime, math
 from decimal import Decimal, ROUND_HALF_UP
 
 
@@ -24,6 +24,24 @@ def r(x):
     """
     return int(Decimal(str(x)).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
 
+def pcts(counts):
+    """加起來剛好 100 的整數百分比（最大餘額法）。
+
+    逐個獨立四捨五入會得出 99 或 101，而版面上的說明寫著「加起來是 100%」，
+    那句就會變成假話。必須跟 ga-proxy.php 的 pcts() 完全一樣，包括打和時
+    保持原次序（PHP 的 arsort 在 8.0 之後是穩定排序）。
+    """
+    total = sum(counts)
+    if total <= 0:
+        return [0] * len(counts)
+    exact = [c / total * 100 for c in counts]
+    out = [math.floor(e) for e in exact]
+    order = sorted(range(len(counts)), key=lambda i: (-(exact[i] - math.floor(exact[i])), i))
+    for i in order[:100 - sum(out)]:
+        out[i] += 1
+    return out
+
+
 HKT = datetime.timezone(datetime.timedelta(hours=8))
 
 
@@ -32,24 +50,44 @@ def b(zh, en):
 
 
 # ── 由 GA 讀回來的原始數字（2026-08-14 至 08-23）────────────────────────────
-USERS, SESSIONS, ENGAGED = 99, 120, 74
-ENGAGE_SECONDS = 17617
-QR_SESSIONS, QR_USERS, QR_SECONDS = 102, 84, 9543
-INT_SESSIONS, INT_SECONDS = 15, 7478
+USERS, SESSIONS, ENGAGED = 106, 134, 84
+ENGAGE_SECONDS = 17904
+QR_SESSIONS, QR_USERS, QR_SECONDS = 111, 88, 9763
+INT_SESSIONS, INT_SECONDS = 20, 7545
 OTHER_SESSIONS = 3
 
 DAILY = [  # (日, 星期索引 0=日, 總次數, 有實際使用)
     ("14", 5, 17, 13), ("15", 6, 11, 5),  ("16", 0, 10, 5),
     ("17", 1, 17, 12), ("18", 2, 9, 7),   ("19", 3, 8, 4),
     ("20", 4, 10, 4),  ("21", 5, 5, 3),   ("22", 6, 7, 3),
-    ("23", 0, 26, 18),
+    ("23", 0, 26, 18), ("24", 1, 14, 10),
 ]
-CHAPTERS = [(1, 15, 34), (2, 9, 12), (3, 6, 6), (4, 5, 6), (5, 5, 5)]
-QR_JOURNEY_START, QR_AUDIO, QR_DOWNLOAD, QR_COMPLETE = 27, 23, 8, 3
-PWA_LAUNCH_ALL = 8
-LISTENED_PCT = 21.9
-LANG_ZH, LANG_EN = 43, 2
-DAYS = 10
+CHAPTERS = [(1, 16, 38), (2, 9, 12), (3, 7, 7), (4, 5, 6), (5, 5, 5)]
+# 對不上章節編號的記錄（GA4 自訂維度不回溯，登記之前的事件回 '(not set)'）。
+# 一定要出數：悄悄丟掉會令同事以為圖上就是全部。
+CHAPTERS_UNKNOWN = (5, 4)
+
+# 裝置：deviceCategory × operatingSystem 歸類後的結果。「其他」那 1 次是分類報
+# mobile 但作業系統報 Macintosh 的怪 UA —— 不可以當成 iPhone，也不可以丟掉。
+DEVICES = [
+    (b("iPhone／iPad", "iPhone / iPad"), 79),
+    (b("Android 手機", "Android phone"), 42),
+    (b("桌面電腦", "Desktop computer"), 14),
+    (b("其他", "Other"), 1),
+]
+# 地區。分母用這幾行的總和，不是 GA 的總 session 數 —— GA 逐個維度各自 dedup，
+# 加起來會多過總數（這裡 136 對 134），用總數做分母百分比就會加埋超過 100%。
+PLACES = [
+    (b("香港", "Hong Kong"), 122, True),
+    (b("日本", "Japan"), 10, False),
+    (b("中國內地", "Mainland China"), 4, False),
+]
+QR_JOURNEY_START, QR_AUDIO, QR_DOWNLOAD, QR_COMPLETE = 28, 25, 9, 3
+PWA_LAUNCH_ALL = 9
+LISTENED_PCT = 20.5
+LANG_ZH, LANG_EN = 32, 2
+DAYS = 11
+MONTH = "2026-08"  # DAILY 只寫日子，月份在這裡。將來跨月要改成逐行帶完整日期。
 
 W_ZH = ["日", "一", "二", "三", "四", "五", "六"]
 W_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -64,6 +102,18 @@ def pct_of_qr(n):
     return f"{r(n / QR_USERS * 100)}%"
 
 
+SRC = [
+    (b("園區 QR code", "On-site QR code"), None, QR_SESSIONS,
+     mmss(QR_SECONDS / QR_SESSIONS), True),
+    (b("直接輸入網址", "Direct URL"), b("內部測試", "Internal testing"), INT_SESSIONS,
+     mmss(INT_SECONDS / INT_SESSIONS), False),
+    (b("其他", "Other"), None, OTHER_SESSIONS, "—", False),
+]
+SRC_PCT = pcts([x[2] for x in SRC])
+DEV_SORTED = sorted(DEVICES, key=lambda d: -d[1])   # 由多到少，同 ga-proxy.php 一樣
+DEV_PCT = pcts([n for _, n in DEV_SORTED])
+PLACE_PCT = pcts([n for _, n, _ in PLACES])
+
 busiest = max(DAILY, key=lambda row: row[2])  # 唔用 r 做參數名：會遮蓋上面個捨入函數
 
 data = {
@@ -71,9 +121,16 @@ data = {
     "live": False,
     "range": {
         "start": b("2026 年 8 月 14 日", "14 August 2026"),
-        "end":   b("8 月 23 日", "23 August 2026"),
+        "end":   b("8 月 24 日", "24 August 2026"),
         "days":  DAYS,
-        "asOf":  b("8 月 23 日", "23 August 2026"),
+        "asOf":  b("8 月 24 日", "24 August 2026"),
+        # 快照只有這一段數據，所以 min/max 等於 from/to —— 頁面見到範圍不可選，
+        # 就會把日期選擇器關掉並說明原因，而不是讓人揀完發現數字沒有變。
+        "from":  f"{MONTH}-14",
+        "to":    f"{MONTH}-24",
+        "min":   f"{MONTH}-14",
+        "max":   f"{MONTH}-24",
+        "clamped": False,
     },
     "summary": [
         {"k": b("訪客人數", "Visitors"), "v": str(USERS),
@@ -86,7 +143,8 @@ data = {
          "n": b("經 QR code 進入的訪客", "Among QR code visitors")},
     ],
     "daily": [
-        {"d": d, "w": b(W_ZH[w], W_EN[w]), "engaged": eng, "quick": tot - eng}
+        {"iso": f"{MONTH}-{int(d):02d}", "d": d, "w": b(W_ZH[w], W_EN[w]),
+         "engaged": eng, "quick": tot - eng}
         for d, w, tot, eng in DAILY
     ],
     "funnel": [
@@ -99,6 +157,16 @@ data = {
     "chapters": [
         {"label": b(f"第 {n} 章", f"Ch {n}"), "complete": c, "abandon": a}
         for n, c, a in CHAPTERS
+    ],
+    "chaptersUnknown": {"complete": CHAPTERS_UNKNOWN[0], "abandon": CHAPTERS_UNKNOWN[1]},
+    # 由多到少排，同 ga-proxy.php 一樣（版面第一行會被當成「最多人用的裝置」）
+    "devices": [
+        {"name": nm, "sessions": n, "pct": f"{p}%"}
+        for (nm, n), p in zip(DEV_SORTED, DEV_PCT)
+    ],
+    "places": [
+        {"name": nm, "sessions": n, "pct": f"{p}%", "hi": hi}
+        for (nm, n, hi), p in zip(PLACES, PLACE_PCT)
     ],
     "facts": [
         {"v": b(f"{LISTENED_PCT}%", f"{LISTENED_PCT}%"),
@@ -114,19 +182,17 @@ data = {
          "k": b("中文對英文使用者", "Chinese to English users"),
          "n": b("以有播放行為的訪客計", "Among visitors who played audio")},
     ],
+    # 分母是這三行的總和，不是 SESSIONS —— GA 逐個維度各自去重，加起來會多過總數。
     "sources": [
-        {"name": b("園區 QR code", "On-site QR code"), "tag": None, "sessions": QR_SESSIONS,
-         "pct": f"{r(QR_SESSIONS / SESSIONS * 100)}%", "avg": mmss(QR_SECONDS / QR_SESSIONS), "hi": True},
-        {"name": b("直接輸入網址", "Direct URL"), "tag": b("內部測試", "Internal testing"),
-         "sessions": INT_SESSIONS, "pct": f"{r(INT_SESSIONS / SESSIONS * 100)}%",
-         "avg": mmss(INT_SECONDS / INT_SESSIONS), "hi": False},
-        {"name": b("其他", "Other"), "tag": None, "sessions": OTHER_SESSIONS,
-         "pct": f"{r(OTHER_SESSIONS / SESSIONS * 100)}%", "avg": "—", "hi": False},
+        {"name": nm, "tag": tag, "sessions": n, "pct": f"{p}%", "avg": avg, "hi": hi}
+        for (nm, tag, n, avg, hi), p in zip(SRC, SRC_PCT)
     ],
     # 文案要用的數字。放在這裡而不是寫死在 HTML —— 數據一更新，寫死的句子就會
     # 跟旁邊的圖表互相矛盾。
     "derived": {
-        "qrShare": f"{r(QR_SESSIONS / SESSIONS * 100)}%",
+        # 直接讀表格那一行，不另外算一次 —— 分開算的話餘額分配可能差 1%，
+        # 文字就會同表格打交。
+        "qrShare": f"{SRC_PCT[0]}%",
         "engagedPct": f"{r(ENGAGED / SESSIONS * 100)}%",
         "internalSessions": INT_SESSIONS,
         "internalAvg": mmss(INT_SECONDS / INT_SESSIONS),

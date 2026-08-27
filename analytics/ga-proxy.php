@@ -39,7 +39,10 @@ $RUN = !defined('GA_PROXY_NO_RUN');
 // ── 快取 ────────────────────────────────────────────────────────────────────
 // GA4 免費版每個資源每日有查詢配額，而一個長開的分頁如果每次載入都直接打 API，
 // 幾個同事同時看就會把配額燒光。快取讓「有多少人在看」與「打多少次 API」脫鈎。
-$cacheFile = rtrim($CACHE_DIR, '/') . '/dashboard.json';
+// 🔴 快取檔名一定要帶著範圍。以前只有一個固定範圍，一個 dashboard.json 就夠；
+//    現在使用者揀得到範圍，還用同一個檔名的話，先到的人存起「最近 7 天」，
+//    後到的人開預設就會收到那 7 天的數字，但標題寫著自己揀的日期 —— 錯得無聲無息。
+//    實際檔名在下面 clampRange() 驗過之後才砌。
 if (!is_dir($CACHE_DIR)) { @mkdir($CACHE_DIR, 0700, true); }
 // 🔴 cache/token.json 裝住一個生效中的 GA access token。萬一 cache 資料夾落在
 //    public_html 之內而父層 .htaccess 又漏了規則，那個 token 就是 web 讀得到的。
@@ -56,6 +59,14 @@ if ($RUN) {
 if ($PROPERTY_ID === '' || $KEY_FILE === '') {
     fail('尚未設定 config.php，請參考 config.sample.php。', 'config-missing');
 }
+$MAX_DATE = maxDataDate(new DateTime('now'), $TZ);
+list($FROM, $TO, $CLAMPED) = clampRange(
+    isset($_GET['from']) ? $_GET['from'] : null,
+    isset($_GET['to'])   ? $_GET['to']   : null,
+    $RANGE_START, $MAX_DATE);
+// 檔名只由驗過的值砌成，所以不可能夾帶路徑。
+$cacheFile = rtrim($CACHE_DIR, '/') . "/dashboard-{$FROM}_{$TO}.json";
+
 $force = isset($_GET['force']) && $_GET['force'] === '1';
 if (!$force && is_readable($cacheFile) && (time() - filemtime($cacheFile)) < $CACHE_TTL) {
     header('X-Cache: hit');
@@ -66,18 +77,18 @@ if (!$force && is_readable($cacheFile) && (time() - filemtime($cacheFile)) < $CA
 // ── 主流程 ──────────────────────────────────────────────────────────────────
 try {
     $token = getAccessToken($KEY_FILE, $CACHE_DIR);
-    // 收到「前日」為止，不是昨天。
-    // 實測：08-24 查 08-23，互動數字是 0；08-25 再查同一天，變成 18。GA 對最近
-    // 一天的互動要一日以上才處理完，期間會回 0。收昨天的話，圖表最後一條柱會
-    // 變成「當天所有人一開就走」，看起來像出了大事，其實只是數據未算好。
-    $end   = (new DateTime('-2 days', $TZ))->format('Y-m-d');
-    $fetch   = function (array $requests) use ($token, $PROPERTY_ID) {
+    $fetch = function (array $requests) use ($token, $PROPERTY_ID) {
         return gaBatch($token, $PROPERTY_ID, $requests);
     };
-    $payload = buildPayload($fetch, $RANGE_START, $end, $TZ);
+    $payload = buildPayload($fetch, $FROM, $TO, $TZ, $RANGE_START, $MAX_DATE, $CLAMPED);
     $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
     @file_put_contents($cacheFile, $json, LOCK_EX);
+    // 快取以範圍做鍵，檔案數量由「同事揀過多少個不同範圍」決定。清走七日沒碰過
+    // 的，令這個目錄有上限。只夾自己造的檔名，碰不到 token.json 或 .htaccess。
+    foreach (glob(rtrim($CACHE_DIR, '/') . '/dashboard-*.json') ?: [] as $stale) {
+        if (time() - filemtime($stale) > 7 * 86400) @unlink($stale);
+    }
     header('X-Cache: miss');
     echo $json;
 } catch (Throwable $e) {
@@ -204,6 +215,58 @@ function req(array $dims, array $mets, ?array $filter = null, ?array $order = nu
     return $r;
 }
 
+/**
+ * 把外來的 from／to 收窄到安全範圍，回傳 [from, to, 有沒有被改動]。
+ *
+ * 這是這個檔第一次接受外來輸入，所以規矩全部寫死在伺服器，不倚賴前端：
+ *   · 必須是 YYYY-MM-DD，而且真的存在那一天。DateTime::createFromFormat()
+ *     會把 '2026-02-31' 靜靜接受成 3 月 3 日，所以要回頭比對字串才算數。
+ *   · 不可以早過分析系統開始收集的那天 —— 更早的日子只會畫出一段假的空白。
+ *   · 不可以晚過「前日」 —— GA 對最近一天的互動數字未算好，會回 0。
+ *   · from 必須不遲於 to，否則整個退回預設範圍。
+ *
+ * 不合規就退回預設而不是報錯：這是一份給同事看的報告，網址被改壞了應該照樣
+ * 看到數。回傳的 payload 會帶著實際採用的範圍，頁面上的日期永遠是真的。
+ */
+/**
+ * 可以拿到數據的最後一天：香港時間的今天，再退兩日。
+ *
+ * 退兩日，是因為 GA 對最近一天的互動數字要一日以上才算好，期間會回 0。實測：
+ * 08-24 查 08-23 得 engaged 0；08-25 再查同一天，變成 18。收昨天的話，圖表最後
+ * 一條柱會變成「當天所有人一開就走」，看起來像出了大事，其實只是數據未算好。
+ *
+ * 🔴 「今天」一定要用香港時間判斷。伺服器的 PHP 預設時區是 UTC，直接用預設的
+ *    話，每日香港時間 00:00 到 08:00 這八個鐘算出來都會慢一日 —— 同事一早開報告
+ *    會見到期間比昨天還要短。$now 由外面傳入，令這條界線測得到。
+ */
+function maxDataDate(DateTimeInterface $now, DateTimeZone $tz): string {
+    // '@時間戳' 一律當 UTC，不受伺服器預設時區影響；再換算到香港才數日子。
+    $d = new DateTime('@' . $now->getTimestamp());
+    $d->setTimezone($tz);
+    $d->modify('-2 days');
+    return $d->format('Y-m-d');
+}
+
+function clampRange($from, $to, string $min, string $max): array {
+    if ($min > $max) $max = $min;          // 全新資源：還未夠兩日數據
+    $valid = function ($v) {
+        if (!is_string($v) || $v === '') return null;
+        // 這裡用 UTC 沒關係：'!' 把時間歸零，而我們只是把它 format 回去跟原字串
+        // 比對，全程不做時區換算。用哪個時區結果都一樣。
+        $d = DateTime::createFromFormat('!Y-m-d', $v, new DateTimeZone('UTC'));
+        return ($d && $d->format('Y-m-d') === $v) ? $v : null;
+    };
+    $f = $valid($from); $t = $valid($to);
+    $changed = ($from !== null && $from !== '' && $f === null)
+            || ($to   !== null && $to   !== '' && $t === null);
+    if ($f === null) $f = $min;
+    if ($t === null) $t = $max;
+    if ($f < $min) { $f = $min; $changed = true; }
+    if ($t > $max) { $t = $max; $changed = true; }
+    if ($f > $t)   { $f = $min; $t = $max; $changed = true; }
+    return [$f, $t, $changed];
+}
+
 function eventFilter(array $names): array {
     return ['filter' => ['fieldName' => 'eventName', 'inListFilter' => ['values' => $names]]];
 }
@@ -222,6 +285,41 @@ function pick(array $r, string $key, int $i = 0, float $default = 0.0): float {
     return isset($r[$key][$i]) ? $r[$key][$i] : $default;
 }
 
+/**
+ * 把一組數字轉成加起來剛好 100 的整數百分比。
+ *
+ * 逐個獨立四捨五入的話，加起來會變成 99 或 101 —— 同事一加就會質疑整份報告，
+ * 而版面上的說明還寫著「加起來是 100%」，那句就變成假話。
+ * 用最大餘額法：先取整數部分，剩下的名額按小數部分由大到小分配。
+ */
+function pcts(array $counts): array {
+    $total = array_sum($counts);
+    $n = count($counts);
+    if ($total <= 0) return array_fill(0, $n, 0);
+    $out = []; $frac = []; $used = 0;
+    foreach ($counts as $i => $c) {
+        $exact = $c / $total * 100;
+        $out[$i] = (int)floor($exact);
+        $frac[$i] = $exact - floor($exact);
+        $used += $out[$i];
+    }
+    arsort($frac);                       // PHP 8 的排序穩定，數值相同就保持原次序
+    $rest = 100 - $used;
+    foreach (array_keys($frac) as $i) {
+        if ($rest <= 0) break;
+        $out[$i]++; $rest--;
+    }
+    ksort($out);
+    return $out;
+}
+
+/** 把 pcts() 的結果寫回每一行的 'pct'。 */
+function withPcts(array $rows): array {
+    $p = pcts(array_column($rows, 'sessions'));
+    foreach ($rows as $i => $_) { $rows[$i]['pct'] = $p[$i] . '%'; }
+    return $rows;
+}
+
 function mmss(float $seconds): string {
     $s = (int)round($seconds);
     return sprintf('%d:%02d', intdiv($s, 60), $s % 60);
@@ -236,7 +334,8 @@ function bi(string $zh, string $en): array { return ['zh' => $zh, 'en' => $en]; 
  * $fetch 是注入的取數函式（array $requests): array $reports），令這裡與 HTTP 脫鈎 ——
  * 測試可以餵真 GA 格式的固定資料進來，驗證轉換出來的數字是否正確。
  */
-function buildPayload(callable $fetch, string $start, string $end, DateTimeZone $tz): array {
+function buildPayload(callable $fetch, string $start, string $end, DateTimeZone $tz,
+                      ?string $min = null, ?string $max = null, bool $clamped = false): array {
     $dr = [['startDate' => $start, 'endDate' => $end]];
     $withRange = function (array $r) use ($dr) { $r['dateRanges'] = $dr; return $r; };
 
@@ -259,6 +358,12 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         req([], ['averageCustomEvent:listened_pct'], eventFilter(['chapter_abandon'])),
         req(['customEvent:lang'], ['totalUsers'], eventFilter($AUDIO_EVENTS)),
         req(['eventName'], ['totalUsers'], eventFilter($STAGE_EVENTS)),
+        req(['deviceCategory', 'operatingSystem'], ['sessions']),
+    ]));
+    // 每批上限 5 份報表，所以國家要另開一批。
+    $batchC = $fetch(array_map($withRange, [
+        req(['country'], ['sessions'], null,
+            [['metric' => ['metricName' => 'sessions'], 'desc' => true]], 50),
     ]));
 
     $tot     = rows($batchA[0]);
@@ -270,6 +375,8 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     $listened= rows($batchB[1]);
     $langRow = rows($batchB[2]);
     $stgAll  = rows($batchB[3]);
+    $devRows = rows($batchB[4]);
+    $ctyRows = rows($batchC[0]);
 
     $sessions   = (int)pick($tot, '', 0);
     $users      = (int)pick($tot, '', 1);
@@ -287,11 +394,16 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     foreach ($daily as $ymd => $m) {
         // PHP 會把「看起來像整數」的陣列鍵自動轉成 int，所以 '20260814' 到這裡
         // 已經是數字，strict_types 之下直接丟 TypeError。一定要轉回字串。
-        $dt = DateTime::createFromFormat('Ymd', (string)$ymd, $tz);
+        // '!' 令未指定的時分秒歸零。不加的話會填入「現在」的時間，日子雖然仍對，
+        // 但同一份報表在不同時刻跑會得出不同的物件，出事時很難查。
+        $dt = DateTime::createFromFormat('!Ymd', (string)$ymd, $tz);
         if (!$dt) continue;
         $w = (int)$dt->format('w');
         $tot1 = (int)$m[0]; $eng1 = (int)($m[1] ?? 0);
         $dailyOut[] = [
+            // iso 畀前端做提示框的完整日期。期間會一日日加長並跨月，只帶「日」
+            // 的話 8 月 3 日同 9 月 3 日會分唔開。
+            'iso' => $dt->format('Y-m-d'),
             'd' => $dt->format('j'), 'w' => bi($wZh[$w], $wEn[$w]),
             'engaged' => $eng1, 'quick' => max($tot1 - $eng1, 0),
         ];
@@ -303,13 +415,25 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     }
 
     // ── 章節 ──
-    $chapters = [];
+    $chapters = []; $placedC = 0; $placedA = 0;
     for ($i = 1; $i <= 5; $i++) {
         $c = (int)pick($chapRow, "$i|chapter_complete");
         $a = (int)pick($chapRow, "$i|chapter_abandon");
         if ($c === 0 && $a === 0) continue;
+        $placedC += $c; $placedA += $a;
         $chapters[] = ['label' => bi("第 $i 章", "Ch $i"), 'complete' => $c, 'abandon' => $a];
     }
+    // 🔴 擺唔入上面五章嘅記錄一定要有人數住。GA4 的自訂維度不會回溯：登記
+    // chapter_number 之前發生的事件全部回 '(not set)'，只 loop 1..5 會靜靜地漏掉
+    // 它們（實測 08-14 至 08-24 漏了 5 次聽完、4 次離開，即全部記錄的 7.6%）。
+    // 這裡用「總數減已放進圖表的」而不是只夾 '(not set)'，將來多出第 6 章也接得住。
+    $allC = 0; $allA = 0;
+    foreach ($chapRow as $k => $m) {
+        $n = (int)$m[0]; $key = (string)$k;
+        if (substr($key, -17) === '|chapter_complete')     $allC += $n;
+        elseif (substr($key, -16) === '|chapter_abandon')  $allA += $n;
+    }
+    $chaptersUnknown = ['complete' => max($allC - $placedC, 0), 'abandon' => max($allA - $placedA, 0)];
 
     // ── 漏斗（只計 QR 訪客）──
     $stage = function (string $event) use ($stgSrc, $QR) { return (int)pick($stgSrc, "$QR|$event"); };
@@ -349,16 +473,82 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             'name' => $srcName[$name],
             'tag'  => $isInternal ? bi('內部測試', 'Internal testing') : null,
             'sessions' => $s,
-            'pct' => round($s / $srcTotal * 100) . '%',
+            'pct' => '',        // 下面一次過算，令一組加起來剛好 100
             'avg' => $avg,
             'hi'  => !$isInternal,
         ];
     }
     if ($otherSessions > 0) {
         $sources[] = ['name' => bi('其他', 'Other'), 'tag' => null, 'sessions' => $otherSessions,
-                      'pct' => round($otherSessions / $srcTotal * 100) . '%',
-                      'avg' => '—', 'hi' => false];
+                      'pct' => '', 'avg' => '—', 'hi' => false];
     }
+    $sources = withPcts($sources);
+    // 文字那句「X% 來自 QR」直接讀表格那一行，不要另外算一次 —— 分開算的話，
+    // 餘額分配有機會令兩個數差 1%，同事就會見到文字同表格打交。
+    foreach ($sources as $row) { if ($row['hi']) { $qrShare = $row['pct']; break; } }
+
+    // ── 訪客裝置 ──
+    // 對一個要離線下載、背景播放的音頻應用來說，iPhone 對 Android 的比例是真的有用：
+    // iOS 在這兩件事上限制最多。以「使用次數」計，跟旁邊的來源表同一個單位。
+    $devBuckets = [
+        'ios'     => ['n' => 0, 'label' => bi('iPhone／iPad', 'iPhone / iPad')],
+        'android' => ['n' => 0, 'label' => bi('Android 手機', 'Android phone')],
+        'tablet'  => ['n' => 0, 'label' => bi('平板電腦', 'Tablet')],
+        'desktop' => ['n' => 0, 'label' => bi('桌面電腦', 'Desktop computer')],
+        'other'   => ['n' => 0, 'label' => bi('其他', 'Other')],
+    ];
+    foreach ($devRows as $k => $m) {
+        $parts = explode('|', (string)$k);
+        $cat = $parts[0] ?? ''; $os = $parts[1] ?? '';
+        $n = (int)$m[0];
+        if ($cat === 'desktop')                       $devBuckets['desktop']['n'] += $n;
+        elseif ($cat === 'tablet')                    $devBuckets['tablet']['n']  += $n;
+        elseif ($cat === 'mobile' && $os === 'iOS')   $devBuckets['ios']['n']     += $n;
+        elseif ($cat === 'mobile' && $os === 'Android') $devBuckets['android']['n'] += $n;
+        else                                          $devBuckets['other']['n']   += $n;
+    }
+    $devTotal = 0;
+    foreach ($devBuckets as $b) { $devTotal += $b['n']; }
+    $devices = [];
+    foreach ($devBuckets as $b) {
+        if ($b['n'] === 0) continue;
+        $devices[] = ['name' => $b['label'], 'sessions' => $b['n'], 'pct' => ''];
+    }
+    // 由多到少排。版面上「最多人用的是 X」那句直接讀第一行，靠固定次序的話，
+    // 有一天 Android 超過 iPhone，那句就會變成假話而沒有人發現。
+    usort($devices, function ($a, $b) { return $b['sessions'] <=> $a['sessions']; });
+    $devices = withPcts($devices);
+
+    // ── 訪客地區 ──
+    // GA 只給英文國名。常見的譯好，其餘保留原名 —— 憑空音譯只會譯錯。
+    $ctyName = [
+        'Hong Kong' => bi('香港', 'Hong Kong'),   'China' => bi('中國內地', 'Mainland China'),
+        'Macao' => bi('澳門', 'Macao'),           'Taiwan' => bi('台灣', 'Taiwan'),
+        'Japan' => bi('日本', 'Japan'),           'South Korea' => bi('南韓', 'South Korea'),
+        'Singapore' => bi('新加坡', 'Singapore'), 'Malaysia' => bi('馬來西亞', 'Malaysia'),
+        'Thailand' => bi('泰國', 'Thailand'),     'Philippines' => bi('菲律賓', 'Philippines'),
+        'United States' => bi('美國', 'United States'),
+        'United Kingdom' => bi('英國', 'United Kingdom'),
+        'Australia' => bi('澳洲', 'Australia'),   'Canada' => bi('加拿大', 'Canada'),
+    ];
+    $ctyTotal = 0;
+    foreach ($ctyRows as $m) { $ctyTotal += (int)$m[0]; }
+    $places = []; $ctyRest = 0; $i = 0;
+    foreach ($ctyRows as $name => $m) {
+        $n = (int)$m[0];
+        // 只列頭四個，其餘歸「其他地區」—— 一堆一次的國家會蓋過真正的訊號。
+        if ($i++ >= 4) { $ctyRest += $n; continue; }
+        $places[] = [
+            'name' => isset($ctyName[$name]) ? $ctyName[(string)$name] : bi((string)$name, (string)$name),
+            'sessions' => $n, 'pct' => '',
+            'hi'  => ((string)$name === 'Hong Kong'),
+        ];
+    }
+    if ($ctyRest > 0) {
+        $places[] = ['name' => bi('其他地區', 'Elsewhere'), 'sessions' => $ctyRest,
+                     'pct' => '', 'hi' => false];
+    }
+    $places = withPcts($places);
 
     // ── 其他觀察 ──
     $listenedPct = round(pick($listened, ''), 1);
@@ -397,6 +587,13 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             'end'   => bi($zhDate($eDt, false), $eDt->format('j F Y')),
             'days'  => $days,
             'asOf'  => bi($zhDate($eDt, false), $eDt->format('j F Y')),
+            // 前端用這幾個值把日期選擇器設定成跟伺服器一致：選擇器顯示的
+            // 永遠是「實際採用了甚麼」，不是「使用者要求了甚麼」。
+            'from'  => $start,
+            'to'    => $end,
+            'min'   => $min !== null ? $min : $start,
+            'max'   => $max !== null ? $max : $end,
+            'clamped' => $clamped,
         ],
         'summary' => [
             ['k' => bi('訪客人數', 'Visitors'), 'v' => (string)$users,
@@ -412,12 +609,17 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         'daily'    => $dailyOut,
         'funnel'   => $funnel,
         'chapters' => $chapters,
+        // 對不上章節編號的記錄。圖表下面會明寫有幾多次未計入 —— 悄悄丟掉會令
+        // 同事以為圖上就是全部。
+        'chaptersUnknown' => $chaptersUnknown,
         'facts'    => $facts,
         'sources'  => $sources,
+        'devices'  => $devices,
+        'places'   => $places,
         // 文案要用的數字。放在這裡而不是寫死在 HTML —— 數據一即時更新，寫死的句子
         // 就會跟圖表打架。
         'derived' => [
-            'qrShare'          => round($qrSessions / $srcTotal * 100) . '%',
+            'qrShare'          => $qrShare,
             'engagedPct'       => $sessions > 0 ? round($engaged / $sessions * 100) . '%' : '—',
             'internalSessions' => $internal['sessions'],
             'internalAvg'      => $internal['avg'],
