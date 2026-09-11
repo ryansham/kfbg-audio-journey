@@ -229,11 +229,12 @@ function req(array $dims, array $mets, ?array $filter = null, ?array $order = nu
  * 看到數。回傳的 payload 會帶著實際採用的範圍，頁面上的日期永遠是真的。
  */
 /**
- * 可以拿到數據的最後一天：香港時間的今天，再退兩日。
+ * 可以拿到數據的最後一天：香港時間的今天，再退一日（今天未完，不計）。
  *
- * 退兩日，是因為 GA 對最近一天的互動數字要一日以上才算好，期間會回 0。實測：
- * 08-24 查 08-23 得 engaged 0；08-25 再查同一天，變成 18。收昨天的話，圖表最後
- * 一條柱會變成「當天所有人一開就走」，看起來像出了大事，其實只是數據未算好。
+ * 2026-09-11 起由「退兩日」改為「退一日」（Ryan 決定）。已知代價：GA 計互動數字
+ * 有時要一日以上，最近一天的 engaged 可能暫時是 0，圖表最後一條柱會看起來像
+ * 「當天所有人一開就走」，等 GA 算好會自動補上。實測：09-11 下午 3 時半查 09-10，
+ * sessions 30、engaged 0。頁面的 rHint 已經向同事說明。
  *
  * 🔴 「今天」一定要用香港時間判斷。伺服器的 PHP 預設時區是 UTC，直接用預設的
  *    話，每日香港時間 00:00 到 08:00 這八個鐘算出來都會慢一日 —— 同事一早開報告
@@ -243,12 +244,12 @@ function maxDataDate(DateTimeInterface $now, DateTimeZone $tz): string {
     // '@時間戳' 一律當 UTC，不受伺服器預設時區影響；再換算到香港才數日子。
     $d = new DateTime('@' . $now->getTimestamp());
     $d->setTimezone($tz);
-    $d->modify('-2 days');
+    $d->modify('-1 day');
     return $d->format('Y-m-d');
 }
 
 function clampRange($from, $to, string $min, string $max): array {
-    if ($min > $max) $max = $min;          // 全新資源：還未夠兩日數據
+    if ($min > $max) $max = $min;          // 全新資源：還未夠一日數據
     $valid = function ($v) {
         if (!is_string($v) || $v === '') return null;
         // 這裡用 UTC 沒關係：'!' 把時間歸零，而我們只是把它 format 回去跟原字串

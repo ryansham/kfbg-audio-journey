@@ -257,7 +257,7 @@ const T = {
     rInvalid: '開始日期不可以遲過結束日期。',
     rClamped: '你揀的日子有一部分沒有數據，已經收窄到下面顯示的期間。',
     rSnapshot: '即時數據未接通，只有這一份匯出快照，暫時不能自己選期間。',
-    rHint: d => `數據到 ${d}為止。最近一兩日分析系統仍在處理，未算好的互動數字會回 0（會令圖表看起來像所有人一開就走），所以暫時揀不到，之後會自動補上。`,
+    rHint: d => `數據到 ${d}為止。今天的數據明天才有。最近一天的互動數字，分析系統可能仍在處理，未算好時會暫時顯示為 0，算好後會自動更新。`,
     rMismatch: p => `即時數據暫時讀不到。下面是最後一次匯出的快照（${p}），不是你揀的期間。`,
     genLabel: '數據讀取時間（香港時間）：', loading: '正在載入數據…',
     modeLive: '即時數據', modeSnapshot: '人手匯出快照',
@@ -313,7 +313,7 @@ const T = {
     rInvalid: 'The start date cannot be later than the end date.',
     rClamped: 'Part of the period you chose has no data, so it has been narrowed to the period shown below.',
     rSnapshot: 'Live figures are not connected. Only this exported snapshot is available, so the period cannot be changed yet.',
-    rHint: d => `Figures run to ${d}. The most recent day or two are still being processed and unsettled engagement figures come back as 0, which would make the chart look as though everyone left immediately, so they cannot be selected yet. They appear on their own once ready.`,
+    rHint: d => `Figures run to ${d}. Today's figures arrive tomorrow. Engagement for the most recent day may still be processing and can show as 0 until it settles; it updates on its own once ready.`,
     rMismatch: p => `Live figures could not be loaded. Below is the last exported snapshot (${p}), not the period you chose.`,
     genLabel: 'Figures read at (Hong Kong time):', loading: 'Loading data…',
     modeLive: 'Live figures', modeSnapshot: 'Exported snapshot',
@@ -704,7 +704,7 @@ function paintRange(d) {
   });
   btns.forEach((b, i) => { b.setAttribute('aria-pressed', String(i === hit)); });
   setMsg(rangeMsg(d));
-  // 為甚麼尾兩日揀唔到 —— 不寫的話，選擇器只是一片灰色，沒有人知道原因。
+  // 為甚麼今天揀不到、最近一天的互動可能暫時是 0 —— 不寫的話，同事會以為出錯。
   const hint = $('rhint');
   if (hint) hint.textContent = live && RANGE.max ? t().rHint(fmtDate(RANGE.max, false)) : '';
 }
