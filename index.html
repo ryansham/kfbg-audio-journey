@@ -712,7 +712,7 @@ function setupGA(){
   loadGA();
   window.addEventListener('online',()=>{loadGA();setTimeout(flushGA,1200);});
   // last chance to drain before the tab goes away
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){trackAbandon();flushGA();}});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){trackAbandon(aud.paused?'hidden_paused':'hidden_playing');flushGA();}});
 }
 function loadGA(){
   if(gaReady||document.getElementById('ga-src'))return;
@@ -1274,15 +1274,26 @@ function sendPlay(i){
   ensureWalk(); // before the event below, so this chapter_play carries the walk_id rather than ''
   track('chapter_play',{chapter_number:CH[i].id,is_offline:!navigator.onLine,playlist_mode:plMode});
 }
-// Leaving a chapter part-way is the drop-off signal. Switching chapters is only half of it —
+// Leaving a chapter part-way is the drop-off signal. Switching chapters is only half of it:
 // on the trail the commoner exit is closing the app mid-chapter, so this also runs on hide.
-function trackAbandon(){
+// exit says which of the three it was, because hiding is NOT necessarily leaving. Measured
+// 2026-09-24 on a real load: locking the screen fires this while the audio keeps playing, and
+// when the chapter then finishes the same load also fires chapter_complete. Chapter 1 in
+// 08-14..09-23 shows it in the totals (222 abandon + 58 complete > 270 play). Without the label
+// the dashboard reads pocketed-and-still-listening as a drop-off. It is the commonest way this
+// app is used, so it was the biggest single bucket in the abandon count.
+// exit is passed explicitly rather than read off `playing`, because jump() calls this BEFORE
+// aud.pause() and a deliberate chapter switch would otherwise be labelled hidden_playing.
+function trackAbandon(exit){
   if(_justEnded||_abandonSent||!aud.duration||aud.currentTime<=5)return;
   _abandonSent=true;
-  track('chapter_abandon',{chapter_number:CH[ai].id,listened_pct:Math.round(aud.currentTime/aud.duration*100)});
+  // ponytail: currentTime is the position reached, not seconds heard — scrubbing forward inflates
+  // it. Good enough as the upper bound of listening time; add a timeupdate accumulator if the
+  // scrub bar turns out to be used much.
+  track('chapter_abandon',{chapter_number:CH[ai].id,listened_pct:Math.round(aud.currentTime/aud.duration*100),listened_sec:Math.round(aud.currentTime),exit:exit||'switch'});
 }
 function jump(i,asPL){
-  if(i!==ai)trackAbandon();
+  if(i!==ai)trackAbandon('switch');
   if(asPL!==undefined)plMode=asPL;
   const c=CH[i];const k=dk();
   const sh=document.getElementById('trsh');
@@ -1328,7 +1339,7 @@ aud.addEventListener('timeupdate',()=>{
   const ct=document.getElementById('ct'+ai);if(ct)ct.textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
 });
 aud.addEventListener('loadedmetadata',()=>{refreshPBProg(0,aud.duration);const ct=document.getElementById('ct'+ai);if(ct)ct.textContent='0:00 / '+fmt(aud.duration);});
-aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id});if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
 aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
 aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 // ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
@@ -1338,6 +1349,11 @@ aud.addEventListener('error',()=>{
   if(!aud.src)return;              // src cleared, not a real failure
   hideLd(ai);playing=false;syncBtns(false);
   errBar(true);
+  // This is the one failure the walk can't recover from, and until now it fired no event at all:
+  // the error bar appeared on the hillside and the dashboard showed nothing. Streamed audio is
+  // never cached either (the SW can only keep full 200s, and media fetches are 206), so anyone who
+  // didn't tap Download is one dead spot away from a stopped walk.
+  track('audio_error',{chapter_number:CH[ai].id,is_offline:!navigator.onLine,err_code:aud.error?aud.error.code:0});
 });
 aud.addEventListener('loadstart',()=>errBar(false));
 function refreshPBText(){
