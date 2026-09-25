@@ -42,9 +42,9 @@
   --safe-bottom:max(calc(env(safe-area-inset-bottom) - 8px),16px);
   /* 播放條真實高度，由 JS 用 ResizeObserver 量完寫入（見 watchBarHeight）。以前係三個寫死嘅數
      （168／32／44），實量全部細過真實高度：首頁遮住 21px、旅程頁 20px、縮細 18px，字級調到最大
-     遮 30px。高度會跟字級、pills、播放列表點點、safe area 變，冇一個常數啱晒。
+     遮 30px。高度會跟字級、錯誤提示、safe area 變，冇一個常數啱晒。
      呢個預設值只喺 JS 量到之前用，寧可高估：估多咗只係底部留白多啲，估少咗就係內容被遮。 */
-  --bar-h:calc(194px + var(--safe-bottom));
+  --bar-h:calc(124px + var(--safe-bottom));
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -204,10 +204,15 @@ details[open] summary::after{content:'▾';}
 [data-lang="zh"] .comp h2{font-family:'Noto Serif TC',serif;}
 .comp p{font-size:0.82rem;color:rgba(247,243,236,0.65);line-height:1.7;margin-bottom:20px;max-width:250px;margin-left:auto;margin-right:auto;}
 .btnhome{display:inline-flex;align-items:center;gap:7px;background:var(--gd);color:var(--olm);padding:11px 20px;border-radius:100px;font-size:0.82rem;font-weight:600;cursor:pointer;border:none;font-family:inherit;}
-/* offline */
-#offbar,#errbar{display:none;background:rgba(196,169,106,0.08);border:1px solid rgba(196,169,106,0.2);border-radius:8px;padding:6px 13px;margin:4px 14px;font-size:0.7rem;color:var(--gd);text-align:center;}
-#offbar.sh,#errbar.sh{display:block;}
-#errbar{background:rgba(192,57,43,0.07);border-color:rgba(192,57,43,0.25);color:#a5382b;line-height:1.5;}
+/* 離線同錯誤提示：喺播放條入面（深橄欖底），所以喺總覽頁同之後嘅章節頁都見到。
+   以前放喺旅程頁地圖下面，章節全屏頁一蓋就睇唔到。 */
+#errbar{display:none;border-radius:8px;padding:6px 11px;margin:8px 14px 0;font-size:0.72rem;line-height:1.5;text-align:center;background:#B03A2E;color:#fff;}
+#errbar.sh{display:block;}
+/* 離線唔係錯誤（照樣由緩存播放），所以只係控制列右邊一粒細標籤，唔加高播放條：
+   山上冇訊號正係最需要閱讀空間嘅時候。透明底，字色喺深橄欖上 5.7:1。
+   真係播唔到嘅話，上面嘅 #errbar 會完整顯示。 */
+#offbar{display:none;justify-self:end;border:1px solid rgba(220,198,148,0.45);border-radius:99px;padding:2px 9px;font-size:0.68rem;color:var(--gdl);white-space:nowrap;}
+#offbar.sh{display:inline-block;}
 
 /* ════ FUSED CHAPTER CARD ════ */
 .csec{margin-top:0;padding-top:52px;padding-bottom:52px;scroll-margin-top:8px;}
@@ -271,37 +276,30 @@ details[open] summary::after{content:'▾';}
 .speaker-title{font-size:0.72rem;color:var(--mu);line-height:1.4;}
 .speaker-bio{font-size:0.8rem;color:var(--tm);line-height:1.82;}
 /* ════ BOTTOM BAR — Audible-style ════ */
-/* minimised state — only seek track + time visible */
-#bar.minimised #pb-info-row,
-#bar.minimised #pbseq,
-#bar.minimised #pb-ctrl-row,
-#bar.minimised #pills-bar-wrap{display:none!important;}
-#bar.minimised #pbt{height:8px;}
-#bar.minimised #pb-time-row{padding:6px 14px 4px;}
 
 #bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
 /* seek track — tall touch target, thin visual */
-#pbt{height:22px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;padding:0 13px;}
+#pbt{flex:1;height:22px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;padding:0 13px;}
 #pbt-track{position:absolute;left:13px;right:13px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;pointer-events:none;}
-#pbf{position:absolute;left:13px;height:3px;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;}
-#pbth{position:absolute;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;z-index:1;}
+/* 填色同圓點喺 #pbt-track 入面，百分比直接對軌道計。以前喺 #pbt 計（連兩邊 13px padding），
+   播到尾會衝出 26px 蓋住時長數字；圓點用 calc(… / 100%)，大部分瀏覽器唔支援長度除百分比。 */
+#pbf{position:absolute;left:0;top:0;height:100%;background:var(--gd);width:0%;transition:width 0.1s linear;pointer-events:none;border-radius:2px;}
+#pbth{position:absolute;top:50%;left:0;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;background:var(--gd);display:none;pointer-events:none;z-index:1;}
 #pbt:hover #pbth,#pbt.sk #pbth{display:block;}
-/* time row — both sides like Audible */
-#pb-time-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px 2px;font-size:0.62rem;color:rgba(247,243,236,0.4);font-variant-numeric:tabular-nums;line-height:1.2;gap:4px;}
-/* track info row — centred, tappable */
-#pb-info-row{padding:2px 14px 0;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;}
-#pb-info-row:hover #pbttl{color:var(--gd);}
-.pbch{font-size:0.58rem;color:rgba(196,169,106,0.5);letter-spacing:0.08em;white-space:nowrap;}
-.pbplt{background:rgba(196,169,106,0.15);color:var(--gd);font-size:0.5rem;letter-spacing:0.08em;padding:1px 5px;border-radius:100px;display:none;}
-.pbplt.sh{display:inline-block;}
-.pbttl{font-size:0.88rem;font-weight:500;color:var(--cr);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55vw;transition:color 0.2s;}
-.pbseq{display:none;gap:3px;align-items:center;padding:2px 0;}
-.pbseq.sh{display:flex;justify-content:center;}
-.pbd{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.15);}
-.pbd.ac{background:var(--gd);}
-.pbd.dn{background:rgba(196,169,106,0.38);}
+/* 正在播放：撳一下跳去嗰站。取代以前嘅資料行、播放列表標籤同點點 */
+#pb-now{display:flex;align-items:baseline;gap:7px;width:100%;min-height:32px;padding:10px 14px 0;background:none;border:0;cursor:pointer;font-family:inherit;text-align:left;}
+#pbnow-st{font-size:0.72rem;color:var(--gdl);white-space:nowrap;}
+#pbnow-ttl{font-size:0.88rem;font-weight:500;color:var(--cr);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* 進度：兩邊時間，中間可拖。以前時間自成一行，而家併埋一行慳位 */
+#pb-prog{display:flex;align-items:center;padding:4px 14px 0;font-size:0.68rem;color:rgba(247,243,236,0.72);font-variant-numeric:tabular-nums;}
+#pbt2{min-width:34px;}
+#pbt2-dur{min-width:34px;text-align:right;}
 /* controls row — centred like Audible */
-#pb-ctrl-row{display:flex;align-items:center;justify-content:center;gap:4px;padding:4px 14px 6px;}
+/* 速度掣靠左，上一站／播放／下一站置中 */
+#pb-ctrl-row{display:grid;grid-template-columns:1fr auto auto auto 1fr;align-items:center;column-gap:16px;padding:2px 14px 6px;}
+#pb-ctrl-row .pbspd{justify-self:start;}
+/* 320px 窄機加大字級時五件嘢塞唔落（離線 chip 會被裁），收窄間距 */
+@media (max-width:359px){#pb-ctrl-row{column-gap:8px;}}
 .pbspd{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:0.7rem;color:rgba(247,243,236,0.6);padding:5px 9px;cursor:pointer;font-family:inherit;min-height:34px;min-width:44px;transition:all 0.18s;font-weight:500;}
 .pbspd:hover{color:var(--gd);border-color:rgba(196,169,106,0.3);}
 .pbprev,.pbnxt{background:transparent;border:none;cursor:pointer;color:rgba(247,243,236,0.55);padding:4px;min-width:38px;min-height:38px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;}
@@ -313,19 +311,6 @@ details[open] summary::after{content:'▾';}
 .pbplay .ip{display:none;}
 .pbplay.pl .ip2{display:none;}
 .pbplay.pl .ip{display:block;}
-/* pills — at very bottom */
-#pills-bar-wrap{border-top:1px solid rgba(255,255,255,0.07);}
-/* pills */
-#barpills{display:none;flex-wrap:nowrap;gap:6px;overflow-x:auto;padding:0 13px 9px;scrollbar-width:none;}
-#barpills::-webkit-scrollbar{display:none;}
-#barpills.sh{display:flex;}
-/* 對比度：呢排 pill 坐喺深橄欖底，三個狀態原本全部低過 WCAG AA（白字落金底得 2.3:1，
-   戶外太陽底下等於冇字）。以下數值全部量過渲染後嘅真實對比。 */
-.pill{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:100px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.04);font-size:0.68rem;color:rgba(247,243,236,0.88);cursor:pointer;font-family:inherit;min-height:32px;white-space:nowrap;transition:all 0.2s;-webkit-tap-highlight-color:transparent;}
-.pill.ac{background:var(--gd);border-color:var(--gd);color:var(--tx);font-weight:600;}
-.pill.dn{border-color:rgba(196,169,106,0.55);color:var(--gdl);}
-.pilln{font-size:0.56rem;} /* 冇 opacity：層級靠字級做，疊上去會拉低對比到 AA 以下 */
-
 /* ════ DRAWER ════ */
 #drov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s;}
 #drov.op{background:rgba(0,0,0,0.35);pointer-events:all;}
@@ -408,7 +393,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 #map-fs-close{position:fixed;top:max(env(safe-area-inset-top,0px),16px);right:16px;width:46px;height:46px;border-radius:50%;background:rgba(30,30,30,0.85);border:2px solid rgba(255,255,255,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:800;flex-shrink:0;}
 #map-fs-close svg{stroke:#fff;}
 #map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
-#pills-bar-wrap::-webkit-scrollbar{display:none;height:0;}
 
 /* ── TUTORIAL COACHMARK ── */
 #tut{position:fixed;inset:0;z-index:900;display:none;}
@@ -529,8 +513,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       </button>
     </div>
     <div class="paw"><button class="pab" onclick="playAll()"><div class="patxt"><div class="palbl"><span class="en">Play all 5 chapters in order</span><span class="tc">順序播放全部5個章節</span></div><div class="pattl en">Grounding Walk · Lower Hillside of KFBG</div><div class="pattl tc">連結大地 — 下山區靜心漫步</div></div><div class="paico"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg></div></button></div>
-    <div id="offbar"><span class="en">Offline — playing from cache</span><span class="tc">離線模式 — 從緩存播放</span></div>
-    <div id="errbar"><span class="en">This chapter could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此章節載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
     <div class="jcon" id="jcon"></div>
   </div>
 
@@ -568,24 +550,18 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 
 <!-- BOTTOM BAR -->
 
-<!-- bar-toggle moved into time row -->
 <div id="bar">
-  <!-- Seek track -->
-  <div id="pbt"><div id="pbt-track"></div><div id="pbf"></div><div id="pbth"></div></div>
-  <!-- Times + minimise toggle in one row -->
-  <div id="pb-time-row">
+  <!-- 正在播放：撳一下跳去嗰站 -->
+  <button id="pb-now" onclick="jumpToCurrent()"><span id="pbnow-st"></span><span id="pbnow-ttl"></span></button>
+  <!-- 離線同錯誤提示：放喺播放條，唔理喺邊一頁都見到 -->
+  <div id="errbar"><span class="en">This chapter could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此章節載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
+  <!-- 進度：兩邊時間 -->
+  <div id="pb-prog">
     <span id="pbt2">0:00</span>
-    <div style="display:flex;align-items:center;gap:6px;"><span id="pbt2-dur">—:——</span><button id="bar-toggle" onclick="toggleBarSize()" aria-label="Toggle player size" style="background:none;border:none;cursor:pointer;padding:2px 0 2px 4px;display:flex;align-items:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0;min-width:28px;min-height:28px;justify-content:center;"><svg id="bar-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(247,243,236,0.38)" stroke-width="2.5" stroke-linecap="round" style="width:14px;height:14px;transition:transform 0.25s;"><polyline points="6 9 12 15 18 9"/></svg></button></div>
+    <div id="pbt"><div id="pbt-track"><div id="pbf"></div><div id="pbth"></div></div></div>
+    <span id="pbt2-dur">—:——</span>
   </div>
-  <!-- Track info — centred, tap to jump to section -->
-  <div id="pb-info-row" onclick="jumpToCurrent()">
-    <span class="pbch" id="pbch-txt"></span>
-    <span class="pbplt" id="pbplt"><span class="en">PLAYLIST</span><span class="tc">播放列表</span></span>
-    <span class="pbttl" id="pbttl"></span>
-  </div>
-  <!-- Playlist dots -->
-  <div class="pbseq" id="pbseq"></div>
-  <!-- Controls row — centred like Audible -->
+  <!-- 控制：速度靠左，上一站／播放／下一站置中 -->
   <div id="pb-ctrl-row">
     <button class="pbspd" id="pbspd" onclick="cycleSpd()">1×</button>
     <button class="pbprev" onclick="prevCh()" aria-label="Previous">
@@ -598,9 +574,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     <button class="pbnxt" onclick="nextCh()" aria-label="Next">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 4 15 12 5 20"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
     </button>
+    <span id="offbar"><span class="en">Offline</span><span class="tc">離線</span></span>
   </div>
-  <!-- pills row inside bar -->
-  <div id="pills-bar-wrap" style="display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;padding:4px 13px 6px;gap:6px;border-top:1px solid rgba(255,255,255,0.07);"></div>
   <!-- safe area spacer -->
   <div style="height:var(--safe-bottom);"></div>
 </div>
@@ -968,7 +943,7 @@ function init(){
   buildDlList();
   buildChapters(); // render immediately from hardcoded fallback
   buildHomeCards(); // render home cards from hardcoded fallback
-  buildPills();
+  try{localStorage.removeItem('kfbg-bar-min');}catch(e){} // 縮細掣已退役，清走舊偏好
   loadCh(parseInt(localStorage.getItem('kfbg-pos')||'0'),false);
   initMap();
   initSeekBar();
@@ -989,12 +964,6 @@ function init(){
     } else {
       badge.className='production';
     }
-  }
-  if(localStorage.getItem('kfbg-bar-min')==='1'){
-    document.getElementById('bar')?.classList.add('minimised');
-    document.body.classList.add('bar-min');
-    const icon=document.getElementById('bar-toggle-icon');
-    if(icon) icon.style.transform='rotate(180deg)';
   }
   // Fetch from Sanity and refresh content if available
   fetchFromSanity().then(journeys=>{
@@ -1024,7 +993,6 @@ function applyJourneyData(journeys){
     // ponytail: CMS may return fewer chapters than the persisted position — clamp so CH[ai] can't crash the player.
     if(ai>=CH.length){ai=0;loadCh(0,false);}
     buildChapters();
-    buildPills();
     buildDlList();
   }
 
@@ -1088,7 +1056,6 @@ function syncA11y(){
   set('#map-expand',  zh?'放大地圖':'Expand map');
   set('#map-fs-close',zh?'關閉地圖':'Close map');
   set('.drclose',     zh?'關閉選單':'Close menu');
-  set('#bar-toggle',  zh?'收起或展開播放器':'Collapse or expand player');
   set('#pbt',         zh?'播放進度，可用左右方向鍵快轉':'Seek, use arrow keys');
   CH.forEach((c,i)=>{
     const t=(zh?c.sh.tc:c.sh.en)||'';
@@ -1121,7 +1088,6 @@ function goHome(){
   document.getElementById('vj').classList.remove('on');
   document.getElementById('vp').classList.remove('on');
   document.getElementById('nav-back').style.display='none';
-  document.getElementById('pills-bar-wrap').style.display='none';
   document.getElementById('views').scrollTop=0;
   document.body.classList.remove('journey-view');
   setNavTitle();
@@ -1133,7 +1099,6 @@ function goJourney(){
   document.getElementById('vh').classList.remove('on');
   document.getElementById('vp').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
-  const pb=document.getElementById('pills-bar-wrap');if(pb){pb.style.display='flex';}
   document.getElementById('views').scrollTop=0;
   setNavTitle();
   document.body.classList.add('journey-view');
@@ -1156,7 +1121,6 @@ function goPrivacy(){
   document.getElementById('vh').classList.remove('on');
   document.getElementById('vj').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
-  document.getElementById('pills-bar-wrap').style.display='none';
   document.body.classList.remove('journey-view');
   document.getElementById('views').scrollTop=0;
   setNavTitle();
@@ -1248,12 +1212,6 @@ function buildChapters(){
 }
 
 // ════ PILLS ════
-function buildPills(){
-  document.getElementById('pills-bar-wrap').innerHTML=
-    `<button class="pill" onclick="scrollMap()"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/></svg><span class="en">Map</span><span class="tc">地圖</span></button>`+
-    CH.map((c,i)=>`<button class="pill${DONE.has(i)?' dn':''}" id="pl${i}" onclick="tapPlay(${i})"><span class="pilln">${String(c.id).padStart(2,'0')}</span><span class="en">${esc(c.loc.en)}</span><span class="tc">${esc(c.loc.tc)}</span></button>`).join('');
-}
-function scrollMap(){document.getElementById('mapw')?.scrollIntoView({behavior:'smooth',block:'start'});}
 
 // ════ AUDIO ════
 function loadCh(i,doPlay){
@@ -1325,7 +1283,7 @@ function jump(i,asPL){
   if(view==='journey')document.getElementById('s'+i)?.scrollIntoView({behavior:'smooth',block:'start'});
   afterCard(()=>{sh.classList.remove('sh');loadCh(i,true);},900);
 }
-function playAll(){plMode=true;document.getElementById('pbplt').classList.add('sh');document.getElementById('pbseq').classList.add('sh');jump(0,true);}
+function playAll(){plMode=true;jump(0,true);}
 function tapPlay(i){
   if(i===ai){
     // If audio not yet loaded (readyState 0 = HAVE_NOTHING), reload and play
@@ -1333,8 +1291,6 @@ function tapPlay(i){
     else{togglePlay();}
   }else{
     plMode=false;
-    document.getElementById('pbplt').classList.remove('sh');
-    document.getElementById('pbseq').classList.remove('sh');
     jump(i,false);
   }
 }
@@ -1350,7 +1306,7 @@ function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.getElem
 function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
 function showLd(i){document.getElementById('cb'+i)?.classList.add('ld');const d=document.getElementById('cdl'+i);if(d){d.classList.add('sh');}}
 function hideLd(i){document.getElementById('cb'+i)?.classList.remove('ld');const d=document.getElementById('cdl'+i);if(d){d.classList.remove('sh');}}
-function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.toggle('pl',on);pb.setAttribute('aria-label',lang==='zh'?(on?'暫停':'播放'):(on?'Pause':'Play'));CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));}
+function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.toggle('pl',on);pb.setAttribute('aria-label',lang==='zh'?(on?'暫停':'播放'):(on?'Pause':'Play'));CH.forEach((_,i)=>document.getElementById('cb'+i)?.classList.toggle('pl',i===ai&&on));refreshNowState(on);}
 aud.addEventListener('timeupdate',()=>{
   if(!aud.duration)return;
   const p=(aud.currentTime/aud.duration)*100;
@@ -1359,7 +1315,7 @@ aud.addEventListener('timeupdate',()=>{
   const ct=document.getElementById('ct'+ai);if(ct)ct.textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
 });
 aud.addEventListener('loadedmetadata',()=>{refreshPBProg(0,aud.duration);const ct=document.getElementById('ct'+ai);if(ct)ct.textContent='0:00 / '+fmt(aud.duration);});
-aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
 aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
 aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 // ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
@@ -1378,18 +1334,22 @@ aud.addEventListener('error',()=>{
 aud.addEventListener('loadstart',()=>errBar(false));
 function refreshPBText(){
   const c=CH[ai];const k=dk();
-  document.getElementById('pbch-txt').textContent='Ch.0'+c.id+' · '+(c.loc[k]||c.loc.en);
-  document.getElementById('pbttl').textContent=c.sh[k]||c.sh.en;
-  if(plMode)updateDots();
+  document.getElementById('pbnow-ttl').textContent=c.sh[k]||c.sh.en;
+  refreshNowState(playing);
+}
+// 「正在播放／已暫停 · 第 N 站」。syncBtns 每次播放狀態一變都會 call，所以用參數唔用 playing。
+function refreshNowState(on){
+  const c=CH[ai];if(!c)return;
+  document.getElementById('pbnow-st').textContent=lang==='zh'
+    ?`${on?'正在播放':'已暫停'} · 第 ${c.id} 站`:`${on?'Now playing':'Paused'} · Stop ${c.id}`;
 }
 function refreshPBProg(cur,dur){
   const p=dur>0?(cur/dur)*100:0;
   document.getElementById('pbf').style.width=p.toFixed(2)+'%';
-  document.getElementById('pbth').style.left='calc(13px + '+p.toFixed(2)+'% * ((100% - 26px) / 100%))';
+  document.getElementById('pbth').style.left=p.toFixed(2)+'%';
   document.getElementById('pbt2').textContent=fmt(cur);
-  document.getElementById('pbt2-dur').textContent=' / '+fmt(dur||0);
+  document.getElementById('pbt2-dur').textContent=fmt(dur||0);
 }
-function updateDots(){const s=document.getElementById('pbseq');if(!s)return;s.innerHTML=CH.map((_,i)=>`<div class="pbd${i===ai?' ac':DONE.has(i)?' dn':''}"></div>`).join('');}
 function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return m+':'+(sc<10?'0':'')+sc;}
 
 // ════ DRAG SEEK BAR ════
@@ -1415,7 +1375,7 @@ function initSeekBar(){
     aud.currentTime=p*aud.duration;
     const pct=(p*100).toFixed(2)+'%';
     document.getElementById('pbf').style.width=pct;
-    document.getElementById('pbth').style.left='calc(13px + '+pct+' * ((100% - 26px) / 100%))';
+    document.getElementById('pbth').style.left=pct;
   }
   // Touch — use capture phase for reliable iOS handling
   t.addEventListener('touchstart',e=>{
@@ -1869,15 +1829,8 @@ function instTab(plat,btn){
   document.getElementById('inst-ios').style.display=plat==='ios'?'flex':'none';
   document.getElementById('inst-android').style.display=plat==='android'?'flex':'none';
 }
-function toggleBarSize(){
-  const bar=document.getElementById('bar');
-  const isMin=bar.classList.toggle('minimised');
-  document.body.classList.toggle('bar-min', isMin);
-  const icon=document.getElementById('bar-toggle-icon');
-  if(icon) icon.style.transform=isMin?'rotate(180deg)':'rotate(0deg)';
-  localStorage.setItem('kfbg-bar-min', isMin?'1':'0');
-}
-// #views 要避開播放條，但播放條幾高冇得寫死：字級、pills、播放列表點點、縮細、
+
+// #views 要避開播放條，但播放條幾高冇得寫死：字級、錯誤提示、
 // safe area 都會令佢變。量真實高度寫入 --bar-h，任何一樣變咗都會自動跟上。
 (function watchBarHeight(){
   const bar=document.getElementById('bar');
@@ -1889,7 +1842,7 @@ function setupScroll(){
   v.addEventListener('scroll',()=>{
     const tot=v.scrollHeight-v.clientHeight;
     document.getElementById('sbar').style.width=(tot>0?(v.scrollTop/tot)*100:0)+'%';
-    if(view==='journey')CH.forEach((_,i)=>{const s=document.getElementById('s'+i);if(!s)return;const r=s.getBoundingClientRect();const on=r.top<=200&&r.bottom>=200;s.classList.toggle('ca',on);document.getElementById('pl'+i)?.classList.toggle('ac',on);});
+    if(view==='journey')CH.forEach((_,i)=>{const s=document.getElementById('s'+i);if(!s)return;const r=s.getBoundingClientRect();const on=r.top<=200&&r.bottom>=200;s.classList.toggle('ca',on);});
   },{passive:true});
 }
 
