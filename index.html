@@ -381,7 +381,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 .ibaddbtn{width:100%;background:var(--gd);color:var(--olm);border:none;border-radius:9px;padding:10px;font-size:0.82rem;font-weight:600;font-family:inherit;cursor:pointer;}
 
 /* ════ MISC ════ */
-#ubar{display:none;position:fixed;top:var(--nav);left:0;right:0;z-index:250;background:var(--olm);padding:9px 15px;align-items:center;gap:9px;}
+#ubar{display:none;position:fixed;top:var(--nav);left:0;right:0;z-index:370;   /* 要喺章節頁（350）同播放條（360）上面 */
+  background:var(--olm);padding:9px 15px;align-items:center;gap:9px;}
 #ubar.sh{display:flex;}
 #ubar p{font-size:0.75rem;color:rgba(247,243,236,0.88);flex:1;}
 #ubar p strong{color:#fff;}
@@ -506,7 +507,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <!-- JOURNEY -->
   <div id="vj" class="view">
     <!-- map-outer: relative wrapper so expand button is OUTSIDE touch-action:none zone -->
-    <div id="map-outer" style="position:relative;height:180px;">
+    <div id="map-outer" style="position:relative;height:150px;">
       <div class="mapw" id="mapw" style="position:absolute;inset:0;">
         <div class="mapph" id="mapph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><line x1="9" y1="4" x2="9" y2="17"/><line x1="15" y1="7" x2="15" y2="20"/></svg><p class="en">Loading map…</p><p class="tc">地圖載入中…</p></div>
         <div class="maphint"><span class="en">Pinch · Drag</span><span class="tc">捏合 · 拖動</span></div>
@@ -571,7 +572,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <!-- 正在播放：撳一下跳去嗰站 -->
   <button id="pb-now" onclick="jumpToCurrent()"><span id="pbnow-st"></span><span id="pbnow-ttl"></span></button>
   <!-- 離線同錯誤提示：放喺播放條，唔理喺邊一頁都見到 -->
-  <div id="errbar"><span class="en">This chapter could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此章節載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
+  <div id="errbar"><span class="en">This stop could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此站載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
   <!-- 進度：兩邊時間 -->
   <div id="pb-prog">
     <span id="pbt2">0:00</span>
@@ -982,6 +983,9 @@ function init(){
     }
   }
   // Fetch from Sanity and refresh content if available
+  // 章節頁嘅相等 CMS 有答覆（成功、失敗或者 4 秒）先載。iPhone 離線時 fetch 可以一直唔返，所以要有上限
+  const settleCms=()=>{if(_cmsSettled)return;_cmsSettled=true;if(clOn)clLazy(vi);};
+  setTimeout(settleCms,4000);
   fetchFromSanity().then(journeys=>{
     if(!journeys||!journeys.length) return;
     // Cache for offline
@@ -991,7 +995,7 @@ function init(){
     // Sanity unavailable — try local cache
     const cached=localStorage.getItem('kfbg-sanity-cache');
     if(cached){try{applyJourneyData(JSON.parse(cached));}catch(e){}}
-  });
+  }).finally(settleCms);
   setTimeout(handleDeepLink,0);
 }
 
@@ -1152,15 +1156,15 @@ function buildChapters(){
   if(sum)sum.innerHTML=`<span class="en">${CH.length} stops${mins?` · about ${mins} min`:''}</span><span class="tc">${CH.length} 站${mins?` · 約 ${mins} 分鐘`:''}</span>`;
   const fr=document.activeElement?.closest?.('.ovr')?.dataset.i;   // Sanity 遲到會重砌清單，焦點留返喺同一行
   document.getElementById('jcon').innerHTML=`<ol class="ov-list">${CH.map((c,i)=>`<li><button class="ovr" data-i="${i}" onclick="openChapters(${i})">
-      <span class="ovn">${c.id}</span>
+      <span class="ovn">${esc(c.id)}</span>
       <span class="ovt"><b><span class="en">${esc(c.sh.en)}</span><span class="tc">${esc(c.sh.tc)}</span></b><small><span class="en">${esc(c.loc.en)}</span><span class="tc">${esc(c.loc.tc)}</span></small></span>
       ${c.dur?`<span class="ovd">${fmt(c.dur)}</span>`:''}<span class="vh ovst"></span>
       <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button></li>`).join('')}</ol>`+`
     <div class="comp" id="comp">
       <div class="compst">🌿</div>
       <h2 class="en">Journey Complete</h2><h2 class="tc nst">旅程完成</h2>
-      <p class="en">You have walked all five stops. Take a breath before you return.</p>
-      <p class="tc">你已完成全部五個站點。在回程前，靜靜感受此刻的覺察。</p>
+      <p class="en">You have walked every stop. Take a breath before you return.</p>
+      <p class="tc">你已完成全部站點。在回程前，靜靜感受此刻的覺察。</p>
       <button class="btnhome" onclick="goHome()">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span class="en">Back to all journeys</span><span class="tc">返回所有旅程</span>
@@ -1269,7 +1273,16 @@ function tapPlay(i){
     jump(i,false);
   }
 }
-function togglePlay(){if(playing){aud.pause();playing=false;}else{sendPlay(ai);aud.play().catch(()=>{});playing=true;}syncBtns(playing);}
+function togglePlay(){
+  if(playing){aud.pause();playing=false;}
+  else{
+    // 載入失敗之後 play() 唔會自己重試，要成個重新載入：網絡返嚟撳一下就救得返。以前每章卡片個掣會咁做，卡退役咗之後冇咗
+    if(aud.error){loadCh(ai,true);return;}
+    sendPlay(ai);playing=true;
+    aud.play().catch(()=>{playing=false;syncBtns(false);});   // 播唔到就唔好扮播緊
+  }
+  syncBtns(playing);
+}
 function nextCh(){if(ai<CH.length-1)jump(ai+1,plMode);}
 function prevCh(){if(ai>0)jump(ai-1,plMode);}
 function jumpToCurrent(){
@@ -1296,7 +1309,10 @@ aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 function errBar(on){document.getElementById('errbar')?.classList.toggle('sh',on);}
 aud.addEventListener('error',()=>{
   if(!aud.src)return;              // src cleared, not a real failure
-  hideLd(ai);playing=false;syncBtns(false);
+  hideLd();playing=false;syncBtns(false);
+  // 訪客未撳過播放就唔出紅條、唔記 audio_error：Chromium 無視 preload=none，一開 app 就下載預載嗰站，
+  // 離線冷啟動會即刻失敗，但佢根本未試過聽。之後撳播放，togglePlay 見到 aud.error 會重新載入
+  if(!_playSent)return;
   errBar(true);
   // This is the one failure the walk can't recover from, and until now it fired no event at all:
   // the error bar appeared on the hillside and the dashboard showed nothing. Streamed audio is
@@ -1313,8 +1329,9 @@ function refreshPBText(){
 // 「正在播放／已暫停 · 第 N 站」。syncBtns 每次播放狀態一變都會 call，所以用參數唔用 playing。
 function refreshNowState(on){
   const c=CH[ai];if(!c)return;
+  const st=on?'play':(_playSent||aud.currentTime>0)?'pause':'new';   // 預載咗但未播過＝尚未開始，唔係「已暫停」
   document.getElementById('pbnow-st').textContent=lang==='zh'
-    ?`${on?'正在播放':'已暫停'} · 第 ${c.id} 站`:`${on?'Now playing':'Paused'} · Stop ${c.id}`;
+    ?`${{play:'正在播放',pause:'已暫停',new:'尚未開始'}[st]} · 第 ${c.id} 站`:`${{play:'Now playing',pause:'Paused',new:'Not started'}[st]} · Stop ${c.id}`;
 }
 function refreshPBProg(cur,dur){
   const p=dur>0?(cur/dur)*100:0;
@@ -1330,7 +1347,7 @@ function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Ma
 // 每站一頁，左右掃。vi＝睇緊邊一頁（0..N-1 係站，N 係完成頁）；ai＝播緊邊一站，兩者刻意分開：
 // 掃嚟睇唔會轉聲，要撳「播放此站」先會。掃頁、點點、IntersectionObserver 一律唔 call
 // jump／tapPlay／track，所以分析事件只喺音訊真係轉咗先射（PRD 分析合約）。
-let clOn=false, vi=0, _clIO=null, _clTo=-1, _clToT=0, _clOpener=null;
+let clOn=false, vi=0, _clIO=null, _clTo=-1, _clToT=0, _clOpener=null, _cmsSettled=false;
 const clPagesEl=()=>document.getElementById('cl-pages');
 // 每種語言只出有內容嗰個：CMS 欄位可以淨係填咗中文或者英文，唔可以令另一種語言出空框
 const clBi=(o,tag,cls,inner)=>['en','tc'].map(k=>o[k]?`<${tag} class="${cls} ${k}">${inner(o[k],k)}</${tag}>`:'').join('');
@@ -1345,7 +1362,7 @@ function buildChapterPages(){
     return `<section class="clp" data-i="${i}">
     ${c.img?`<div class="clp-img"><img data-src="${esc(c.img)}" data-alt-en="${esc(altEn)}" data-alt-tc="${esc(altTc)}" alt="${esc(lang==='zh'?altTc:altEn)}"></div>`:''}
     <div class="clp-body${c.img?'':' noimg'}">
-      <div class="clp-kick"><span class="en">Stop ${c.id} · ${esc(c.loc.en)}</span><span class="tc">第 ${c.id} 站 · ${esc(c.loc.tc)}</span></div>
+      <div class="clp-kick"><span class="en">Stop ${esc(c.id)} · ${esc(c.loc.en)}</span><span class="tc">第 ${esc(c.id)} 站 · ${esc(c.loc.tc)}</span></div>
       <h2 class="clp-title"><span class="en">${esc(c.title.en||c.sh.en)}</span><span class="tc">${esc(c.title.tc||c.sh.tc)}</span></h2>
       ${c.dur?`<div class="clp-meta">${fmt(c.dur)}</div>`:''}
       <button class="clp-play" data-i="${i}" onclick="tapPlay(${i})"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg><span class="en">Play this stop</span><span class="tc">播放此站</span></button>
@@ -1355,8 +1372,7 @@ function buildChapterPages(){
     </div></section>`;}).join('')+`
     <section class="clp clp-comp" data-i="${n}">
       <div class="e">🌿</div>
-      <h2><span class="en">Journey Complete</span><span class="tc">旅程完成</span></h2>
-      <p><span class="en">You have walked all five stops. Take a breath before you return.</span><span class="tc">你已完成全部五個站點。在回程前，靜靜感受此刻的覺察。</span></p>
+      <h2 id="clc-h"></h2><p id="clc-p"></p>
       <button onclick="closeChapters()"><span class="en">Back to overview</span><span class="tc">返回總覽</span></button>
     </section>`;
   document.getElementById('cl-dots').innerHTML=CH.map((c,i)=>`<button data-i="${i}" onclick="clGo(${i},true)"></button>`).join('');
@@ -1376,7 +1392,8 @@ function buildChapterPages(){
   }else clRefresh();
 }
 // 只載入睇緊同左右兩站嘅相（山上訊號差，PRD）；章節頁收埋時一張都唔載
-function clLazy(i){if(!clOn)return;for(let k=i-1;k<=i+1;k++){const im=clPagesEl().children[k]?.querySelector('img[data-src]');if(im){im.src=im.dataset.src;im.removeAttribute('data-src');}}}
+// CMS 未有答覆之前唔載：後備內容嘅相同 CMS 嘅唔同，載咗都係嘥（見 init 嘅 settleCms）
+function clLazy(i){if(!clOn||!_cmsSettled)return;for(let k=i-1;k<=i+1;k++){const im=clPagesEl().children[k]?.querySelector('img[data-src]');if(im){im.src=im.dataset.src;im.removeAttribute('data-src');}}}
 // 畫面外嘅頁 inert：Tab 唔會走入去（一入去就會捲走個畫面），讀屏亦唔會讀到其他站
 function clSetView(i){vi=i;[...clPagesEl().children].forEach((sec,k)=>sec.inert=k!==i);clLazy(i);clRefresh();clHeadSolid();
   if(document.getElementById('map-fs').classList.contains('sh')&&!document.getElementById('map-fs-ttl').hidden)clMapTitle();}
@@ -1385,7 +1402,7 @@ function clRefresh(){
   if(!lbl||!dots)return;
   const zh=lang==='zh', f=document.activeElement;
   // 站號一律用 CMS 嘅 chapter_number（c.id），同路線地圖上嘅號碼、「正在播放 · 第 N 站」一致
-  lbl.innerHTML=vi<n?`<span class="en">Stop ${CH[vi].id} of ${n}</span><span class="tc">第 ${CH[vi].id}／${n} 站</span>`
+  lbl.innerHTML=vi<n?`<span class="en">Stop ${esc(CH[vi].id)} of ${n}</span><span class="tc">第 ${esc(CH[vi].id)}／${n} 站</span>`
                     :`<span class="en">Complete</span><span class="tc">完成</span>`;
   [...dots.children].forEach((d,k)=>{
     d.classList.toggle('on',k===vi);d.classList.toggle('play',k===ai&&k!==vi);
@@ -1400,6 +1417,14 @@ function clRefresh(){
   // 睇緊播放中嗰站時收埋「正在播放」一行：頁面已經講咗係邊站，唔收嘅話固定元素超出 170px
   const now=document.getElementById('pb-now');if(now)now.hidden=clOn&&vi===ai;
   document.querySelectorAll('.clp-img img').forEach(im=>im.alt=zh?im.dataset.altTc:im.dataset.altEn);
+  // 完成頁任何時候都掃得到：未聽完就講聽咗幾多，唔好話「已完成全部」
+  const nd=CH.filter((_,k)=>DONE.has(k)).length, all=nd===n, hEl=document.getElementById('clc-h');
+  if(hEl){
+    hEl.innerHTML=all?'<span class="en">Journey Complete</span><span class="tc">旅程完成</span>':'<span class="en">End of the journey</span><span class="tc">旅程終點</span>';
+    document.getElementById('clc-p').innerHTML=all
+      ?'<span class="en">You have walked every stop. Take a breath before you return.</span><span class="tc">你已完成全部站點。在回程前，靜靜感受此刻的覺察。</span>'
+      :`<span class="en">You have finished ${nd} of ${n} stops.</span><span class="tc">已完成 ${nd}／${n} 個站點。</span>`;
+  }
   // 撳完「播放此站」或者「正在播放」，嗰粒掣會收埋；焦點唔好跌去 body，交畀控制條播放掣
   if(f&&f.hidden)document.getElementById('pbplay').focus({preventScroll:true});
 }
@@ -1439,8 +1464,9 @@ function clMapTitle(){
   const c=CH[vi],t=document.getElementById('map-fs-ttl');
   if(!c){t.hidden=true;return;}         // 完成頁：淨係開地圖
   const zh=lang==='zh',loc=esc((zh?c.loc.tc:c.loc.en)||c.loc.tc||'');
-  t.innerHTML=zh?`<b>第 ${c.id} 站 · ${loc}</b><small>對照地圖上的號碼 ${c.id}</small>`
-                :`<b>Stop ${c.id} · ${loc}</b><small>Look for number ${c.id} on the map</small>`;
+  const id=esc(c.id);
+  t.innerHTML=zh?`<b>第 ${id} 站 · ${loc}</b><small>對照地圖上的號碼 ${id}</small>`
+                :`<b>Stop ${id} · ${loc}</b><small>Look for number ${id} on the map</small>`;
   t.hidden=false;
 }
 
