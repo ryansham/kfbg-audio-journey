@@ -207,6 +207,17 @@ body.env-staging #nav{top:0;}
 /* 正在播放：撳一下跳去嗰站。取代以前嘅資料行、播放列表標籤同點點 */
 #pb-now{display:flex;align-items:baseline;gap:7px;width:100%;min-height:32px;padding:10px 14px 0;background:none;border:0;cursor:pointer;font-family:inherit;text-align:left;}
 #pb-now[hidden]{display:none;}
+/* 尚未開始時縮成一行：狀態＋站名＋播放掣（Ryan）。一播過就保持完整控制條，暫停都唔縮
+   （Ryan 2026-09-26：暫停唔縮，暫停中要拉得到進度條）。見 barMini */
+#bar.mini{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;}
+#bar.mini #errbar{grid-row:1;grid-column:1/-1;}
+#bar.mini #pb-now{grid-row:2;grid-column:1;min-height:56px;padding:0 6px 0 14px;align-items:center;}
+#bar.mini #pb-ctrl-row{grid-row:2;grid-column:2;display:flex;align-items:center;gap:8px;padding:6px 14px 6px 0;}
+#bar.mini #pb-ctrl-row>:not(#pbplay):not(#offbar){display:none;}
+#bar.mini #offbar{order:-1;}
+#bar.mini #pb-prog{display:none;}
+#bar.mini .pbplay{width:44px;height:44px;}
+#bar.mini>div:last-child{grid-row:3;grid-column:1/-1;}
 #pbnow-st{font-size:0.72rem;color:var(--gdl);white-space:nowrap;}
 #pbnow-ttl{font-size:0.88rem;font-weight:500;color:var(--cr);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* 進度：兩邊時間，中間可拖。以前時間自成一行，而家併埋一行慳位 */
@@ -249,13 +260,18 @@ body.env-staging #nav{top:0;}
 .clp-body{padding:18px max(18px,env(safe-area-inset-right)) 0 max(18px,env(safe-area-inset-left));}
 .clp-body.noimg{padding-top:calc(70px + env(safe-area-inset-top));}
 .clp-kick{font-size:0.68rem;letter-spacing:0.14em;color:var(--ol);font-weight:500;}
-.clp-title{font-family:'Noto Serif TC',serif;font-weight:500;font-size:1.45rem;line-height:1.35;margin:4px 0 8px;color:var(--tx);}
-[data-lang="en"] .clp-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;}
+.clp-title{font-family:'Noto Serif TC',serif;font-weight:500;font-size:1.2rem;line-height:1.4;margin:4px 0 8px;color:var(--tx);text-wrap:balance;}   /* 1.45rem 令十四五字嘅站名斷兩行 */
+[data-lang="en"] .clp-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;line-height:1.25;}
 .clp-meta{font-size:0.8rem;color:var(--tm);margin-bottom:16px;font-variant-numeric:tabular-nums;}
 .clp-play{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--gd);color:#26311d;
   border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:500;margin-bottom:18px;cursor:pointer;}
 .clp-play svg{width:13px;height:13px;fill:#26311d;}
 .clp-play[hidden]{display:none;}
+/* 強烈建議每位訪客預先下載（山上訊號差）；全部站都下載咗就收埋（body.all-dl，見 checkDlState） */
+.clp-dl{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:-8px 0 18px;padding:6px;background:none;border:0;
+  font:inherit;font-size:0.8rem;color:var(--ol);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+.clp-dl svg{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.all-dl .clp-dl{display:none;}
 .clp-desc{font-size:0.98rem;color:var(--tm);line-height:1.9;margin-bottom:18px;}
 .clp-tr{border-top:1px solid var(--bd);padding:14px 0;}
 .clp-trl{font-size:0.64rem;letter-spacing:0.16em;color:var(--ol);font-weight:600;margin-bottom:6px;}
@@ -290,6 +306,7 @@ body.env-staging #nav{top:0;}
 #cl-lbl{font-size:0.68rem;letter-spacing:0.05em;line-height:1.2;}
 #cl-right{justify-self:end;display:flex;}
 @media (prefers-reduced-motion:reduce){#cl{transition:none;}}
+
 .cl-on #sbar{display:none;}       /* 長頁嘅捲動進度，唔關章節頁事 */
 
 /* ════ 總覽清單 ════
@@ -400,9 +417,13 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 #map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
 
 /* ── TUTORIAL COACHMARK ── */
-#tut{position:fixed;inset:0;z-index:900;display:none;}
-#tut-spot{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(30,36,24,0.72),0 0 0 3px var(--gd),0 0 0 7px rgba(196,169,106,0.3);pointer-events:none;transition:left 0.28s cubic-bezier(0.4,0,0.2,1),top 0.28s cubic-bezier(0.4,0,0.2,1),width 0.28s cubic-bezier(0.4,0,0.2,1),height 0.28s cubic-bezier(0.4,0,0.2,1);}
-#tut-bub{position:fixed;max-width:290px;width:calc(100vw - 28px);background:var(--cr);border:1px solid var(--bd);border-radius:14px;padding:17px 18px;box-shadow:0 12px 40px rgba(30,36,24,0.28);}
+#tut{position:fixed;inset:0;z-index:900;display:none;transition:background 0s linear 0.18s;}   /* 灰幕等窿淡入完先收，唔會閃 */
+#tut-spot{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(30,36,24,0.72),0 0 0 3px var(--gd),0 0 0 7px rgba(196,169,106,0.3);pointer-events:none;transition:opacity 0.18s;}
+/* 以前聚光燈會由上一個位置滑去新目標，加上 smooth 捲動途中計位，灰幕成塊郁嚟郁去先定到位。
+   而家計位期間（.settling）灰幕由 #tut 自己出、唔郁；窿同氣泡定好位先淡入 */
+#tut.settling{background:rgba(30,36,24,0.72);transition:none;}
+#tut.settling #tut-spot,#tut.settling #tut-bub{opacity:0;}
+#tut-bub{position:fixed;max-width:290px;width:calc(100vw - 28px);transition:opacity 0.18s;background:var(--cr);border:1px solid var(--bd);border-radius:14px;padding:17px 18px;box-shadow:0 12px 40px rgba(30,36,24,0.28);}
 #tut-bub p{font-size:0.86rem;line-height:1.6;color:var(--tx);margin-bottom:14px;}
 [data-lang="zh"] #tut-bub p{font-family:'Noto Serif TC',serif;}
 .tut-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -1200,7 +1221,7 @@ function buildChapters(){
 
 // ════ AUDIO ════
 function loadCh(i,doPlay){
-  ai=i;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
+  ai=i;_wantPlay=!!doPlay;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
   clRefresh();
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
@@ -1208,10 +1229,10 @@ function loadCh(i,doPlay){
   if(doPlay){
     sendPlay(i);
     showLd();
-    aud.play().then(()=>{hideLd();playing=true;syncBtns(true);}).catch(()=>{hideLd();playing=false;syncBtns(false);});
+    aud.play().then(()=>{hideLd();_wantPlay=false;playing=true;syncBtns(true);}).catch(()=>{hideLd();_wantPlay=false;playing=false;syncBtns(false);});
   }else{playing=false;syncBtns(false);}
 }
-let _justEnded=false,_abandonSent=false,_playSent=false;
+let _justEnded=false,_abandonSent=false,_playSent=false,_wantPlay=false;   // _wantPlay：撳咗播放、仲等緊 play() 有結果
 // One chapter_play per chapter load, whichever route started it: loadCh(i,true) when a chapter is
 // tapped, togglePlay() when the play button starts audio that was loaded but never played — the
 // commonest case, since reopening the app restores the last chapter paused. Routing both through
@@ -1300,7 +1321,10 @@ function setSpdBtn(r,btn){si=SPDS.indexOf(r);aud.playbackRate=r;document.getElem
 function cycleSpd(){si=(si+1)%SPDS.length;const r=SPDS[si];aud.playbackRate=r;document.getElementById('pbspd').textContent=r+'×';}
 function showLd(){document.getElementById('pbplay').classList.add('ld');}
 function hideLd(){document.getElementById('pbplay').classList.remove('ld');}
-function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.toggle('pl',on);pb.setAttribute('aria-label',lang==='zh'?(on?'暫停':'播放'):(on?'Pause':'Play'));refreshNowState(on);clRefresh();}
+function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.toggle('pl',on);pb.setAttribute('aria-label',lang==='zh'?(on?'暫停':'播放'):(on?'Pause':'Play'));refreshNowState(on);barMini();clRefresh();}
+// 只有「尚未開始」先縮細，同狀態字眼一致（refreshNowState 嘅 'new'）。等緊開始播（_wantPlay）唔縮，
+// 換站時先 pause 再 loadCh 嗰一刻亦因此唔會閃
+function barMini(){document.getElementById('bar').classList.toggle('mini',!(playing||_wantPlay||_playSent||aud.currentTime>0));}
 aud.addEventListener('timeupdate',()=>{if(aud.duration)refreshPBProg(aud.currentTime,aud.duration);});
 aud.addEventListener('loadedmetadata',()=>refreshPBProg(0,aud.duration));
 aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
@@ -1357,6 +1381,10 @@ let clOn=false, vi=0, _clIO=null, _clTo=-1, _clToT=0, _clOpener=null, _cmsSettle
 const clPagesEl=()=>document.getElementById('cl-pages');
 // 每種語言只出有內容嗰個：CMS 欄位可以淨係填咗中文或者英文，唔可以令另一種語言出空框
 const clBi=(o,tag,cls,inner)=>['en','tc'].map(k=>o[k]?`<${tag} class="${cls} ${k}">${inner(o[k],k)}</${tag}>`:'').join('');
+// 播放掣用中文數字（Ryan 指定「播放第一站」）；十以上冇需要，照出阿拉伯數字
+const zhNum=n=>'一二三四五六七八九十'[n-1]||esc(n);
+// 由章節頁下載：打開選單先開始，進度同「請先加至主畫面」嗰句都喺選單入面，唔打開就乜都見唔到
+function clDownload(){drOpen();if(!document.getElementById('drdlbtn').disabled)dlClick();}
 function buildChapterPages(){
   const P=clPagesEl();if(!P)return;
   const n=CH.length;
@@ -1371,7 +1399,8 @@ function buildChapterPages(){
       <div class="clp-kick"><span class="en">Stop ${esc(c.id)} · ${esc(c.loc.en)}</span><span class="tc">第 ${esc(c.id)} 站 · ${esc(c.loc.tc)}</span></div>
       <h2 class="clp-title"><span class="en">${esc(c.title.en||c.sh.en)}</span><span class="tc">${esc(c.title.tc||c.sh.tc)}</span></h2>
       ${c.dur?`<div class="clp-meta">${fmt(c.dur)}</div>`:''}
-      <button class="clp-play" data-i="${i}" onclick="tapPlay(${i})"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg><span class="en">Play this stop</span><span class="tc">播放此站</span></button>
+      <button class="clp-play" data-i="${i}" onclick="tapPlay(${i})"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg><span class="en">Play stop ${esc(c.id)}</span><span class="tc">播放第${zhNum(c.id)}站</span></button>
+      <button class="clp-dl" onclick="clDownload()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="en">Download all audio for offline listening</span><span class="tc">下載全部音頻，離線也能收聽</span></button>
       ${clBi(c.desc,'p','clp-desc',t=>esc(t))}
       ${clBi(c.prac,'div','prac',(t,k)=>`<div class="pracl">${k==='en'?'Mindful Practice':'正念練習'}</div><div class="pract">${esc(t)}</div>`)}
       ${c.tr?`<div class="clp-tr"><div class="clp-trl"><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></div><div class="clp-trb en" style="font-style:italic;color:var(--mu);">Transcript is available in Chinese only.</div><div class="clp-trb">${esc(c.tr)}</div></div>`:''}
@@ -1421,7 +1450,7 @@ function clRefresh(){
     r.classList.toggle('dn',d);r.classList.toggle('now',k===ai);
     r.querySelector('.ovst').textContent=d?(lang==='zh'?'，已完成':', completed'):'';});
   // 睇緊播放中嗰站時收埋「正在播放」一行：頁面已經講咗係邊站，唔收嘅話固定元素超出 170px
-  const now=document.getElementById('pb-now');if(now)now.hidden=clOn&&vi===ai;
+  const now=document.getElementById('pb-now');if(now)now.hidden=clOn&&vi===ai&&!document.getElementById('bar').classList.contains('mini');
   document.querySelectorAll('.clp-img img').forEach(im=>im.alt=zh?im.dataset.altTc:im.dataset.altEn);
   // 完成頁任何時候都掃得到：未聽完就講聽咗幾多，唔好話「已完成全部」
   const nd=CH.filter((_,k)=>DONE.has(k)).length, all=nd===n, hEl=document.getElementById('clc-h');
@@ -2111,7 +2140,11 @@ async function deleteCachedImages(){
 
 async function checkDlState(){
   if(!('caches' in window))return;
-  try{const c=await caches.open(CACHE);const k=await c.keys();document.getElementById('drdel').style.display=k.some(r=>r.url.endsWith('.mp3'))?'inline-block':'none';}catch(e){}
+  try{const c=await caches.open(CACHE);const k=await c.keys();document.getElementById('drdel').style.display=k.some(r=>r.url.endsWith('.mp3'))?'inline-block':'none';
+    // 全部站都喺快取就收埋章節頁嗰句「下載全部音頻」
+    const have=new Set(k.map(r=>r.url));
+    document.body.classList.toggle('all-dl',CH.length>0&&CH.every(ch=>have.has(new URL(ch.a,location.href).href)));
+  }catch(e){}
 }
 async function delCache(){
   if(!confirm(lang==='zh'?'確定要刪除所有已下載的音頻嗎？':'Delete all downloaded audio?'))return;
@@ -2120,6 +2153,7 @@ async function delCache(){
   const b=document.getElementById('drdlbtn');b.disabled=false;
   b.innerHTML='<span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
   document.getElementById('drprog').style.display='none';document.getElementById('drpfill').style.width='0%';
+  checkDlState();
 }
 
 // ════ INSTALL ════
@@ -2211,7 +2245,7 @@ const TUT_STEPS=[
   {sel:'#drdlbtn', open:true, en:'Then open the menu and download the audio in advance — it plays even with no signal on the trail.', tc:'第二步：在選單預先下載音頻，山上沒有網絡也能收聽。'},
   {sel:'#jlib .jc',   en:'All set — tap a journey here to begin your walk.',                                      tc:'準備好了。按此選擇旅程，開始步行。'}
 ];
-let _tutI=0,_tutOn=false,_tutSteps=TUT_STEPS,_tutKey='kfbg-tour',_tutPrevFocus=null;
+let _tutI=0,_tutOn=false,_tutSteps=TUT_STEPS,_tutKey='kfbg-tour',_tutPrevFocus=null,_tutTok=0;
 function _tutReflow(){tutPos();}
 function startTour(steps,key){
   // replayTour 經 requestAnimationFrame 叫，第一個參數會係時間戳，所以要驗類型
@@ -2235,11 +2269,17 @@ function startTour(steps,key){
 function tutKey(e){if(e.key==='Escape')endTour();}
 function tutShow(){
   const step=_tutSteps[_tutI];
+  const drMoves=!!(step&&step.open)!==document.getElementById('dr').classList.contains('op');   // 選單要滑入或者滑出
   step&&step.open?drOpen():drClose(); // 需要時打開選單，否則收起
   const el=step&&document.querySelector(step.sel);
   const r0=el&&el.getBoundingClientRect();
   if(!el||!r0||(r0.width<2&&r0.height<2)){ if(_tutI<_tutSteps.length-1){_tutI++;return tutShow();} return endTour(); } // 目標唔喺 DOM／唔可見 → 跳步唔終止
-  el.scrollIntoView({block:'center',behavior:'smooth'});
+  // 即時捲，唔用 smooth：以前捲動途中已經計位，聚光燈同灰幕追住個目標走一段先定到位。
+  // #views 喺 CSS 設咗 scroll-behavior:smooth，behavior:'auto' 會跟佢照樣慢慢捲，所以暫時關咗先捲
+  // （唔用 behavior:'instant'：舊 iOS 唔認得會 throw）
+  const ov=document.getElementById('tut');ov.classList.add('settling');
+  const vw_=document.getElementById('views'),sb=vw_.style.scrollBehavior;
+  vw_.style.scrollBehavior='auto';el.scrollIntoView({block:'center'});vw_.style.scrollBehavior=sb;
   const last=_tutI===_tutSteps.length-1;
   document.getElementById('tut-bub').innerHTML=
     `<p><span class="en">${step.en}</span><span class="tc">${step.tc}</span></p>`+
@@ -2248,31 +2288,63 @@ function tutShow(){
     `<button class="tut-next" type="button" onclick="tutNext(event)">`+
     (last?`<span class="en">${step.done?.en||'Done'}</span><span class="tc">${step.done?.tc||'完成'}</span>`:'<span class="en">Next</span><span class="tc">下一步</span>')+
     `</button></span></div>`;
-  document.querySelector('#tut-bub .tut-next')?.focus({preventScroll:true});
-  tutPos();
-  setTimeout(tutPos,380); // 等 smooth scroll + drawer 滑入定位
+  // 等選單滑完（0.32s）同 iPhone Safari 工具列因捲動而伸縮完先計位，之後先顯示窿同氣泡
+  const tok=++_tutTok;
+  setTimeout(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    if(tok!==_tutTok||!_tutOn)return;   // 呢段時間入面已經撳咗下一步或者略過
+    tutPos();ov.classList.remove('settling');
+    tutPeek(step);
+    document.querySelector('#tut-bub .tut-next')?.focus({preventScroll:true});
+  })),drMoves?360:0);
 }
 function tutPos(){
   if(!_tutOn)return;
   const step=_tutSteps[_tutI];
   const el=step&&document.querySelector(step.sel);
   if(!el)return;
-  const r=el.getBoundingClientRect(),PAD=6;
-  const x=Math.max(0,r.left-PAD),y=Math.max(0,r.top-PAD),w=r.width+PAD*2,h=r.height+PAD*2;
+  const r=el.getBoundingClientRect(),PAD=6,M=12,vw=window.innerWidth,vh=window.innerHeight;
+  // 聚光燈夾返入畫面：目標高過畫面時（例如旅程卡喺 Safari 工具列展開時）淨係圈住見到嗰段
+  const x=Math.max(0,r.left-PAD),y=Math.max(0,r.top-PAD),w=Math.min(vw,r.right+PAD)-x,h=Math.min(vh,r.bottom+PAD)-y;
   const spot=document.getElementById('tut-spot');
   spot.style.left=x+'px';spot.style.top=y+'px';spot.style.width=w+'px';spot.style.height=h+'px';
-  const bub=document.getElementById('tut-bub'),vw=window.innerWidth,vh=window.innerHeight;
-  bub.style.left=Math.min(Math.max(12,x),Math.max(12,vw-302))+'px';
-  if(y+h+170<vh){bub.style.top=(y+h+12)+'px';bub.style.bottom='auto';}
-  else{bub.style.bottom=(vh-y+12)+'px';bub.style.top='auto';}
+  // 氣泡用實際量到嘅闊高（以前估 170px 高、302px 闊）：下面夠位擺下面，唔夠擺上面；
+  // 兩邊都唔夠就貼住位多嗰邊嘅畫面邊，寧願遮少少目標，都唔可以出界睇唔到字
+  const bub=document.getElementById('tut-bub'),bw=bub.offsetWidth,bh=bub.offsetHeight;
+  bub.style.left=Math.min(Math.max(M,x),vw-bw-M)+'px';
+  const below=y+h+M, above=y-M-bh;
+  const top=below+bh<=vh-M?below:above>=M?above:(vh-(y+h)>=y?vh-bh-M:M);
+  bub.style.top=Math.max(M,Math.min(top,vh-bh-M))+'px';bub.style.bottom='auto';
 }
 function tutNext(e){if(e&&e.stopPropagation)e.stopPropagation();if(_tutI>=_tutSteps.length-1)return endTour('finish');_tutI++;tutShow();}
+// 章節頁提示第一步：成版向左推 64px 再彈返，重複兩次，露出下一站嘅邊，示範可以左右掃（Ryan 建議）。
+// 用 scrollLeft 逐格郁，唔用 CSS transform：畫面外嗰頁 Chrome 唔會行動畫，下一站根本唔會露出嚟。
+// 期間暫時關 scroll-snap，完咗還原。64px 只佔畫面兩成，IntersectionObserver（0.6）唔會當轉咗站；
+// 提示遮罩擋住手指，訪客掃唔到，唔會同佢打架。完成頁後面冇下一站，就向右推露出上一站
+let _peekRaf=0,_peekBase=null;
+function tutPeek(step){
+  const P=document.getElementById('cl-pages');if(!P)return;
+  cancelAnimationFrame(_peekRaf);
+  if(_peekBase!==null){P.scrollLeft=_peekBase;P.style.scrollSnapType='';_peekBase=null;}
+  if(!step||!step.peek||!_tutOn||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const dir=vi>=CH.length?-1:1,base=P.scrollLeft,D=64,T=1600,t0=performance.now()+300;
+  const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+  _peekBase=base;P.style.scrollSnapType='none';
+  const f=now=>{
+    const t=(now-t0)/T;
+    if(t>=2){P.scrollLeft=base;P.style.scrollSnapType='';_peekBase=null;return;}
+    const u=t<0?0:t%1;   // 每 1.6 秒：推出 30%、停 15%、彈返 30%、靜 25%
+    const k=u<.3?ease(u/.3):u<.45?1:u<.75?1-ease((u-.45)/.3):0;
+    P.scrollLeft=base+dir*D*k;_peekRaf=requestAnimationFrame(f);
+  };
+  _peekRaf=requestAnimationFrame(f);
+}
 function endTour(how){
   // tutorial_end, not tour_end: this is the coachmark walkthrough, not the audio journey. Under the
   // old name GA read it as "finished the tour" and it outnumbered journey_start, so the report lied.
   if(_tutOn&&_tutSteps===TUT_STEPS)track('tutorial_end',{how:how||'aborted',step_reached:_tutI+1,of:TUT_STEPS.length}); // 章節頁提示唔記，分析合約冇呢項
   _tutOn=false;
   const ov=document.getElementById('tut');if(ov)ov.style.display='none';
+  tutPeek(null);
   drClose(); // 若停喺開咗選單嗰步，收埋
   window.removeEventListener('resize',_tutReflow);
   window.removeEventListener('scroll',_tutReflow,true);
@@ -2288,8 +2360,8 @@ function maybeStartTour(){
 }
 // 第一次打開章節頁：兩步提示（左右滑動、地圖掣）。首頁教學唔郁
 const CL_HINT=[
-  {sel:'#cl-head .clh-c', en:'Swipe left or right to see other stops.<small class="tut-sub">Swiping does not change the audio. To listen, tap “Play this stop”.</small>',
-                   tc:'左右滑動，查看前後站點。<small class="tut-sub">滑動不會切換音頻；如要收聽該站，請按「播放此站」。</small>'},
+  {sel:'#cl-pages', peek:true, en:'Swipe left or right to see other stops.<small class="tut-sub">Swiping does not change the audio. To listen, tap that stop’s play button.</small>',
+                   tc:'左右滑動，查看前後站點。<small class="tut-sub">滑動不會切換音頻；如要收聽該站，請按該站的播放按鈕。</small>'},
   {sel:'#cl-map',  en:'Tap here to open the route map.<small class="tut-sub">The numbers on the map are the stop numbers.</small>',
                    tc:'按此打開路線地圖。<small class="tut-sub">地圖上的號碼即為站號。</small>', done:{en:'Got it',tc:'知道了'}}
 ];
