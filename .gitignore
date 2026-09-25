@@ -25,3 +25,6 @@ analytics/*key*.json
 analytics/*credential*.json
 analytics/*service-account*.json
 analytics/cache/
+
+# 秘密連結 folder 名。repo 是公開的，網址一公開就等於冇保護。見 analytics/README.md「存取控制」
+analytics/.secret-folder

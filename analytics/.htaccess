@@ -1,79 +1,54 @@
-# ⚠️⚠️ 上載這個檔會關掉密碼保護 ⚠️⚠️
+# KFBG Audio Journey 數據簡報 —— 秘密連結 folder 的設定
 #
-# DirectAdmin 的 Password Protected Directories 把 AuthType／AuthUserFile 那幾行
-# 寫進「這個檔案」。上載 repo 版本 = 蓋走它們 = /analytics/ 立即變成全世界打得開。
-# 2026-08-26 就是這樣中招的：上載之後 curl 回 200 而不是 401。
+# 位置：comm.kfbg.org/public_html/analytics-and-dashboards/<秘密 folder 名>/.htaccess
+#       folder 名不寫在這裡（這個 repo 是公開的），見 kfbg-comm-hub README。
 #
-# 所以：這個檔平時不要上載。真的改過規則要上載的話，三步缺一不可：
-#   1. 上載 .htaccess
-#   2. DirectAdmin → Advanced Features → Password Protected Directories
-#      → public_html/analytics → 重新設定一次（它會把 auth 那幾行加回去）
-#   3. 驗：curl -o /dev/null -w "%{http_code}" https://audio-journey.kfbg.org/analytics/
-#      一定要回 401。回 200 就是第 2 步未做。
+# 🔓 這個 folder 刻意放在 comm.kfbg.org 的密碼閘外面：知道網址就看得到，不用登入。
+#    2026-09-25 Ryan 拍板，做法跟 70A 活動睇板一樣。保護只有一層：網址沒人知道。
+#    所以 folder 名是隨機的，而且下面加了 noindex。
 #
-# auth 那幾行不寫在這裡，是因為 .htpasswd 的絕對路徑是這部伺服器獨有的，
-# 而這個 repo 是公開的。
+# ⚠️ DirectAdmin 的 File Manager 不會經 zip 解壓帶出點開頭的檔案。
+#    用 File Manager 的「Create New File」手動建立 .htaccess，再貼上本檔內容。
+#
+# 上載後一定要跑：  analytics/test-live.sh
+#    它由外面、不帶密碼打一次，確認開放的只有該開放的那幾個檔。
 
-# KFBG Audio Journey — /analytics/ 目錄設定
-# 位置：public_html/analytics/.htaccess
-#
-# ⚠️ DirectAdmin 的 File Manager 預設不顯示以點開頭的檔案。若上載後看不見，
-#    請用 File Manager 的「Create File」手動建立，再貼上本檔內容。
-#
-# 每條指令都用 <IfModule> 包住 —— 模組不存在時應該安靜降級，不是 500 整站。
+# ── 1. 對這個 folder 關掉父層的密碼閘 ───────────────────────────────────────
+# 兩行都要：只寫 AuthType None 會 500；只寫 Require all granted 可以，但看不出意圖。
+AuthType None
+Require all granted
 
-# ── 憑證與快取：絕不對外 ────────────────────────────────────────────────────
-# 🔴 config.php 內有 service account 金鑰的路徑；cache/ 內有生效中的 GA access
-#    token。PHP 正常運作時 config.php 不會輸出內容，但 PHP 一旦故障或被停用，
-#    伺服器就會把它當純文字送出去。所以明文擋死，不倚賴 PHP 一定正常。
-# 開發用的檔案。用「這一類」而不是「今日這幾個」來擋 —— 逐個列的話，
-# 將來加一個新的測試或工具檔就會靜靜地漏網，而漏網不會有任何訊號。
-# 應該送出去的只有三個：index.html、ga-proxy.php、data.json。
-<FilesMatch "^(config.*\.php|test-.*|check\.py|build_data\.py|.*\.(py|mjs|md|orig|bak)|\.DS_Store)$">
-  <IfModule mod_authz_core.c>
-    Require all denied
-  </IfModule>
-  <IfModule !mod_authz_core.c>
-    Order allow,deny
-    Deny from all
-  </IfModule>
+# ── 2. 憑證：父層已經擋，這裡再擋一次 ───────────────────────────────────────
+# 本機 Apache 2.4.66 實測（2026-09-25）：
+#   · 父層正常時，父層的 FilesMatch 已經擋住 config.php 和 token.json（403）。
+#   · 但把父層那段拿走（模擬 live 與 repo drift —— 70A 那次真的發生過），
+#     只靠上面兩行的話 cache/token.json 以 200 整份吐出：生效中的 GA access token
+#     直接送上公網。加了這一段，同樣情況下仍然 403。
+# 所以這段不是裝飾，是父層失守時唯一擋住憑證的東西。不要刪。
+# .ht* 也放進來：同一個實驗裡 .htaccess 本身變成 200。live 伺服器的全域設定本來就擋
+# .ht*，不過這裡不依賴一個在 repo 裡看不到、本機也驗不到的設定。
+<FilesMatch "^(\.ht.*|config.*\.php|token\.json|.*key.*\.json|.*credential.*|.*service-account.*)$">
+  Require all denied
 </FilesMatch>
 
-# 任何看起來像憑證的檔案，即使誤放進這個資料夾也打不開。
-<FilesMatch "(key|credential|service-account)">
-  <IfModule mod_authz_core.c>
-    Require all denied
-  </IfModule>
-  <IfModule !mod_authz_core.c>
-    Order allow,deny
-    Deny from all
-  </IfModule>
+# ── 3. 開發和說明檔不公開 ─────────────────────────────────────────────────
+# 父層只擋憑證，不擋這些。實測只寫第 1 段的話 README.md、build_data.py、
+# test-proxy.php 都回 200。按「類別」擋而不是逐個列名：以後多一個測試或工具檔，
+# 不會因為沒人記得加名字而靜靜地公開。
+# 應該送出去的只有三個：index.html、ga-proxy.php、data.json。
+<FilesMatch "^(test-.*|check\.py|.*\.(py|mjs|md|sh|orig|bak|txt)|\.DS_Store)$">
+  Require all denied
 </FilesMatch>
 
 <IfModule mod_headers.c>
-  # data.json 每次更新數字都會改，而網站根目錄的 .htaccess 沒有為 .json 設任何
-  # Cache-Control，瀏覽器會套用啟發式快取（可以長達數天）。頁面本身已經加了
-  # cache-busting 參數，這條是伺服器端的第二道保險。
-  <FilesMatch "\.json$">
-    Header set Cache-Control "no-cache, must-revalidate"
-  </FilesMatch>
+  # ── 4. 不被收錄 ─────────────────────────────────────────────────────────
+  # 秘密連結萬一被貼到搜尋器爬得到的地方，這條令它不會出現在搜尋結果。
+  Header set X-Robots-Tag "noindex, nofollow, noarchive"
 
-  # ga-proxy.php 自己會送 Cache-Control，這裡確保沒有中介層擅自快取。
-  <FilesMatch "^ga-proxy\.php$">
+  # ── 5. 數字不被快取 ──────────────────────────────────────────────────────
+  # data.json 每次更新都會變，頁面已經加了 cache-busting 參數，這是伺服器端的
+  # 第二道保險。ga-proxy.php 自己會送 Cache-Control，這裡確保中介層不擅自快取。
+  <FilesMatch "(\.json|^ga-proxy\.php)$">
     Header set Cache-Control "no-cache, must-revalidate"
-  </FilesMatch>
-
-  # 本頁不應被搜尋引擎收錄。HTML 內已有 <meta name="robots">，
-  # 這條 header 連非 HTML 檔（例如直接開 data.json）都一併覆蓋。
-  <FilesMatch "\.(html|json|php)$">
-    Header set X-Robots-Tag "noindex, nofollow, noarchive"
   </FilesMatch>
 </IfModule>
-
-# ── 存取控制 ────────────────────────────────────────────────────────────────
-# 建議用 DirectAdmin 介面設定，不要在這裡手寫 AuthUserFile：
-#     DirectAdmin → Advanced Features → Password Protected Directories
-#     → 選 public_html/analytics → 設定使用者名稱與密碼
-# 介面會自動建立 .htpasswd 並填上正確的絕對路徑，省卻猜路徑出錯。
-#
-# 頁面本身不再自設密碼框，所以訪客只會被問一次。

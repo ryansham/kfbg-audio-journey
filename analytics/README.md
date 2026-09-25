@@ -2,8 +2,15 @@
 
 給項目團隊傳閱的 GA4 使用情況報告。中英雙語、淺色單一主題（刻意不做深色版：這份會被列印和貼進簡報，每個人看到的應該一樣）。
 
-**位置**：`https://audio-journey.kfbg.org/analytics/`
-**伺服器路徑**：`public_html/analytics/`
+**位置**：`https://comm.kfbg.org/analytics-and-dashboards/<秘密 folder 名>/` —— 秘密連結，唔使登入，見「存取控制」
+**伺服器路徑**：comm.kfbg.org（DirectAdmin 帳戶 `comm`）`public_html/analytics-and-dashboards/<秘密 folder 名>/`
+
+🔴 **folder 名刻意不寫在這個 repo**：repo 是公開的，而秘密連結唯一的保護就是網址沒人知道。
+權威記錄在 `kfbg-comm-hub`（private）的 README「刻意喺閘外」那段；本機放一份在 gitignored 的
+`analytics/.secret-folder` 給 `test-live.sh` 用。
+
+2026-09-24 由 `audio-journey.kfbg.org/analytics/` 搬過來，搬遷步驟在 `kfbg-comm-hub` 的
+`RUNBOOK-audio-journey-analytics.md`。2026-09-25 改名成隨機 folder 並拆走密碼。改名 ＝ 舊連結即死。
 
 ---
 
@@ -14,14 +21,16 @@
 | `index.html` | ✅ | 頁面本身。圖表在瀏覽器由數據即場畫出，沒有外部程式庫 |
 | `ga-proxy.php` | ✅ | 伺服器端即時查 GA4。憑證留在伺服器，永不下傳 |
 | `data.json` | ✅ | 後備快照。proxy 未設定好或 GA 打不通時頁面會退回這一份 |
-| `.htaccess` | ⚠️ | 擋住憑證與快取、關掉搜尋引擎收錄、JSON 不快取。**平時不要上載** —— 會蓋走 DirectAdmin 的密碼保護，見下面「存取控制」 |
+| `.htaccess` | ✅ | 對這個 folder 關掉密碼閘、再擋一次憑證、擋開發檔、noindex。**用 File Manager「Create New File」手動建**，見「存取控制」 |
 | `config.php` | ✅ | **在伺服器上由 `config.sample.php` 複製而成，不在 repo 內** |
 | `config.sample.php` | ➖ | 設定範本 |
-| `build_data.py` | ➖ | 產生 `data.json` |
+| `build_data.py` | ➖ | 產生 `data.json`。🔴 不要上載，公開 folder 裡會被讀到（有 `.htaccess` 會 403，但不應依賴） |
+| `check.py` | ➖ | 本機檢查工具 |
+| `test-live.sh` | ➖ | **上載之後由外面跑**，驗開放的只有該開放的 |
 | `test-proxy.php` | ➖ | proxy 轉換邏輯自我檢查 |
 | `test-dates.mjs` | ➖ | 前端日期／時區檢查 |
 
-➖ = 不需要上載。`.htaccess` 按**檔案類別**擋（`test-*`、`*.py`、`*.mjs`、`*.md`、`config*.php`），
+➖ = 不需要上載。`.htaccess` 按**檔案類別**擋（`test-*`、`*.py`、`*.mjs`、`*.md`、`*.sh`、`config*.php`），
 不是逐個檔名列，所以將來加新的工具檔也會自動被擋住，即使誤上載也打不開。
 
 ---
@@ -148,7 +157,7 @@ GA4 → Admin → Property access management → 加剛才那個 service account
 ### 3. 把金鑰放上伺服器
 
 🔴 **必須放在 `public_html` 以外。** 放在 `analytics/` 之內的話，任何人打
-`https://audio-journey.kfbg.org/analytics/<檔名>.json` 就會拿到私鑰，等於把整個 GA 帳戶交出去。
+`https://comm.kfbg.org/analytics-and-dashboards/<秘密 folder 名>/<檔名>.json` 就會拿到私鑰，等於把整個 GA 帳戶交出去。
 
 DirectAdmin 上，家目錄通常是 `/home/<使用者名稱>/`。建一個資料夾例如
 `/home/<使用者名稱>/ga-credentials/`，把 JSON 放進去。
@@ -160,7 +169,7 @@ DirectAdmin 上，家目錄通常是 `/home/<使用者名稱>/`。建一個資�
 ### 5. 驗一驗
 
 ```bash
-curl -s "https://audio-journey.kfbg.org/analytics/ga-proxy.php" | head -c 200
+curl -s "https://comm.kfbg.org/analytics-and-dashboards/<秘密 folder 名>/ga-proxy.php" | head -c 200
 ```
 
 見到 `{"generated":"…","live":true,…` 就成功。見到 `{"error":"config-missing"…}` 代表第 4 步未做；見到 `{"error":"ga-unavailable"…}` 代表憑證或權限有問題，訊息會說明是哪一種。
@@ -179,51 +188,47 @@ curl -s "https://audio-journey.kfbg.org/analytics/ga-proxy.php" | head -c 200
 
 ## 存取控制
 
-由 DirectAdmin 的 Basic Auth 把關，設定在：
+**秘密連結，唔使登入。** 2026-09-25 起，這個 folder 刻意放在 comm.kfbg.org 的密碼閘外面，
+做法跟 70A 活動睇板一樣：知道網址就看得到。保護只有一層 —— 網址沒人知道 —— 所以 folder
+名是隨機的，而且回應帶 `X-Robots-Tag: noindex`。
 
-```
-DirectAdmin → Advanced Features → Password Protected Directories
-→ public_html/analytics
-```
+- 分享一定用 `https://`。http 版會被父層轉去 hub 首頁彈登入框。
+- 改 folder 名 ＝ 舊連結即死。hub repo `public/index.html` 那張卡要一齊改。
+- 這個 folder **不可以**加入 hub `.env` 的 `TOOL_PATHS`：`verify.sh` V8 要求每個工具都問密碼。
 
-訪客在頁面載入之前就要通過，所以 `index.html` 內不再自設密碼框（兩層密碼只會讓同事被問兩次）。
+### `.htaccess` 做三件事
 
-要改密碼，在同一個 DirectAdmin 畫面改，不用動任何檔案。
+1. 對這個 folder 關掉父層的密碼閘（`AuthType None` ＋ `Require all granted`，兩行都要）
+2. **再擋一次憑證**（`config.php`、`token.json`、key json、`.ht*`）
+3. 擋開發和說明檔（`test-*`、`*.py`、`*.md`、`*.sh` ⋯）
 
-### 🔴 上載 `.htaccess` 會關掉密碼保護
+第 2 點看似重複，因為父層已經擋。2026-09-25 用本機 Apache 2.4.66 做過 mutation test：
+把父層那段拿走（模擬 live 與 repo drift —— 70A 那次真的發生過），只靠第 1 點的話
+`cache/token.json` 以 200 整份吐出，生效中的 GA access token 直接上公網。有第 2 點就仍然
+403。**不要刪。** 反過來，拿走第 2 點而父層正常，一樣 403：兩層各自都擋得住，缺一不致命，
+兩層都缺才出事。
 
-DirectAdmin 把 `AuthType` / `AuthUserFile` 那幾行**寫進 `analytics/.htaccess` 本身**。
-上載 repo 版本就是蓋走它們，`/analytics/` 會立即變成全世界打得開。
-2026-08-26 實際發生過：上載之後 `curl` 回 200 而不是 401。
+第 3 點父層不管。只寫第 1 點的話 `README.md`、`build_data.py`、`test-proxy.php` 全部回 200。
 
-auth 那幾行沒有寫進 repo，是因為 `.htpasswd` 的絕對路徑是那部伺服器獨有的，而這個
-repo 是公開的。
+### 放上伺服器
 
-所以 `.htaccess` 平時**不要上載**。真的改過規則要上載，三步缺一不可：
-
-1. 上載 `.htaccess`
-2. DirectAdmin → Password Protected Directories → `public_html/analytics` → 重新設定一次
-3. 驗一驗（下面）
+File Manager 不會經 zip 帶出點開頭的檔案：入到 folder → **Create New File** → 打 `.htaccess`
+→ **Edit** → 貼上 repo 版內容 → **Save**。
 
 ### 每次上載之後都要跑一次
 
 ```bash
-for u in / ga-proxy.php config.php cache/token.json; do
-  printf "%-22s %s\n" "$u" "$(curl -s -o /dev/null -w '%{http_code}' "https://audio-journey.kfbg.org/analytics/$u")"
-done
+analytics/test-live.sh
 ```
 
-應該見到：
+由外面、不帶密碼逐項打：其他地方仍然問密碼、睇板開放、憑證和開發檔一律不是 200、有 noindex、
+http 會轉走。全部通過 exit 0，任何一項失敗 exit 1，而且把漏出的內容開頭印出來。
 
-| 網址 | 應該回 |
-|---|---|
-| `/analytics/` | **401**（回 200 就是密碼保護被蓋走了）|
-| `/analytics/ga-proxy.php` | **401** |
-| `/analytics/config.php` | 403 |
-| `/analytics/cache/token.json` | 403 |
+因為這個 folder 不在 `TOOL_PATHS`，`verify.sh` 的 V4–V7 **不會**替它檢查憑證，
+`test-live.sh` 就是唯一的檢查。本機 Apache 模擬環境和 mutation test 的做法，寫在加入 `test-live.sh` 那個 commit 的說明裡（`git log -- analytics/test-live.sh`）。
 
-⚠️ 「記得去 DirectAdmin 重開」這種靠人記住的規矩一定會有一天忘記，所以真正把關的是
-上面這個 curl，不是這段文字。上載完就跑，30 秒。
+⚠️ 「記得檢查」這種靠人記住的規矩一定會有一天忘記，所以真正把關的是這個 script，
+不是這段文字。上載完就跑，30 秒。
 
 ---
 
