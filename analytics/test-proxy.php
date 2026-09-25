@@ -159,6 +159,9 @@ check('音檔失敗總次數',              $out['fields']['errAll'], 8);
 // 時間窗 08-14 起，早過 09-24，所以新欄位只覆蓋後半段。
 check('新欄位未覆蓋整段期間',        $out['fields']['full'], false);
 check('分界日',                      $out['fields']['since'], '2026-09-24');
+// 08-14 至 08-23 成段喺新介面上線之前
+check('新介面：成段喺上線前',        $out['fields']['uiBefore'], true);
+check('新介面：唔係成段喺上線後',    $out['fields']['uiAfter'], false);
 // 四種離開方式。未標籤那 9 次（空字串 6 + (not set) 3）要留著，丟掉的話百分比會用
 // 一個偏小的分母去計，而算出來的數字看起來完全正常。
 check('離開方式：換章',              $out['fields']['exitTotals']['switch'], 4);

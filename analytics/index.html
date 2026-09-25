@@ -291,7 +291,7 @@ const T = {
     lg_complete: '聽完整章', lg_abandon: '真正中途離開', lg_pocket: '熄屏後繼續聽（不計入柱高）',
     cap_daily: (d, x) => `縱軸為使用次數，橫軸為日期與星期。${x.busiest ? `${x.busiest.label.zh}是最高的一天，共 ${x.busiest.sessions} 次，當中 ${x.busiest.engaged} 次有實際使用。` : ''}把游標移到任何一天，或在手機點一下，可看該天的實際數字。樣本仍然很小，請看整體高低，不要單看某一天。`,
     cap_funnel: n => `只計算經園區 QR code 進入的 ${n} 位訪客。每一層都是人數，百分比以 ${n} 人為基數。下面「訪客來源」表列的是使用次數，同一位訪客可以用很多次，所以兩處的數字不會相等。移到任何一層可看該層的人數與流失。`,
-    cap_chapters: (d, x) => `縱軸為次數，非人數（同一位訪客可重複收聽）。柱高只計「聽完」加「真正中途離開」。訪客鎖上螢幕、把手機放進口袋繼續聽的那一批已經抽出來，數字在提示框內 —— 舊版把它們算進「中途離開」，第一章因此虛高。第一章另有一部分記錄是程式在開啟時預先載入該章，實際是「打開了但沒有繼續」。${unknownNote(d, 'zh')}`,
+    cap_chapters: (d, x) => `縱軸為次數，非人數（同一位訪客可重複收聽）。柱高只計「聽完」加「真正中途離開」。訪客鎖上螢幕、把手機放進口袋繼續聽的那一批已經抽出來，數字在提示框內 —— 舊版把它們算進「中途離開」，第一章因此虛高。${uiNote(d, 'zh')}${unknownNote(d, 'zh')}`,
     h_closer: '再深入一層',
     h_rate: '每章完成率', h_heard: '每章平均實際聽到多少', h_exit: '訪客用甚麼方式離開一章',
     cap_rate: '完成率 ＝ 聽完次數 ÷ 該章總收聽次數。分母用未扣除「熄屏後繼續聽」的原始次數，因為那些也真的播放過一次，從分母剔走會令完成率虛高。值得留意的是完成率並不隨章節遞減：真正開始聽後面章節的人，把它聽完的比例反而較高。',
@@ -356,7 +356,7 @@ const T = {
     lg_complete: 'Chapter finished', lg_abandon: 'Genuinely left part-way', lg_pocket: 'Kept listening, screen off (not in the bar)',
     cap_daily: (d, x) => `The vertical axis counts sessions; the horizontal axis shows date and weekday. ${x.busiest ? `${x.busiest.label.en} was the busiest day with ${x.busiest.sessions} sessions, ${x.busiest.engaged} of them genuine use. ` : ''}Hover over any day, or tap it on a phone, to see that day's figures. The sample is still small, so read the overall shape rather than any single day.`,
     cap_funnel: n => `Counts only the ${n} visitors who arrived by on-site QR code. Each row is a headcount and percentages are of those ${n} people. The "Where visitors came from" table below counts sessions instead, and one visitor can have many, so the two sets of figures will not match. Hover any row to see its headcount and the drop-off.`,
-    cap_chapters: (d, x) => `The vertical axis counts plays, not people, since one visitor may listen more than once. The bars count finished plus genuinely left part-way. Visitors who locked the phone and kept listening with it in a pocket have been taken out and appear in the tooltip instead — the earlier figure counted them as leaving, which is why chapter 1 looked worse than it was. Chapter 1 also carries records from the app pre-loading that chapter on opening, which are really "opened but did not continue". ${unknownNote(d, 'en')}`,
+    cap_chapters: (d, x) => `The vertical axis counts plays, not people, since one visitor may listen more than once. The bars count finished plus genuinely left part-way. Visitors who locked the phone and kept listening with it in a pocket have been taken out and appear in the tooltip instead — the earlier figure counted them as leaving, which is why chapter 1 looked worse than it was. ${uiNote(d, 'en')}${unknownNote(d, 'en')}`,
     h_closer: 'A closer look',
     h_rate: 'Completion rate by chapter', h_heard: 'Average heard per play', h_exit: 'How visitors leave a chapter',
     cap_rate: 'Completion rate = finishes divided by total plays of that chapter. The denominator uses the raw play count, including visitors who locked the screen and kept listening, because those are real plays; taking them out would flatter the rate. Note that the rate does not fall away chapter by chapter: people who do start a later chapter are more likely to finish it.',
@@ -445,6 +445,19 @@ function hideTip() { tipEl.classList.remove('on'); tipKey = null; }
   document.addEventListener('scroll', hideTip, true);   // capture：連圖表自己的橫向捲動都收到
   addEventListener('resize', hideTip);
 })();
+
+/* 新介面上線日（ga-proxy.php $UI_SINCE）前後，第一章「播放」嘅意思唔同：之前由 QR 碼打開、
+   程式嘗試自動播就算一次（瀏覽器擋咗都算），之後要訪客自己按播放。時間範圍跨過嗰日就要講明。 */
+function uiNote(d, lang) {
+  const F = d.fields || {}, zh = lang === 'zh';
+  const old = zh ? '第一章另有一部分記錄是由 QR 碼打開時程式嘗試自動播放，實際是「打開了但沒有繼續」。'
+                 : 'Chapter 1 also carries records from the app trying to autoplay when opened from a QR code, which are really "opened but did not continue". ';
+  if (F.uiBefore !== false) return old;          // 全部喺上線前（或者舊 proxy 冇呢個欄位）
+  if (F.uiAfter) return '';                      // 全部喺上線後：每一次播放都係訪客自己按
+  const [, m, dd] = String(F.uiSince).split('-').map(Number);
+  return zh ? `${old}${m} 月 ${dd} 日起換了新介面，由 QR 碼打開要按播放才計一次，所以之後第一章的播放數會較低，前後不可直接比較。`
+            : `${old}From ${dd} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1]} a new interface counts a play only when the visitor presses play, so chapter 1 plays drop from that day; figures either side of it are not directly comparable. `;
+}
 
 /* 對不上章節編號的記錄一定要出數，悄悄丟掉會令同事以為圖上就是全部。 */
 function unknownNote(d, lang) {
