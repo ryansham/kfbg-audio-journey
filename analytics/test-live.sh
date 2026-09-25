@@ -54,7 +54,10 @@ row "$F/.htaccess"                  "403"     ".htaccess"
 # key 本身放在 public_html 外面，網址到不了。這條防的是有人日後把它搬進 docroot。
 row "$F/../../ga-credentials/audio-journey-ga4.key.json" "401 403 404" "../../ 去 key 所在位置"
 
-echo "── 開發檔：沒上載是 404，上載了但被擋是 403，兩個都可以"
+# ⚠️ 403 不代表檔案在伺服器上。live 實測（2026-09-25）：一個根本不存在的 zz.py 都回 403，
+#    不存在的 zz.html 才回 404 —— Apache 按檔名先擋，不理存不存在。所以這一段只證明
+#    「就算上載了也讀不到」，證明不了「沒有上載」。要知道有沒有，去 File Manager 看。
+echo "── 開發檔：一律不可以是 200（403 代表被擋，不代表檔案在伺服器上）"
 row "$F/README.md"      "403 404" "README.md"
 row "$F/build_data.py"  "403 404" "build_data.py"
 row "$F/check.py"       "403 404" "check.py"
