@@ -86,6 +86,24 @@ $batchB = [
 $batchC = [
     rep(['Hong Kong' => [122], 'Japan' => [10], 'Iceland' => [5],
          'Taiwan' => [2], 'Singapore' => [1], 'Australia' => [1]], 1),
+    rep([                                            // chapter_abandon × exit（次數、平均進度）
+        // 第一章是重點：10 次是熄屏放進口袋繼續聽，舊版把它們算成放棄。
+        '1|hidden_playing' => [10, 8.0],
+        '1|switch'         => [4, 40.0],
+        // 改動之前的記錄沒有 exit 值。GA 有時回空字串、有時回 '(not set)'，兩種都要被排除在
+        // 平均之外，否則等於把污染過的舊數字混進乾淨的新數字。
+        '1|'               => [6, 15.0],
+        '1|(not set)'      => [3, 12.0],
+        '2|hidden_paused'  => [2, 60.0],
+    ], 2),
+    rep([                                            // listened_sec 總和
+        'chapter_complete|'             => [4000],
+        'chapter_abandon|switch'        => [500],
+        'chapter_abandon|hidden_paused' => [300],
+        // 這批之後通常還會再發一次 chapter_complete，一併算就重複計同一段收聽。
+        'chapter_abandon|hidden_playing'=> [9999],
+    ], 1),
+    rep(['false' => [5], 'true' => [3]], 1),         // audio_error × is_offline
 ];
 
 $calls = 0;
@@ -127,7 +145,20 @@ check('百分比序列', array_column($out['funnel'], 'pct'), ['100%', '32%', '2
 echo "\n章節\n";
 check('章節數',   count($out['chapters']), 5);
 check('聽完序列', array_column($out['chapters'], 'complete'), [15, 9, 6, 5, 5]);
-check('離開序列', array_column($out['chapters'], 'abandon'),  [34, 12, 6, 6, 5]);
+// 第一章 34 次放棄裡面有 10 次其實是熄屏繼續聽，抽出去之後剩 24；第二章 12 - 0 = 12。
+check('離開序列（已剔除口袋）', array_column($out['chapters'], 'abandon'), [24, 12, 6, 6, 5]);
+check('放入口袋序列',           array_column($out['chapters'], 'pocket'),  [10, 0, 0, 0, 0]);
+check('口袋 + 放棄 = GA 原始放棄數', $out['chapters'][0]['abandon'] + $out['chapters'][0]['pocket'], 34);
+check('口袋總數',                    $out['fields']['pocketAll'], 10);
+// 只用有標籤、非口袋那批：(4x40 + 2x60) / 6 = 46.7。空字串同 (not set) 那 9 次不計。
+check('真正離開的平均進度',          $out['derived']['listenedPct'], '46.7%');
+check('平均進度有可信數字',          $out['derived']['listenedPctKnown'], true);
+// 4000 + 500 + 300 = 4800。hidden_playing 的 9999 要被剔走，否則重複計同一段收聽。
+check('實際收聽秒數剔走口袋那批',    $out['fields']['audioSecs'], 4800);
+check('音檔失敗總次數',              $out['fields']['errAll'], 8);
+// 時間窗 08-14 起，早過 09-24，所以新欄位只覆蓋後半段。
+check('新欄位未覆蓋整段期間',        $out['fields']['full'], false);
+check('分界日',                      $out['fields']['since'], '2026-09-24');
 
 check('對不上章節的聽完次數', $out['chaptersUnknown']['complete'], 5);
 check('對不上章節的離開次數', $out['chaptersUnknown']['abandon'], 4);
@@ -149,7 +180,8 @@ check('內部次數',      $out['derived']['internalSessions'], 15);
 check('內部平均時間',  $out['derived']['internalAvg'], '8:19');
 check('最旺一天',      $out['derived']['busiest']['sessions'], 26);
 check('最旺一天標籤',  $out['derived']['busiest']['label']['zh'], '8 月 23 日（星期日）');
-check('中途離開進度',  $out['derived']['listenedPct'], '21.9%');
+// 舊值 21.9% 是把「熄屏繼續聽」撈埋算出來的。現在只計真正離開那批 → 46.7%。
+check('真正離開進度（供文案用）',  $out['derived']['listenedPct'], '46.7%');
 check('每 N 人一個播放', $out['derived']['playRatio'], 4);
 check('內部停留倍數',  $out['derived']['internalMultiple'], 5);
 
@@ -160,9 +192,18 @@ check('QR 被標示為主要', $out['sources'][0]['hi'], true);
 check('內部有標籤', $out['sources'][1]['tag']['zh'], '內部測試');
 
 echo "\n其他觀察\n";
-check('語言比',     $out['facts'][3]['v']['zh'], '43 : 2');
-check('離線下載',   $out['facts'][1]['v']['zh'], '8 人');
-check('主畫面開啟', $out['facts'][2]['v']['zh'], '8 人');
+// 以前按索引拿，每次新增一個觀察就會靜靜錯位（實測：加了 3 個之後三條全爆，
+// 而爆出來的數字本身是對的，只是拿錯了格）。改成按標題找。
+$fact = function (string $zhLabel) use ($out) {
+    foreach ($out['facts'] as $f) if ($f['k']['zh'] === $zhLabel) return $f['v']['zh'];
+    return null;
+};
+check('語言比',     $fact('中文對英文使用者'), '43 : 2');
+check('離線下載',   $fact('下載音頻離線收聽'), '8 人');
+check('主畫面開啟', $fact('從主畫面圖示開啟'), '8 人');
+check('熄屏繼續聽', $fact('熄屏後把手機放下繼續聽'), '10 次');
+check('音檔失敗',   $fact('音檔載入失敗'), '8 次');
+check('實際收聽時間', $fact('平均實際收聽時間（上限）'), '0:40');   // 4800 秒 / 120 次使用
 
 echo "\n雙語完整性\n";
 $missing = [];

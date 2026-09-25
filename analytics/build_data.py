@@ -137,8 +137,10 @@ data = {
          "n": b("不重複訪客", "Unique visitors")},
         {"k": b("使用次數", "Sessions"), "v": str(SESSIONS),
          "n": b(f"平均每天 {r(SESSIONS / DAYS)} 次", f"About {r(SESSIONS / DAYS)} a day")},
-        {"k": b("平均使用時間", "Average time in app"), "v": mmss(ENGAGE_SECONDS / SESSIONS),
-         "n": b("分：秒", "min : sec")},
+        # 同 ga-proxy.php 一致：這個只計前景兼螢幕亮著的時間，是下限。
+        {"k": b("平均使用時間（下限）", "Time in app (lower bound)"),
+         "v": mmss(ENGAGE_SECONDS / SESSIONS),
+         "n": b("螢幕亮著才計", "Screen-on time only")},
         {"k": b("聽完整條路線", "Completed the route"), "v": str(QR_COMPLETE),
          "n": b("經 QR code 進入的訪客", "Among QR code visitors")},
     ],
@@ -170,8 +172,10 @@ data = {
     ],
     "facts": [
         {"v": b(f"{LISTENED_PCT}%", f"{LISTENED_PCT}%"),
-         "k": b("中途離開時的平均收聽進度", "Average progress when a chapter is abandoned"),
-         "n": b("以 chapter_abandon 事件計", "From chapter_abandon events")},
+         "k": b("中途離開時的平均收聽進度（舊算法）",
+                "Average progress when a chapter is abandoned (old measure)"),
+         "n": b("含「熄屏後繼續聽」那批，所以偏低；9 月 24 日起才分得開",
+                "Includes screen-locked listening, so it reads low; only separable from 24 Sep")},
         {"v": b(f"{QR_DOWNLOAD} 人", str(QR_DOWNLOAD)),
          "k": b("下載音頻離線收聽", "Downloaded audio for offline use"),
          "n": b(f"{pct_of_qr(QR_DOWNLOAD)} QR code 訪客", f"{pct_of_qr(QR_DOWNLOAD)} of QR code visitors")},
@@ -203,7 +207,9 @@ data = {
             "label": b(f"8 月 {busiest[0]} 日（星期{W_ZH[busiest[1]]}）",
                        f"{busiest[0]} August ({W_EN[busiest[1]]})"),
         },
+        # 這個數字分不開「真的離開」和「熄屏繼續聽」，所以不讓前端把它寫進句子裡。
         "listenedPct": f"{LISTENED_PCT}%",
+        "listenedPctKnown": False,
         "playRatio": r(QR_USERS / QR_AUDIO),
     },
 }

@@ -362,9 +362,19 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         req(['deviceCategory', 'operatingSystem'], ['sessions']),
     ]));
     // 每批上限 5 份報表，所以國家要另開一批。
+    // 🔴 exit / listened_sec / audio_error 由 2026-09-24 才開始送。時間窗跨過那一天的話，
+    //    這幾個數字只覆蓋後半段；不可以當成整段期間的數字讀，下面用 $newFieldsFull 守住。
     $batchC = $fetch(array_map($withRange, [
         req(['country'], ['sessions'], null,
             [['metric' => ['metricName' => 'sessions'], 'desc' => true]], 50),
+        // exit 把「熄了屏幕但仍在聽」同「真的離開」分開。沒有 exit 值的是改動之前的記錄。
+        req(['customEvent:chapter_number', 'customEvent:exit'],
+            ['eventCount', 'averageCustomEvent:listened_pct'], eventFilter(['chapter_abandon'])),
+        // 實際聽到的音訊秒數。帶 exit 是為了把 hidden_playing 那批剔出去 —— 它們多數之後
+        // 還會再發一次 chapter_complete，兩邊都算就會重複計同一段收聽。
+        req(['eventName', 'customEvent:exit'], ['customEvent:listened_sec'],
+            eventFilter($CHAPTER_EVENTS)),
+        req(['customEvent:is_offline'], ['eventCount'], eventFilter(['audio_error']), null, 20),
     ]));
 
     $tot     = rows($batchA[0]);
@@ -378,6 +388,52 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     $stgAll  = rows($batchB[3]);
     $devRows = rows($batchB[4]);
     $ctyRows = rows($batchC[0]);
+    // ?? [] ：GA 正常會回齊每份報表，但局部回應只應該令個別數字變空白，唔應該 500 成版。
+    $exitRow = rows(isset($batchC[1]) ? $batchC[1] : []);
+    $secRow  = rows(isset($batchC[2]) ? $batchC[2] : []);
+    $errRow  = rows(isset($batchC[3]) ? $batchC[3] : []);
+
+    // ── 09-24 起才有的欄位 ──
+    $FIELDS_SINCE  = '2026-09-24';
+    $newFieldsFull = $start >= $FIELDS_SINCE;
+    $sinceNote = bi('9 月 24 日起計', 'From 24 Sep');
+
+    // exit 逐章拆開。POCKET 一定要同「真的離開」分家：它代表訪客把手機放進口袋繼續聽，
+    // 舊版把它記成放棄，第一章因此虛高（222 放棄 + 58 聽完 > 270 播放）。
+    $POCKET = 'hidden_playing';
+    $pocketByCh = []; $pocketAll = 0;
+    $pctNum = 0.0; $pctDen = 0;      // 只用有標籤、而且不是口袋那批來算平均進度
+    foreach ($exitRow as $k => $m) {
+        $parts = explode('|', (string)$k);
+        $ch = isset($parts[0]) ? $parts[0] : '';
+        $ex = isset($parts[1]) ? $parts[1] : '';
+        $n  = (int)$m[0];
+        if ($ex === $POCKET) {
+            $pocketAll += $n;
+            if ($ch !== '') $pocketByCh[$ch] = (isset($pocketByCh[$ch]) ? $pocketByCh[$ch] : 0) + $n;
+            continue;
+        }
+        // 改動之前的記錄。GA 對缺參數有時回空字串、有時回 '(not set)'，兩個都要當未標籤。
+        if ($ex === '' || $ex === '(not set)') continue;
+        $pctNum += $n * (isset($m[1]) ? $m[1] : 0.0);
+        $pctDen += $n;
+    }
+
+    // 實際收聽秒數：聽完的全部算，中途離開的只算「真的離開」那批。
+    $audioSecs = 0.0;
+    foreach ($secRow as $k => $m) {
+        $parts = explode('|', (string)$k);
+        $ev = isset($parts[0]) ? $parts[0] : '';
+        $ex = isset($parts[1]) ? $parts[1] : '';
+        if ($ev === 'chapter_abandon' && $ex === $POCKET) continue;
+        $audioSecs += $m[0];
+    }
+
+    $errAll = 0; $errOffline = 0;
+    foreach ($errRow as $k => $m) {
+        $errAll += (int)$m[0];
+        if ((string)$k === 'true' || (string)$k === '1') $errOffline += (int)$m[0];
+    }
 
     $sessions   = (int)pick($tot, '', 0);
     $users      = (int)pick($tot, '', 1);
@@ -422,7 +478,10 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         $a = (int)pick($chapRow, "$i|chapter_abandon");
         if ($c === 0 && $a === 0) continue;
         $placedC += $c; $placedA += $a;
-        $chapters[] = ['label' => bi("第 $i 章", "Ch $i"), 'complete' => $c, 'abandon' => $a];
+        // pocket 從 abandon 裡面扣出來，兩條加起來仍然等於 GA 的原始放棄數，圖表不會少掉記錄。
+        $p = isset($pocketByCh[(string)$i]) ? (int)$pocketByCh[(string)$i] : 0;
+        $chapters[] = ['label' => bi("第 $i 章", "Ch $i"), 'complete' => $c,
+                       'abandon' => max($a - $p, 0), 'pocket' => $p];
     }
     // 🔴 擺唔入上面五章嘅記錄一定要有人數住。GA4 的自訂維度不會回溯：登記
     // chapter_number 之前發生的事件全部回 '(not set)'，只 loop 1..5 會靜靜地漏掉
@@ -552,15 +611,39 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     $places = withPcts($places);
 
     // ── 其他觀察 ──
-    $listenedPct = round(pick($listened, ''), 1);
+    // 舊版用 averageCustomEvent:listened_pct 算全部 chapter_abandon，而那批裡面大多數是
+    // 「熄屏放進口袋」的一刻，所以量到的其實是「幾時收機」而不是「幾時放棄」。五章全部
+    //  落在 15–26% 這種平坦分佈就是徵狀。現在只用有 exit 標籤、而且不是口袋那批來算。
+    $listenedPct    = $pctDen > 0 ? round($pctNum / $pctDen, 1) : null;
+    $listenedPctOld = round(pick($listened, ''), 1);   // 保留舊算法，給下面的備註做對比
     $dl      = $stage('audio_download');
     $pwaAll  = (int)pick($stgAll, 'pwa_launch');
     $zhUsers = (int)pick($langRow, 'zh');
     $enUsers = (int)pick($langRow, 'en');
     $facts = [
-        ['v' => bi($listenedPct . '%', $listenedPct . '%'),
-         'k' => bi('中途離開時的平均收聽進度', 'Average progress when a chapter is abandoned'),
-         'n' => bi('以 chapter_abandon 事件計', 'From chapter_abandon events')],
+        ['v' => bi($listenedPct === null ? '—' : $listenedPct . '%',
+                   $listenedPct === null ? '—' : $listenedPct . '%'),
+         'k' => bi('真正中途離開時的平均進度', 'Average progress at a real drop-off'),
+         'n' => $listenedPct === null
+                ? $sinceNote
+                : bi('已剔除熄屏繼續聽那批 · ' . $sinceNote['zh'],
+                     'Screen-locked listening excluded · ' . $sinceNote['en'])],
+        ['v' => bi($sessions > 0 && $audioSecs > 0 ? mmss($audioSecs / $sessions) : '—',
+                   $sessions > 0 && $audioSecs > 0 ? mmss($audioSecs / $sessions) : '—'),
+         'k' => bi('平均實際收聽時間（上限）', 'Audio actually heard (upper bound)'),
+         'n' => bi('由音訊進度計，螢幕熄了也算 · ' . $sinceNote['zh'],
+                   'From audio progress, counts with the screen off · ' . $sinceNote['en'])],
+        ['v' => bi($pocketAll . ' 次', (string)$pocketAll),
+         'k' => bi('熄屏後把手機放下繼續聽', 'Pocketed the phone and kept listening'),
+         'n' => bi('舊版把這批算成放棄 · ' . $sinceNote['zh'],
+                   'The old figure counted these as drop-offs · ' . $sinceNote['en'])],
+        ['v' => bi($errAll . ' 次', (string)$errAll),
+         'k' => bi('音檔載入失敗', 'Audio failed to load'),
+         'n' => $errAll > 0
+                ? bi($errOffline . ' 次發生在離線 · ' . $sinceNote['zh'],
+                     $errOffline . ' while offline · ' . $sinceNote['en'])
+                : bi('之前完全沒有記錄 · ' . $sinceNote['zh'],
+                     'Not measured at all before then · ' . $sinceNote['en'])],
         ['v' => bi($dl . ' 人', (string)$dl),
          'k' => bi('下載音頻離線收聽', 'Downloaded audio for offline use'),
          'n' => bi($pctOf($dl) . ' QR code 訪客', $pctOf($dl) . ' of QR code visitors')],
@@ -602,8 +685,10 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             ['k' => bi('使用次數', 'Sessions'), 'v' => (string)$sessions,
              'n' => bi('平均每天 ' . ($days > 0 ? round($sessions / $days) : 0) . ' 次',
                        'About ' . ($days > 0 ? round($sessions / $days) : 0) . ' a day')],
-            ['k' => bi('平均使用時間', 'Average time in app'),
-             'v' => $sessions > 0 ? mmss($engageSecs / $sessions) : '—', 'n' => bi('分：秒', 'min : sec')],
+            // 只計前景兼螢幕亮著的時間，所以是下限；上限在「其他觀察」的實際收聽時間。
+            ['k' => bi('平均使用時間（下限）', 'Time in app (lower bound)'),
+             'v' => $sessions > 0 ? mmss($engageSecs / $sessions) : '—',
+             'n' => bi('螢幕亮著才計', 'Screen-on time only')],
             ['k' => bi('聽完整條路線', 'Completed the route'), 'v' => (string)$qrComplete,
              'n' => bi('經 QR code 進入的訪客', 'Among QR code visitors')],
         ],
@@ -613,6 +698,15 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         // 對不上章節編號的記錄。圖表下面會明寫有幾多次未計入 —— 悄悄丟掉會令
         // 同事以為圖上就是全部。
         'chaptersUnknown' => $chaptersUnknown,
+        // 前端用這幾個值決定要不要在圖表旁邊寫「這條線 9 月 24 日才開始有數」。
+        'fields' => [
+            'since'       => $FIELDS_SINCE,
+            'full'        => $newFieldsFull,
+            'pocketAll'   => $pocketAll,
+            'audioSecs'   => (int)$audioSecs,
+            'errAll'      => $errAll,
+            'oldAvgPct'   => $listenedPctOld,
+        ],
         'facts'    => $facts,
         'sources'  => $sources,
         'devices'  => $devices,
@@ -631,7 +725,9 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
                            / (pick($srcRows, $QR, 2) / $qrSessions))
                 : null,
             'busiest'          => $busiest,
-            'listenedPct'      => $listenedPct . '%',
+            'listenedPct'      => $listenedPct === null ? '—' : $listenedPct . '%',
+            // 前端用這個決定要不要寫出那一句 —— 沒有可信數字時整句略去，好過印一個「—」。
+            'listenedPctKnown' => $listenedPct !== null,
             'playRatio'        => $qrAudio > 0 ? (int)round($qrUsers / $qrAudio) : null,  // JSON 出 int，唔好出 4.0
         ],
     ];

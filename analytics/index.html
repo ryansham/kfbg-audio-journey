@@ -242,8 +242,8 @@ const DATA_SOURCES = ['ga-proxy.php', 'data.json'];
    /analytics/ 開啟 Basic Auth，訪客在頁面載入之前就要通過。頁面本身不再
    自設密碼框 —— 兩層密碼只會讓同事被問兩次。 */
 
-/* ⚠️ v51 一上正式網站，注意事項第 3 條（播放次數偏低）就唔再啱，記得改返。
-      同一時間第 5 條（tour_end）都要改，因為嗰個事件已經改名做 tutorial_end。 */
+/* 2026-09-25：上面兩條待辦已做 —— v51 已上正式網站，播放次數那條換成了自動播放
+   問題的分界說明，tour_end 亦已改名 tutorial_end。 */
 /* ── 文案 ──
    凡是句子裡的數字，一律由 data.derived 帶進來。寫死在這裡的話，數據一即時
    更新，文字就會跟旁邊的圖表互相矛盾。                                        */
@@ -279,24 +279,25 @@ const T = {
     notes: (d, x) => [
       '<b>沒有 8 月 13 日的數字。</b>分析系統 8 月 14 日中午才開始收集，之前的使用情況沒有記錄。',
       `<b>「直接輸入網址」的 ${x.internalSessions} 次幾乎全部是我們自己測試。</b>這批訪問平均停留 ${x.internalAvg}，是一般訪客的${x.internalMultiple ? x.internalMultiple + ' 倍' : '數倍'}，行為明顯不同。系統尚未設定排除內部流量，所以下面凡是比率數字，我們都只計算經 QR code 進入的訪客。`,
-      '<b>「實際播放音頻」的人數目前偏低。</b>程式有一條路徑沒有記錄播放動作，修正已經寫好，但尚未更新到正式網站。更新之後這個數字會明顯上升，那是計算方式改好，不是訪客行為改變。',
-      '<b>「平均使用時間」只計算應用程式在前景、螢幕亮著的時間。</b>訪客鎖上螢幕、把手機放進口袋繼續聽，那段時間不會被計算在內。所以這個數字低於實際收聽時間，應該當成下限來看，不是實際收聽了多久。',
+      '<b>9 月 25 日之前的章節數字，不能與之後比較。</b>應用程式原本在訪客鎖上螢幕之後無法自動播放下一章，一段旅程會停在當時正在播的那一章。這一點 9 月 25 日已修正。所以「第一章跌到第二章」的落差，有一部分是程式問題，不是訪客失去興趣。',
+      '<b>「平均使用時間」只計算應用程式在前景、螢幕亮著的時間</b>，訪客鎖上螢幕把手機放進口袋繼續聽的那段時間不會計入，所以它是下限。下面「其他觀察」的「平均實際收聽時間」由音訊播放進度計算，螢幕熄了也照計，是上限。真實情況在兩者之間。',
       `<b>樣本只有 ${d.range.days} 天、${d.summary[0].v} 人。</b>請看整體走勢，不要解讀百分比的小數變化。`,
-      '<b>系統內有一個名為 tour_end 的項目，與導賞路線無關</b>，那是開場的操作教學提示。如果直接查看分析後台，請不要把它當成完成人數。',
+      '<b>系統內有一個名為 tutorial_end 的項目，與導賞路線無關</b>，那是開場的操作教學提示。如果直接查看分析後台，請不要把它當成完成人數。',
+      '<b>「真正中途離開」、「平均實際收聽時間」與「音檔載入失敗」由 9 月 24 日才開始記錄。</b>之前的記錄沒有這幾個欄位，分析系統不會事後補上，所以時間範圍跨過那一天時，這幾項只覆蓋後半段。',
     ],
     lg_engaged: '有實際使用（停留超過 10 秒）', lg_quick: '打開後很快離開',
-    lg_complete: '聽完整章', lg_abandon: '中途離開',
+    lg_complete: '聽完整章', lg_abandon: '真正中途離開', lg_pocket: '熄屏後繼續聽（不計入柱高）',
     cap_daily: (d, x) => `縱軸為使用次數，橫軸為日期與星期。${x.busiest ? `${x.busiest.label.zh}是最高的一天，共 ${x.busiest.sessions} 次，當中 ${x.busiest.engaged} 次有實際使用。` : ''}把游標移到任何一天，或在手機點一下，可看該天的實際數字。樣本仍然很小，請看整體高低，不要單看某一天。`,
     cap_funnel: n => `只計算經園區 QR code 進入的 ${n} 位訪客。每一層都是人數，百分比以 ${n} 人為基數。下面「訪客來源」表列的是使用次數，同一位訪客可以用很多次，所以兩處的數字不會相等。移到任何一層可看該層的人數與流失。`,
-    cap_chapters: (d, x) => `縱軸為次數，非人數（同一位訪客可重複收聽）；柱頂的數字是該章的總收聽次數，即聽完加中途離開。第一章的「中途離開」偏高，部分原因是程式會在訪客打開應用程式時預先載入第一章，因此有些記錄其實是「打開了但沒有繼續」。${unknownNote(d, 'zh')}`,
+    cap_chapters: (d, x) => `縱軸為次數，非人數（同一位訪客可重複收聽）。柱高只計「聽完」加「真正中途離開」。訪客鎖上螢幕、把手機放進口袋繼續聽的那一批已經抽出來，數字在提示框內 —— 舊版把它們算進「中途離開」，第一章因此虛高。第一章另有一部分記錄是程式在開啟時預先載入該章，實際是「打開了但沒有繼續」。${unknownNote(d, 'zh')}`,
     cap_sources: '「平均使用時間」與上面一樣是互動時間，只計算螢幕亮著的部分。佔比以表內三行的總和為基數，所以加起來是 100%。',
     unknownCh: (c, a) => `另有 ${c} 次聽完、${a} 次中途離開沒有帶章節編號，未計入上圖 —— 分析系統登記這個欄位之前的記錄，事後不會補上。`,
     lede_funnel: (d, x) => `<strong>每 ${x.playRatio ? x.playRatio : '幾'} 位掃描 QR code 的訪客，只有一位真正按下播放。</strong>這是目前最值得處理的一點。頁面載入正常，不是技術故障；比較可能是進入後不夠清楚下一步要做什麼，或者現場環境不方便即時收聽。`,
-    lede_chapters: (d, x) => `聽完的次數逐章遞減：<strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>。訪客中途退出某一章時，平均只聽了該章的 ${x.listenedPct}。`,
+    lede_chapters: (d, x) => `聽完的次數逐章遞減：<strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>。${x.listenedPctKnown ? `訪客真正中途退出某一章時，平均只聽了該章的 ${x.listenedPct}。` : ''}`,
     t_sources: '訪客來源', th_source: '來源', th_sessions: '使用次數', th_pct: '佔比', th_avg: '平均使用時間',
     acts: (d, x) => [
       '<b>檢視現場 QR code 旁的指示，以及頁面第一屏。</b>目標是讓訪客一進入就知道要按哪裡。這是流失最大的一關。',
-      `<b>檢視第一章的開頭。</b>聽完次數由第一章的 ${d.chapters[0] ? d.chapters[0].complete : '—'} 跌到第二章的 ${d.chapters[1] ? d.chapters[1].complete : '—'}，是章節之間最大的一次跌幅。`,
+      `<b>暫時不要急著改第一章的內容。</b>聽完次數由第一章的 ${d.chapters[0] ? d.chapters[0].complete : '—'} 跌到第二章的 ${d.chapters[1] ? d.chapters[1].complete : '—'}，但其中一部分來自 9 月 25 日才修好的自動播放問題。建議累積兩三星期修正後的數據，再判斷這個落差有多少真正屬於內容。`,
       '<b>在分析系統設定排除內部流量。</b>我們自己的測試正混在數據裡，而已經混入的部分無法事後清除，越早設定越好。',
       `<b>再觀察兩至三星期才下定論。</b>目前 ${d.range.days} 天、${d.summary[0].v} 人的樣本，數字仍會明顯波動。`,
     ],
@@ -335,24 +336,25 @@ const T = {
     notes: (d, x) => [
       '<b>There are no figures for 13 August.</b> Analytics only began collecting at midday on 14 August, so anything before that was not recorded.',
       `<b>The ${x.internalSessions} "direct URL" sessions are almost entirely our own testing.</b> They averaged ${x.internalAvg}, ${x.internalMultiple ? x.internalMultiple + ' times' : 'several times'} a typical visitor, so the behaviour is clearly different. Internal traffic is not yet filtered out, so every rate below counts only visitors who arrived by QR code.`,
-      '<b>The "Played audio" figure is currently too low.</b> One route through the app does not record the play action. The fix is written but not yet live on the site. Once it is, this figure will rise noticeably — that is the counting being corrected, not visitor behaviour changing.',
-      '<b>"Average time in app" counts only the time the app is in the foreground with the screen on.</b> If a visitor locks the phone and keeps listening with it in a pocket, none of that time is counted. The figure therefore understates real listening and should be read as a floor rather than as how long people actually listened.',
+      '<b>Chapter figures from before 25 September cannot be compared with later ones.</b> The app could not start the next chapter once the screen was locked, so a walk stopped at whichever chapter was playing when the phone went into a pocket. This was fixed on 25 September. Part of the fall from chapter 1 to chapter 2 is therefore the app, not visitors losing interest.',
+      '<b>"Average time in app" counts only the time the app is in the foreground with the screen on</b>, so time spent listening with the phone locked in a pocket is not counted and this figure is a floor. "Audio actually heard" under Other observations is measured from audio progress, counts with the screen off, and is a ceiling. The truth sits between the two.',
       `<b>The sample is only ${d.range.days} days and ${d.summary[0].v} people.</b> Read the overall direction, not small movements in the percentages.`,
-      '<b>Analytics contains an item called tour_end that has nothing to do with the audio route</b> — it is the opening how-to-use prompt. If you look at the analytics back end directly, please do not read it as a completion count.',
+      '<b>Analytics contains an item called tutorial_end that has nothing to do with the audio route</b> — it is the opening how-to-use prompt. If you look at the analytics back end directly, please do not read it as a completion count.',
+      '<b>"Genuinely left part-way", "Audio actually heard" and "Audio failed to load" only start on 24 September.</b> Earlier records do not carry these fields and Analytics does not add them retrospectively, so where a date range crosses that day these figures cover only the later part of it.',
     ],
     lg_engaged: 'Genuine use (over 10 seconds)', lg_quick: 'Opened, then left quickly',
-    lg_complete: 'Chapter finished', lg_abandon: 'Left part-way',
+    lg_complete: 'Chapter finished', lg_abandon: 'Genuinely left part-way', lg_pocket: 'Kept listening, screen off (not in the bar)',
     cap_daily: (d, x) => `The vertical axis counts sessions; the horizontal axis shows date and weekday. ${x.busiest ? `${x.busiest.label.en} was the busiest day with ${x.busiest.sessions} sessions, ${x.busiest.engaged} of them genuine use. ` : ''}Hover over any day, or tap it on a phone, to see that day's figures. The sample is still small, so read the overall shape rather than any single day.`,
     cap_funnel: n => `Counts only the ${n} visitors who arrived by on-site QR code. Each row is a headcount and percentages are of those ${n} people. The "Where visitors came from" table below counts sessions instead, and one visitor can have many, so the two sets of figures will not match. Hover any row to see its headcount and the drop-off.`,
-    cap_chapters: (d, x) => `The vertical axis counts plays, not people, since one visitor may listen more than once; the figure above each bar is the chapter's total plays, finished plus left part-way. Chapter 1 shows a high "left part-way" figure partly because the app pre-loads chapter 1 when it opens, so some records are really "opened but did not continue". ${unknownNote(d, 'en')}`,
+    cap_chapters: (d, x) => `The vertical axis counts plays, not people, since one visitor may listen more than once. The bars count finished plus genuinely left part-way. Visitors who locked the phone and kept listening with it in a pocket have been taken out and appear in the tooltip instead — the earlier figure counted them as leaving, which is why chapter 1 looked worse than it was. Chapter 1 also carries records from the app pre-loading that chapter on opening, which are really "opened but did not continue". ${unknownNote(d, 'en')}`,
     cap_sources: '"Average time" is engagement time, as above: it counts only the part with the screen on. Shares are calculated against the sum of the three rows in this table, so they add to 100%.',
     unknownCh: (c, a) => `A further ${c} completions and ${a} part-way exits carry no chapter number and are not in the chart above — records made before that field was registered in Analytics do not get one added afterwards.`,
     lede_funnel: (d, x) => `<strong>Only one in ${x.playRatio ? x.playRatio : 'a few'} visitors who scan the QR code actually presses play.</strong> This is the point most worth addressing. The page loads correctly, so this is not a technical fault; more likely it is not clear enough what to do next, or the setting makes listening there and then awkward.`,
-    lede_chapters: (d, x) => `Completions fall away chapter by chapter: <strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>. When a visitor leaves a chapter part-way, they have on average heard ${x.listenedPct} of it.`,
+    lede_chapters: (d, x) => `Completions fall away chapter by chapter: <strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>.${x.listenedPctKnown ? ` When a visitor genuinely leaves a chapter part-way, they have on average heard ${x.listenedPct} of it.` : ''}`,
     t_sources: 'Where visitors came from', th_source: 'Source', th_sessions: 'Sessions', th_pct: 'Share', th_avg: 'Average time',
     acts: (d, x) => [
       '<b>Review the wording beside the on-site QR code, and the first screen of the app.</b> The aim is that a visitor knows what to tap the moment they arrive. This is where most people are lost.',
-      `<b>Review the opening of chapter 1.</b> Completions fall from ${d.chapters[0] ? d.chapters[0].complete : '—'} in chapter 1 to ${d.chapters[1] ? d.chapters[1].complete : '—'} in chapter 2, the largest drop between any two chapters.`,
+      `<b>Hold off on changing chapter 1 for now.</b> Completions fall from ${d.chapters[0] ? d.chapters[0].complete : '—'} in chapter 1 to ${d.chapters[1] ? d.chapters[1].complete : '—'} in chapter 2, but part of that came from the auto-play fault fixed on 25 September. Give it two or three weeks of corrected data before judging how much of the gap is really the content.`,
       '<b>Set up internal traffic filtering in Analytics.</b> Our own testing is mixed into the figures, and what is already mixed in cannot be removed afterwards, so the sooner this is set the better.',
       `<b>Wait another two or three weeks before drawing conclusions.</b> With ${d.range.days} days and ${d.summary[0].v} people, the figures will still move about a fair amount.`,
     ],
@@ -522,14 +524,18 @@ function render() {
         + tipRow('var(--data-pale)', T_.lg_quick, r.quick)
         + `<div class="tt">${tipRow('', T_.tipTotal, tot)}</div>`) };
   });
+  /* 「熄屏後繼續聽」不進柱高：它不是流失，疊進去等於用顏色講一個錯的故事。但也不可以
+     丟掉 —— 提示框把它寫在合計之下，讀者加得返 GA 的原始放棄數。共用的 stackedBars
+     只畫兩層，這裡不改它（每日圖也在用），所以第三個數字走文字路。 */
   const chapters = d.chapters.map(r => {
-    const lab = L(r.label), tot = r.complete + r.abandon;
+    const lab = L(r.label), pk = r.pocket || 0, tot = r.complete + r.abandon;
     return { label: lab, strong: r.complete, pale: r.abandon,
       aria: `${lab}，${T_.tipChTotal} ${tot}`,
       key: tipRef(`<div class="th">${esc(lab)}</div>`
         + tipRow('var(--data-strong)', T_.lg_complete, r.complete)
         + tipRow('var(--data-pale)', T_.lg_abandon, r.abandon)
-        + `<div class="tt">${tipRow('', T_.tipChTotal, tot)}</div>`) };
+        + `<div class="tt">${tipRow('', T_.tipChTotal, tot)}</div>`
+        + (pk > 0 ? tipRow('', T_.lg_pocket, pk) : '')) };
   });
   // 漏斗的重點是每一層跌了多少，所以提示框把流失明寫出來，不用讀者自己減。
   const funnel = d.funnel.map((r, i) => {
