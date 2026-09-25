@@ -92,8 +92,17 @@ body.env-staging #nav{top:0;}
 .hero-desc{font-size:0.85rem;color:var(--mu);max-width:320px;margin:0 auto 22px;line-height:1.75;}
 .hero-meta{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:0.68rem;color:var(--mu);}
 .hdot{width:3px;height:3px;border-radius:50%;background:var(--bd);}
-.inst-block{background:var(--sa);border-radius:16px;padding:18px;margin:32px 14px 28px;}
-.inst-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.inst-block{position:relative;background:var(--sa);border-radius:16px;padding:18px;margin:32px 14px 28px;}
+/* 收起掣：撳咗記住（kfbg-inst-hide），由目錄「加至主畫面」打開返；由主畫面 app 開就成段唔出（body.installed） */
+.inst-x{position:absolute;top:4px;right:4px;width:44px;height:44px;display:grid;place-items:center;background:none;border:0;border-radius:10px;color:var(--mu);cursor:pointer;}
+.inst-x svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+.inst-hide .inst-block,.installed .inst-block,.installed .toc-inst{display:none;}
+/* 首頁目錄：三段內容（為何創作、加至主畫面、選擇旅程）。「選擇旅程」排喺最底，要捲過兩大段先見到 */
+.toc{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px 14px 28px;}
+.toc button{border:1px solid var(--bd);border-radius:99px;background:none;padding:8px 15px;min-height:36px;font:inherit;font-size:0.8rem;color:var(--ol);cursor:pointer;}
+#about,#inst-block,#jlib{scroll-margin-top:12px;}
+.env-staging #about,.env-staging #inst-block,.env-staging #jlib{scroll-margin-top:44px;}   /* staging 頂部有 badge */
+.inst-head{display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-right:34px;}   /* 讓位畀收起掣 */
 .inst-ico{width:44px;height:44px;border-radius:10px;overflow:hidden;flex-shrink:0;}
 .inst-ico img{width:100%;height:100%;object-fit:cover;}
 .inst-title{font-size:0.92rem;font-weight:500;color:var(--tx);margin-bottom:2px;}
@@ -466,7 +475,12 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <div class="hdot"></div><span class="en">Offline-ready</span><span class="tc">支援離線</span>
       </div>
     </div>
-    <div class="about">
+    <nav class="toc" id="toc">
+      <button onclick="tocGo('about')"><span class="en">About</span><span class="tc">為何創作</span></button>
+      <button class="toc-inst" onclick="tocGo('inst-block')"><span class="en">Install</span><span class="tc">加至主畫面</span></button>
+      <button onclick="tocGo('jlib')"><span class="en">Journeys</span><span class="tc">選擇旅程</span></button>
+    </nav>
+    <div class="about" id="about">
       <div class="about-in">
         <h2 class="en">Why we created this journey</h2>
         <h2 class="tc">我們為何創作這段旅程</h2>
@@ -476,6 +490,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
     <!-- INSTALL BLOCK — inline on homepage -->
     <div class="inst-block" id="inst-block">
+      <button class="inst-x" onclick="instShow(false)"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       <div class="inst-head">
         <div class="inst-ico"><img src="KFBG_Logo.png" alt="KFBG"/></div>
         <div>
@@ -1101,6 +1116,8 @@ function syncA11y(){
   set('#cl-back',     zh?'返回總覽':'Back to overview');
   set('#cl-menu',     zh?'選單':'Menu');
   set('#cl-map',      zh?'查看地圖':'View map');
+  set('.inst-x',      zh?'收起「加至主畫面」':'Hide “Add to Home Screen”');
+  set('#toc',         zh?'目錄':'Contents');
   syncBtns(playing);
 }
 function setLang(l){if(l!==lang)track('lang_switch',{from:lang,to:l});applyLang(l);}
@@ -2158,6 +2175,13 @@ async function delCache(){
 
 // ════ INSTALL ════
 let dPr=null;
+// 首頁目錄：撳就捲去嗰段（#views 本身 scroll-behavior:smooth）。「加至主畫面」收起咗就先打開返
+function tocGo(id){if(id==='inst-block')instShow(true);document.getElementById(id)?.scrollIntoView({block:'start'});}
+function instShow(on){
+  document.body.classList.toggle('inst-hide',!on);
+  try{on?localStorage.removeItem('kfbg-inst-hide'):localStorage.setItem('kfbg-inst-hide','1');}catch(e){}
+  if(!on)document.querySelector('.toc-inst')?.focus({preventScroll:true});   // 收起掣冇咗，焦點交畀打開返嘅目錄掣
+}
 function setupInstall(){
   // Auto-select correct tab based on device
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
@@ -2240,16 +2264,22 @@ function setupSW(){
 
 // ════ TUTORIAL COACHMARK ════
 // 首次使用導覽：dim 全屏 + spotlight 高亮單一目標 + 氣泡逐步。單 div box-shadow 做鏤空 dim。
+(function(){
+  if(window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true)document.body.classList.add('installed');
+  try{if(localStorage.getItem('kfbg-inst-hide'))document.body.classList.add('inst-hide');}catch(e){}
+})();
 const TUT_STEPS=[
-  {sel:'#inst-block', en:'First, add this app to your home screen — one tap to open it anytime.',                 tc:'第一步：將本應用程式加至主畫面，隨時一按即開。'},
-  {sel:'#drdlbtn', open:true, en:'Then open the menu and download the audio in advance — it plays even with no signal on the trail.', tc:'第二步：在選單預先下載音頻，山上沒有網絡也能收聽。'},
+  {sel:'#inst-block', en:'Add this app to your home screen — one tap to open it anytime.',                 tc:'將本應用程式加至主畫面，隨時一按即開。'},
+  {sel:'#drdlbtn', open:true, en:'Open the menu and download the audio in advance — it plays even with no signal on the trail.', tc:'在選單預先下載音頻，山上沒有網絡也能收聽。'},
   {sel:'#jlib .jc',   en:'All set — tap a journey here to begin your walk.',                                      tc:'準備好了。按此選擇旅程，開始步行。'}
 ];
 let _tutI=0,_tutOn=false,_tutSteps=TUT_STEPS,_tutKey='kfbg-tour',_tutPrevFocus=null,_tutTok=0;
 function _tutReflow(){tutPos();}
 function startTour(steps,key){
   // replayTour 經 requestAnimationFrame 叫，第一個參數會係時間戳，所以要驗類型
-  _tutSteps=Array.isArray(steps)?steps:TUT_STEPS;_tutKey=typeof key==='string'?key:'kfbg-tour';
+  _tutKey=typeof key==='string'?key:'kfbg-tour';
+  // 目標冇顯示嘅步驟（例如「加至主畫面」收起咗、由主畫面 app 開）一開始就剔走，「1 / N」先數得啱
+  _tutSteps=(Array.isArray(steps)?steps:TUT_STEPS).filter(st=>{const el=document.querySelector(st.sel);return el&&el.getClientRects().length;});
   _tutI=0;_tutOn=true;_tutPrevFocus=document.activeElement;
   let ov=document.getElementById('tut');
   if(!ov){
@@ -2341,7 +2371,7 @@ function tutPeek(step){
 function endTour(how){
   // tutorial_end, not tour_end: this is the coachmark walkthrough, not the audio journey. Under the
   // old name GA read it as "finished the tour" and it outnumbered journey_start, so the report lied.
-  if(_tutOn&&_tutSteps===TUT_STEPS)track('tutorial_end',{how:how||'aborted',step_reached:_tutI+1,of:TUT_STEPS.length}); // 章節頁提示唔記，分析合約冇呢項
+  if(_tutOn&&_tutKey==='kfbg-tour')track('tutorial_end',{how:how||'aborted',step_reached:_tutI+1,of:_tutSteps.length});   // 用 key 分：步驟剔走咗之後唔再係同一個 array // 章節頁提示唔記，分析合約冇呢項
   _tutOn=false;
   const ov=document.getElementById('tut');if(ov)ov.style.display='none';
   tutPeek(null);
