@@ -695,7 +695,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const GA_ID='G-3YGC4LP6Y3';
 const GA_COOKIELESS=false; // ⚠️ set true to run without cookies while KFBG's consent policy is unresolved
 const GA_QUEUE='kfbg-ga-q';
-// ?ga_debug=1 routes this load into GA4 DebugView. The desktop Chrome extension can't help on a
+// ?ga_debug=1 routes this load into GA4 DebugView (production host only — see GA_SEND). The desktop Chrome extension can't help on a
 // phone, and measured: adding debug_mode in a later gtag('config') does nothing — the flag only
 // counts on the first config call, so it has to be decided here at startup.
 const GA_DEBUG=/[?&#]ga_debug=1/.test(location.search+location.hash);
@@ -714,8 +714,13 @@ function setupGA(){
   // last chance to drain before the tab goes away
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){trackAbandon(aud.paused?'hidden_paused':'hidden_playing');flushGA();}});
 }
+// 只有正式網址先送出 GA。本機、同一個 Wi-Fi 嘅 iPhone、GitHub Pages staging 都行緊呢段 code，
+// 以前全部送真事件入正式 property，即係每次測試都污染數據。攔喺「載入 gtag」呢一步，唔攔
+// setupGA 成個：事件照樣經 track() 排入 localStorage（kfbg-ga-q），其餘邏輯（例如熄屏觸發
+// trackAbandon）同正式網站一模一樣，測試先有意義。想知本來會送乜，讀 localStorage 就得。
+const GA_SEND=SANITY_DATASET==='production';
 function loadGA(){
-  if(gaReady||document.getElementById('ga-src'))return;
+  if(!GA_SEND||gaReady||document.getElementById('ga-src'))return;
   const s=document.createElement('script');
   s.id='ga-src';s.async=true;s.src=`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
   s.onload=()=>{
