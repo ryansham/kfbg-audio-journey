@@ -2197,8 +2197,11 @@ function setupOffline(){
 // ════ SW ════
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
+  // sw.js 每次 activate 都會發 SW_UPDATED，第一次安裝都發。載入時冇舊 SW 控制＝第一次嚟，冇「新版本」可言：
+  // 以前每個新訪客一開頁就見到「有新版本」（差唔多全部流量都係新訪客）
+  const hadSW=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('sw.js').catch(()=>{});
-  navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='SW_UPDATED')document.getElementById('ubar').classList.add('sh');});
+  navigator.serviceWorker.addEventListener('message',e=>{if(hadSW&&e.data&&e.data.type==='SW_UPDATED')document.getElementById('ubar').classList.add('sh');});
 }
 
 // ════ TUTORIAL COACHMARK ════
