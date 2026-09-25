@@ -103,6 +103,7 @@ h2::after{content:"";flex:1;height:1px;background:var(--rule);}
 .note ol{padding-left:1.3em;display:flex;flex-direction:column;gap:9px;font-size:.92rem;color:var(--ink);}
 .note li::marker{color:var(--accent);font-weight:500;}
 
+.card h3{font-family:var(--serif);font-weight:600;font-size:1.02rem;}
 .card{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px 20px 18px;display:flex;flex-direction:column;gap:14px;}
 .chart{overflow-x:auto;}
 .chart svg{display:block;width:100%;min-width:440px;height:auto;}
@@ -110,6 +111,7 @@ h2::after{content:"";flex:1;height:1px;background:var(--rule);}
 .ax{fill:var(--ink-3);font-family:var(--sans);font-size:11px;font-variant-numeric:tabular-nums;}
 .val{fill:var(--ink-2);font-family:var(--sans);font-size:11.5px;font-weight:500;font-variant-numeric:tabular-nums;}
 .d-strong{fill:var(--data-strong);}
+.trk{fill:var(--rule-soft);}
 .d-pale{fill:var(--data-pale);}
 .f0{fill:var(--f0);}.f1{fill:var(--f1);}.f2{fill:var(--f2);}.f3{fill:var(--f3);}.f4{fill:var(--f4);}
 .flab{fill:var(--ink);font-family:var(--sans);font-size:12.5px;}
@@ -280,7 +282,7 @@ const T = {
       '<b>沒有 8 月 13 日的數字。</b>分析系統 8 月 14 日中午才開始收集，之前的使用情況沒有記錄。',
       `<b>「直接輸入網址」的 ${x.internalSessions} 次幾乎全部是我們自己測試。</b>這批訪問平均停留 ${x.internalAvg}，是一般訪客的${x.internalMultiple ? x.internalMultiple + ' 倍' : '數倍'}，行為明顯不同。系統尚未設定排除內部流量，所以下面凡是比率數字，我們都只計算經 QR code 進入的訪客。`,
       '<b>9 月 25 日之前的章節數字，不能與之後比較。</b>應用程式原本在訪客鎖上螢幕之後無法自動播放下一章，一段旅程會停在當時正在播的那一章。這一點 9 月 25 日已修正。所以「第一章跌到第二章」的落差，有一部分是程式問題，不是訪客失去興趣。',
-      '<b>「平均使用時間」只計算應用程式在前景、螢幕亮著的時間</b>，訪客鎖上螢幕把手機放進口袋繼續聽的那段時間不會計入，所以它是下限。下面「其他觀察」的「平均實際收聽時間」由音訊播放進度計算，螢幕熄了也照計，是上限。真實情況在兩者之間。',
+      '<b>「平均使用時間」與「平均實際收聽時間」量的是兩件事，不要相減或者當成一個範圍。</b>前者計訪客留在應用程式裡、而且螢幕亮著的時間，包括只看畫面沒有播放；後者由音訊播放進度計算，螢幕熄了也照計。想知道「聽了多久」，看後者。',
       `<b>樣本只有 ${d.range.days} 天、${d.summary[0].v} 人。</b>請看整體走勢，不要解讀百分比的小數變化。`,
       '<b>系統內有一個名為 tutorial_end 的項目，與導賞路線無關</b>，那是開場的操作教學提示。如果直接查看分析後台，請不要把它當成完成人數。',
       '<b>「真正中途離開」、「平均實際收聽時間」與「音檔載入失敗」由 9 月 24 日才開始記錄。</b>之前的記錄沒有這幾個欄位，分析系統不會事後補上，所以時間範圍跨過那一天時，這幾項只覆蓋後半段。',
@@ -290,6 +292,14 @@ const T = {
     cap_daily: (d, x) => `縱軸為使用次數，橫軸為日期與星期。${x.busiest ? `${x.busiest.label.zh}是最高的一天，共 ${x.busiest.sessions} 次，當中 ${x.busiest.engaged} 次有實際使用。` : ''}把游標移到任何一天，或在手機點一下，可看該天的實際數字。樣本仍然很小，請看整體高低，不要單看某一天。`,
     cap_funnel: n => `只計算經園區 QR code 進入的 ${n} 位訪客。每一層都是人數，百分比以 ${n} 人為基數。下面「訪客來源」表列的是使用次數，同一位訪客可以用很多次，所以兩處的數字不會相等。移到任何一層可看該層的人數與流失。`,
     cap_chapters: (d, x) => `縱軸為次數，非人數（同一位訪客可重複收聽）。柱高只計「聽完」加「真正中途離開」。訪客鎖上螢幕、把手機放進口袋繼續聽的那一批已經抽出來，數字在提示框內 —— 舊版把它們算進「中途離開」，第一章因此虛高。第一章另有一部分記錄是程式在開啟時預先載入該章，實際是「打開了但沒有繼續」。${unknownNote(d, 'zh')}`,
+    h_closer: '再深入一層',
+    h_rate: '每章完成率', h_heard: '每章平均實際聽到多少', h_exit: '訪客用甚麼方式離開一章',
+    cap_rate: '完成率 ＝ 聽完次數 ÷ 該章總收聽次數。分母用未扣除「熄屏後繼續聽」的原始次數，因為那些也真的播放過一次，從分母剔走會令完成率虛高。值得留意的是完成率並不隨章節遞減：真正開始聽後面章節的人，把它聽完的比例反而較高。',
+    cap_heard: '由音訊播放進度計算，螢幕熄了也照計，所以這是目前唯一真正量到「聽了多久」的數字。已剔除「熄屏後繼續聽」那批 —— 它們之後大多會再記一次聽完，一併計會把平均值拉高。',
+    cap_exit: '「熄屏後繼續聽」不是流失：那是把手機放進口袋繼續行的正常用法。9 月 24 日之前它被一併算進「中途離開」，正是上面那張圖第一章曾經虛高的原因。',
+    ex_switch: '換去另一章', ex_paused: '暫停之後關閉', ex_pocket: '熄屏後繼續聽', ex_unlab: '改動前，分不出',
+    sinceOnly: '這一項由 9 月 24 日才開始記錄，暫時未有足夠數據。',
+    noData: '這段期間沒有足夠的章節記錄可以計算。',
     cap_sources: '「平均使用時間」與上面一樣是互動時間，只計算螢幕亮著的部分。佔比以表內三行的總和為基數，所以加起來是 100%。',
     unknownCh: (c, a) => `另有 ${c} 次聽完、${a} 次中途離開沒有帶章節編號，未計入上圖 —— 分析系統登記這個欄位之前的記錄，事後不會補上。`,
     lede_funnel: (d, x) => `<strong>每 ${x.playRatio ? x.playRatio : '幾'} 位掃描 QR code 的訪客，只有一位真正按下播放。</strong>這是目前最值得處理的一點。頁面載入正常，不是技術故障；比較可能是進入後不夠清楚下一步要做什麼，或者現場環境不方便即時收聽。`,
@@ -337,7 +347,7 @@ const T = {
       '<b>There are no figures for 13 August.</b> Analytics only began collecting at midday on 14 August, so anything before that was not recorded.',
       `<b>The ${x.internalSessions} "direct URL" sessions are almost entirely our own testing.</b> They averaged ${x.internalAvg}, ${x.internalMultiple ? x.internalMultiple + ' times' : 'several times'} a typical visitor, so the behaviour is clearly different. Internal traffic is not yet filtered out, so every rate below counts only visitors who arrived by QR code.`,
       '<b>Chapter figures from before 25 September cannot be compared with later ones.</b> The app could not start the next chapter once the screen was locked, so a walk stopped at whichever chapter was playing when the phone went into a pocket. This was fixed on 25 September. Part of the fall from chapter 1 to chapter 2 is therefore the app, not visitors losing interest.',
-      '<b>"Average time in app" counts only the time the app is in the foreground with the screen on</b>, so time spent listening with the phone locked in a pocket is not counted and this figure is a floor. "Audio actually heard" under Other observations is measured from audio progress, counts with the screen off, and is a ceiling. The truth sits between the two.',
+      '<b>"Time in app" and "Audio actually heard" measure two different things — do not subtract one from the other or read them as a range.</b> The first counts time spent in the app with the screen on, including looking at it without playing anything; the second is measured from audio progress and counts with the screen off. For how long people listened, read the second.',
       `<b>The sample is only ${d.range.days} days and ${d.summary[0].v} people.</b> Read the overall direction, not small movements in the percentages.`,
       '<b>Analytics contains an item called tutorial_end that has nothing to do with the audio route</b> — it is the opening how-to-use prompt. If you look at the analytics back end directly, please do not read it as a completion count.',
       '<b>"Genuinely left part-way", "Audio actually heard" and "Audio failed to load" only start on 24 September.</b> Earlier records do not carry these fields and Analytics does not add them retrospectively, so where a date range crosses that day these figures cover only the later part of it.',
@@ -347,6 +357,14 @@ const T = {
     cap_daily: (d, x) => `The vertical axis counts sessions; the horizontal axis shows date and weekday. ${x.busiest ? `${x.busiest.label.en} was the busiest day with ${x.busiest.sessions} sessions, ${x.busiest.engaged} of them genuine use. ` : ''}Hover over any day, or tap it on a phone, to see that day's figures. The sample is still small, so read the overall shape rather than any single day.`,
     cap_funnel: n => `Counts only the ${n} visitors who arrived by on-site QR code. Each row is a headcount and percentages are of those ${n} people. The "Where visitors came from" table below counts sessions instead, and one visitor can have many, so the two sets of figures will not match. Hover any row to see its headcount and the drop-off.`,
     cap_chapters: (d, x) => `The vertical axis counts plays, not people, since one visitor may listen more than once. The bars count finished plus genuinely left part-way. Visitors who locked the phone and kept listening with it in a pocket have been taken out and appear in the tooltip instead — the earlier figure counted them as leaving, which is why chapter 1 looked worse than it was. Chapter 1 also carries records from the app pre-loading that chapter on opening, which are really "opened but did not continue". ${unknownNote(d, 'en')}`,
+    h_closer: 'A closer look',
+    h_rate: 'Completion rate by chapter', h_heard: 'Average heard per play', h_exit: 'How visitors leave a chapter',
+    cap_rate: 'Completion rate = finishes divided by total plays of that chapter. The denominator uses the raw play count, including visitors who locked the screen and kept listening, because those are real plays; taking them out would flatter the rate. Note that the rate does not fall away chapter by chapter: people who do start a later chapter are more likely to finish it.',
+    cap_heard: 'Measured from audio progress, counting with the screen off, so this is the only figure here that really measures how long people listened. Screen-locked listening is excluded — those plays usually go on to record a finish as well, and counting both would pull the average up.',
+    cap_exit: '"Screen off, kept listening" is not a drop-off: it is the normal way to use this app, with the phone in a pocket. Before 24 September it was counted as leaving part-way, which is why chapter 1 looked worse than it was in the chart above.',
+    ex_switch: 'Tapped another chapter', ex_paused: 'Paused, then closed', ex_pocket: 'Screen off, kept listening', ex_unlab: 'Before the change, not separable',
+    sinceOnly: 'This is only recorded from 24 September and there is not enough data yet.',
+    noData: 'There are not enough chapter records in this period to calculate it.',
     cap_sources: '"Average time" is engagement time, as above: it counts only the part with the screen on. Shares are calculated against the sum of the three rows in this table, so they add to 100%.',
     unknownCh: (c, a) => `A further ${c} completions and ${a} part-way exits carry no chapter number and are not in the chart above — records made before that field was registered in Analytics do not get one added afterwards.`,
     lede_funnel: (d, x) => `<strong>Only one in ${x.playRatio ? x.playRatio : 'a few'} visitors who scan the QR code actually presses play.</strong> This is the point most worth addressing. The page loads correctly, so this is not a technical fault; more likely it is not clear enough what to do next, or the setting makes listening there and then awkward.`,
@@ -366,6 +384,7 @@ const T = {
 let LANG = 'zh', DATA = null, lastGenerated = null;
 const t = () => T[LANG];
 const L = o => (o && typeof o === 'object' && 'zh' in o) ? o[LANG] : o;
+const mmss = n => `${Math.floor(n / 60)}:${String(Math.round(n % 60)).padStart(2, '0')}`;
 const $ = id => document.getElementById(id);
 /* #pw 同 #gerr 只在密碼閘未拆之前存在。切語言在開閘前後都會執行，所以寫入文字
    一律經這個 setter，不要直接摸 .textContent —— 否則開閘之後切語言會在半路
@@ -434,6 +453,30 @@ function unknownNote(d, lang) {
 }
 
 /* ── 圖表 ── */
+/* 水平條。完成率、離開方式、每章聽到幾多秒，三個都用它。
+   用橫條而不是直柱：這三組的項目名比數字重要，直柱會把標籤逼到轉角度，
+   而這一頁會被列印和貼進簡報，轉角度的中文標籤印出來很難讀。
+   max 預設 100，所以百分比是照實際比例畫的 —— 縮放到「最大那條佔滿」會把
+   31% 和 50% 畫成天差地遠，看圖的人不會知道尺被動過。絕對值才傳 max。 */
+function pctBars(rows, { max = 100, rowH = 30, valW = 86, aria = '' } = {}) {
+  /* 標籤欄寬由最長那個標籤反推，而不是寫死：英文標籤長一倍有多，實測「Before the
+     change, not separable」要 188px，寫死 104 會令四個英文標籤全部溢出 viewBox 左邊
+     被切走，而 innerText 仍然讀得到，所以純文字檢查看不出來。寧可高估 —— 估多了只是
+     條子短一點，估少了是字不見了。 */
+  const longest = Math.max(...rows.map(r => String(r.label).length), 1);
+  const labW = Math.max(64, Math.min(248, longest * (LANG === 'en' ? 7 : 13.4) + 10));
+  const w = 720, x0 = labW + 10, bw = w - x0 - valW, bh = 14, top = max > 0 ? max : 1;
+  let o = '';
+  rows.forEach((r, i) => {
+    const by = i * rowH + (rowH - bh) / 2, ty = (by + 11).toFixed(1);
+    const fill = Math.max(0, Math.min(1, r.n / top)) * bw;
+    o += `<text class="flab" x="${labW}" y="${ty}" text-anchor="end">${esc(r.label)}</text>`
+       + `<rect class="trk" x="${x0}" y="${by.toFixed(1)}" width="${bw}" height="${bh}" rx="3"/>`
+       + (fill > 0 ? `<rect class="${r.dim ? 'd-pale' : 'd-strong'}" x="${x0}" y="${by.toFixed(1)}" width="${fill.toFixed(1)}" height="${bh}" rx="3"/>` : '')
+       + `<text class="fval" x="${w}" y="${ty}" text-anchor="end">${esc(r.val)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${w} ${rows.length * rowH}" role="img" aria-label="${esc(aria)}">${o}</svg>`;
+}
 function stackedBars(rows, { h = 270, ticks, unitLabel = '', ml = 44, mr = 12, mt = 30, mb = 46, labW = 34 } = {}) {
   const w = 720, top = ticks[ticks.length - 1], pw = w - ml - mr, ph = h - mt - mb;
   const slot = pw / rows.length, bw = Math.min(40, slot * 0.62), unit = ph / top;
@@ -537,6 +580,21 @@ function render() {
         + `<div class="tt">${tipRow('', T_.tipChTotal, tot)}</div>`
         + (pk > 0 ? tipRow('', T_.lg_pocket, pk) : '')) };
   });
+  const F = d.fields || {}, ET = F.exitTotals || {};
+  const rateRows = d.chapters.filter(c => c.rate != null)
+    .map(c => ({ label: L(c.label), n: c.rate, val: c.rate + '%' }));
+  const heardRows = d.chapters.filter(c => c.avgSec != null)
+    .map(c => ({ label: L(c.label), n: c.avgSec, val: mmss(c.avgSec) }));
+  /* 離開方式的分母是四種加起來，包括「改動前分不出」那批。把未標籤的剔走，
+     其餘三項的百分比就會用一個偏小的分母算出來，數字看起來完全正常卻是錯的。 */
+  const exitDefs = [['switch', T_.ex_switch], ['hidden_paused', T_.ex_paused],
+                    ['hidden_playing', T_.ex_pocket], ['unlabelled', T_.ex_unlab]];
+  const exitSum = exitDefs.reduce((a, [k]) => a + (ET[k] || 0), 0);
+  const exitRows = exitSum > 0 ? exitDefs.map(([k, lab]) => {
+    const n = ET[k] || 0, pct = Math.round(n / exitSum * 100);
+    return { label: lab, n: pct, dim: k === 'unlabelled',
+             val: LANG === 'en' ? `${n} (${pct}%)` : `${n}（${pct}%）` };
+  }) : [];
   // 漏斗的重點是每一層跌了多少，所以提示框把流失明寫出來，不用讀者自己減。
   const funnel = d.funnel.map((r, i) => {
     const lab = L(r.label), prev = i ? d.funnel[i - 1].v : null;
@@ -599,6 +657,31 @@ function render() {
     <p class="cap">${T_.cap_chapters(d, x)}</p>
   </div>
   <p class="lede">${T_.lede_chapters(d, x)}</p>
+</section>
+
+<section>
+  <h2>${T_.h_closer}</h2>
+  <div class="card">
+    <h3>${T_.h_rate}</h3>
+    ${rateRows.length
+      ? `<div class="chart">${pctBars(rateRows, { aria: T_.h_rate })}</div>
+         <p class="cap">${T_.cap_rate}</p>`
+      : `<p class="cap">${T_.noData}</p>`}
+  </div>
+  <div class="card">
+    <h3>${T_.h_heard}</h3>
+    ${heardRows.length
+      ? `<div class="chart">${pctBars(heardRows, { max: Math.max(...heardRows.map(r => r.n)), aria: T_.h_heard })}</div>
+         <p class="cap">${T_.cap_heard}</p>`
+      : `<p class="cap">${T_.sinceOnly}</p>`}
+  </div>
+  <div class="card">
+    <h3>${T_.h_exit}</h3>
+    ${exitRows.length
+      ? `<div class="chart">${pctBars(exitRows, { aria: T_.h_exit })}</div>
+         <p class="cap">${T_.cap_exit}</p>`
+      : `<p class="cap">${T_.sinceOnly}</p>`}
+  </div>
 </section>
 
 <section>

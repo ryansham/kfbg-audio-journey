@@ -372,8 +372,8 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             ['eventCount', 'averageCustomEvent:listened_pct'], eventFilter(['chapter_abandon'])),
         // 實際聽到的音訊秒數。帶 exit 是為了把 hidden_playing 那批剔出去 —— 它們多數之後
         // 還會再發一次 chapter_complete，兩邊都算就會重複計同一段收聽。
-        req(['eventName', 'customEvent:exit'], ['customEvent:listened_sec'],
-            eventFilter($CHAPTER_EVENTS)),
+        req(['customEvent:chapter_number', 'eventName', 'customEvent:exit'],
+            ['customEvent:listened_sec', 'eventCount'], eventFilter($CHAPTER_EVENTS)),
         req(['customEvent:is_offline'], ['eventCount'], eventFilter(['audio_error']), null, 20),
     ]));
 
@@ -403,30 +403,40 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     $POCKET = 'hidden_playing';
     $pocketByCh = []; $pocketAll = 0;
     $pctNum = 0.0; $pctDen = 0;      // 只用有標籤、而且不是口袋那批來算平均進度
+    // 四種離開方式各自數一次。unlabelled 是改動之前的記錄 —— 要留著並且在圖上標明，
+    // 悄悄丟掉會讓百分比以一個比實際小的分母計算，看起來卻完全正常。
+    $exitTotals = ['switch' => 0, 'hidden_paused' => 0, 'hidden_playing' => 0, 'unlabelled' => 0];
     foreach ($exitRow as $k => $m) {
         $parts = explode('|', (string)$k);
         $ch = isset($parts[0]) ? $parts[0] : '';
         $ex = isset($parts[1]) ? $parts[1] : '';
         $n  = (int)$m[0];
+        // GA 對缺參數有時回空字串、有時回 '(not set)'，兩個都要當未標籤。
+        if ($ex === '' || $ex === '(not set)') { $exitTotals['unlabelled'] += $n; continue; }
+        if (isset($exitTotals[$ex])) $exitTotals[$ex] += $n;
         if ($ex === $POCKET) {
             $pocketAll += $n;
             if ($ch !== '') $pocketByCh[$ch] = (isset($pocketByCh[$ch]) ? $pocketByCh[$ch] : 0) + $n;
             continue;
         }
-        // 改動之前的記錄。GA 對缺參數有時回空字串、有時回 '(not set)'，兩個都要當未標籤。
-        if ($ex === '' || $ex === '(not set)') continue;
         $pctNum += $n * (isset($m[1]) ? $m[1] : 0.0);
         $pctDen += $n;
     }
 
     // 實際收聽秒數：聽完的全部算，中途離開的只算「真的離開」那批。
-    $audioSecs = 0.0;
+    // 逐章同總數由同一份報表出，所以兩個數字永遠夾得埋，不會各自算出不同的總和。
+    $audioSecs = 0.0; $secByCh = []; $nByCh = [];
     foreach ($secRow as $k => $m) {
         $parts = explode('|', (string)$k);
-        $ev = isset($parts[0]) ? $parts[0] : '';
-        $ex = isset($parts[1]) ? $parts[1] : '';
+        $ch = isset($parts[0]) ? $parts[0] : '';
+        $ev = isset($parts[1]) ? $parts[1] : '';
+        $ex = isset($parts[2]) ? $parts[2] : '';
         if ($ev === 'chapter_abandon' && $ex === $POCKET) continue;
         $audioSecs += $m[0];
+        if ($ch !== '' && $ch !== '(not set)') {
+            $secByCh[$ch] = (isset($secByCh[$ch]) ? $secByCh[$ch] : 0) + $m[0];
+            $nByCh[$ch]   = (isset($nByCh[$ch]) ? $nByCh[$ch] : 0) + (isset($m[1]) ? (int)$m[1] : 0);
+        }
     }
 
     $errAll = 0; $errOffline = 0;
@@ -480,8 +490,14 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         $placedC += $c; $placedA += $a;
         // pocket 從 abandon 裡面扣出來，兩條加起來仍然等於 GA 的原始放棄數，圖表不會少掉記錄。
         $p = isset($pocketByCh[(string)$i]) ? (int)$pocketByCh[(string)$i] : 0;
+        // 完成率的分母用 GA 的原始放棄數，不是扣掉口袋之後那個 —— 口袋那批也是真的
+        // 播過一次，從分母剔走會讓完成率虛高。
+        $den = $c + $a;
+        $n   = isset($nByCh[(string)$i]) ? $nByCh[(string)$i] : 0;
         $chapters[] = ['label' => bi("第 $i 章", "Ch $i"), 'complete' => $c,
-                       'abandon' => max($a - $p, 0), 'pocket' => $p];
+                       'abandon' => max($a - $p, 0), 'pocket' => $p,
+                       'rate'    => $den > 0 ? (int)round($c / $den * 100) : null,
+                       'avgSec'  => $n > 0 ? (int)round($secByCh[(string)$i] / $n) : null];
     }
     // 🔴 擺唔入上面五章嘅記錄一定要有人數住。GA4 的自訂維度不會回溯：登記
     // chapter_number 之前發生的事件全部回 '(not set)'，只 loop 1..5 會靜靜地漏掉
@@ -630,7 +646,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
                      'Screen-locked listening excluded · ' . $sinceNote['en'])],
         ['v' => bi($sessions > 0 && $audioSecs > 0 ? mmss($audioSecs / $sessions) : '—',
                    $sessions > 0 && $audioSecs > 0 ? mmss($audioSecs / $sessions) : '—'),
-         'k' => bi('平均實際收聽時間（上限）', 'Audio actually heard (upper bound)'),
+         'k' => bi('平均實際收聽時間', 'Audio actually heard'),
          'n' => bi('由音訊進度計，螢幕熄了也算 · ' . $sinceNote['zh'],
                    'From audio progress, counts with the screen off · ' . $sinceNote['en'])],
         ['v' => bi($pocketAll . ' 次', (string)$pocketAll),
@@ -686,7 +702,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
              'n' => bi('平均每天 ' . ($days > 0 ? round($sessions / $days) : 0) . ' 次',
                        'About ' . ($days > 0 ? round($sessions / $days) : 0) . ' a day')],
             // 只計前景兼螢幕亮著的時間，所以是下限；上限在「其他觀察」的實際收聽時間。
-            ['k' => bi('平均使用時間（下限）', 'Time in app (lower bound)'),
+            ['k' => bi('平均使用時間', 'Time in app'),
              'v' => $sessions > 0 ? mmss($engageSecs / $sessions) : '—',
              'n' => bi('螢幕亮著才計', 'Screen-on time only')],
             ['k' => bi('聽完整條路線', 'Completed the route'), 'v' => (string)$qrComplete,
@@ -704,6 +720,10 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             'full'        => $newFieldsFull,
             'pocketAll'   => $pocketAll,
             'audioSecs'   => (int)$audioSecs,
+            'exitTotals'  => $exitTotals,
+            // 原始秒數：上下限那條範圍圖要自己算長度，格式化過的 "2:14" 用不到。
+            'avgEngageSec'=> $sessions > 0 ? (int)round($engageSecs / $sessions) : 0,
+            'avgAudioSec' => $sessions > 0 ? (int)round($audioSecs / $sessions) : 0,
             'errAll'      => $errAll,
             'oldAvgPct'   => $listenedPctOld,
         ],

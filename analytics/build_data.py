@@ -138,7 +138,7 @@ data = {
         {"k": b("使用次數", "Sessions"), "v": str(SESSIONS),
          "n": b(f"平均每天 {r(SESSIONS / DAYS)} 次", f"About {r(SESSIONS / DAYS)} a day")},
         # 同 ga-proxy.php 一致：這個只計前景兼螢幕亮著的時間，是下限。
-        {"k": b("平均使用時間（下限）", "Time in app (lower bound)"),
+        {"k": b("平均使用時間", "Time in app"),
          "v": mmss(ENGAGE_SECONDS / SESSIONS),
          "n": b("螢幕亮著才計", "Screen-on time only")},
         {"k": b("聽完整條路線", "Completed the route"), "v": str(QR_COMPLETE),
@@ -157,7 +157,8 @@ data = {
         {"label": b("完成整條路線", "Completed the route"), "v": QR_COMPLETE, "pct": pct_of_qr(QR_COMPLETE)},
     ],
     "chapters": [
-        {"label": b(f"第 {n} 章", f"Ch {n}"), "complete": c, "abandon": a}
+        {"label": b(f"第 {n} 章", f"Ch {n}"), "complete": c, "abandon": a,
+         "rate": round(c / (c + a) * 100) if (c + a) else None, "avgSec": None}
         for n, c, a in CHAPTERS
     ],
     "chaptersUnknown": {"complete": CHAPTERS_UNKNOWN[0], "abandon": CHAPTERS_UNKNOWN[1]},

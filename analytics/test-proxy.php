@@ -96,13 +96,13 @@ $batchC = [
         '1|(not set)'      => [3, 12.0],
         '2|hidden_paused'  => [2, 60.0],
     ], 2),
-    rep([                                            // listened_sec 總和
-        'chapter_complete|'             => [4000],
-        'chapter_abandon|switch'        => [500],
-        'chapter_abandon|hidden_paused' => [300],
+    rep([                                            // 章節 × 事件 × exit：秒數、次數
+        '1|chapter_complete|'             => [4000, 10],
+        '1|chapter_abandon|switch'        => [500, 4],
         // 這批之後通常還會再發一次 chapter_complete，一併算就重複計同一段收聽。
-        'chapter_abandon|hidden_playing'=> [9999],
-    ], 1),
+        '1|chapter_abandon|hidden_playing'=> [9999, 10],
+        '2|chapter_abandon|hidden_paused' => [300, 2],
+    ], 2),
     rep(['false' => [5], 'true' => [3]], 1),         // audio_error × is_offline
 ];
 
@@ -159,6 +159,20 @@ check('音檔失敗總次數',              $out['fields']['errAll'], 8);
 // 時間窗 08-14 起，早過 09-24，所以新欄位只覆蓋後半段。
 check('新欄位未覆蓋整段期間',        $out['fields']['full'], false);
 check('分界日',                      $out['fields']['since'], '2026-09-24');
+// 四種離開方式。未標籤那 9 次（空字串 6 + (not set) 3）要留著，丟掉的話百分比會用
+// 一個偏小的分母去計，而算出來的數字看起來完全正常。
+check('離開方式：換章',              $out['fields']['exitTotals']['switch'], 4);
+check('離開方式：暫停後關閉',        $out['fields']['exitTotals']['hidden_paused'], 2);
+check('離開方式：熄屏繼續聽',        $out['fields']['exitTotals']['hidden_playing'], 10);
+check('離開方式：改動前未標籤',      $out['fields']['exitTotals']['unlabelled'], 9);
+check('平均互動秒數（下限）',        $out['fields']['avgEngageSec'], 147);   // 17617 / 120
+check('平均每次使用聽到的秒數',      $out['fields']['avgAudioSec'], 40);     // 4800 / 120
+// 完成率分母用 GA 原始放棄數（含口袋那批），因為它們也真的播過一次。
+// 第一章 15 / (15 + 34) = 31%；第二章 9 / (9 + 12) = 43%。
+check('完成率序列',   array_column($out['chapters'], 'rate'), [31, 43, 50, 45, 50]);
+// 第一章 (4000 + 500) / (10 + 4) = 321 秒；hidden_playing 那 9999 秒同 10 次都要剔走，
+// 否則平均值會被一批「其實聽完了」的記錄拉高。第二章 300 / 2 = 150。
+check('每章平均聽到秒數', array_column($out['chapters'], 'avgSec'), [321, 150, null, null, null]);
 
 check('對不上章節的聽完次數', $out['chaptersUnknown']['complete'], 5);
 check('對不上章節的離開次數', $out['chaptersUnknown']['abandon'], 4);
@@ -203,7 +217,7 @@ check('離線下載',   $fact('下載音頻離線收聽'), '8 人');
 check('主畫面開啟', $fact('從主畫面圖示開啟'), '8 人');
 check('熄屏繼續聽', $fact('熄屏後把手機放下繼續聽'), '10 次');
 check('音檔失敗',   $fact('音檔載入失敗'), '8 次');
-check('實際收聽時間', $fact('平均實際收聽時間（上限）'), '0:40');   // 4800 秒 / 120 次使用
+check('實際收聽時間', $fact('平均實際收聽時間'), '0:40');   // 4800 秒 / 120 次使用
 
 echo "\n雙語完整性\n";
 $missing = [];
