@@ -1276,8 +1276,14 @@ function tapPlay(i){
 function togglePlay(){
   if(playing){aud.pause();playing=false;}
   else{
-    // 載入失敗之後 play() 唔會自己重試，要成個重新載入：網絡返嚟撳一下就救得返。以前每章卡片個掣會咁做，卡退役咗之後冇咗
-    if(aud.error){loadCh(ai,true);return;}
+    // 載入失敗（error）或者一粒數據都未收到（readyState 0：請求卡住又唔報錯，山上弱訊號常見）時，
+    // play() 唔會自己重新請求，要成個重新載入：網絡返嚟撳一下就救得返。以前每章卡片個掣會咁做，卡退役咗之後冇咗。
+    // 記住播到邊，重新載入之後跳返去，唔好由頭播
+    if(aud.error||aud.readyState===0){
+      const at=aud.currentTime;loadCh(ai,true);
+      if(at>1)aud.addEventListener('loadedmetadata',()=>{aud.currentTime=at;},{once:true});
+      return;
+    }
     sendPlay(ai);playing=true;
     aud.play().catch(()=>{playing=false;syncBtns(false);});   // 播唔到就唔好扮播緊
   }
