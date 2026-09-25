@@ -56,9 +56,10 @@ kfbg-audio-journey/
 │   │       ├── grounding-walk-ch03.jpg
 │   │       ├── grounding-walk-ch04.jpg
 │   │       ├── grounding-walk-ch05.jpg
-│   │       └── grounding-walk-map-preview.jpg  # Trail map thumbnail
+│   │       └── grounding-walk-map-preview.jpg  # Unused: old facility map, no longer referenced
 │   ├── maps/
-│   │   └── kfbg-map-full.jpg                  # Full KFBG farm map (fullscreen)
+│   │   ├── route-map.jpg                      # Offline fallback route map (copy of Sanity Map Full Image)
+│   │   └── kfbg-map-full.jpg                  # Unused: old facility map, no longer referenced
 │   └── speakers/
 │       └── stanley-chan.jpg                    # Speaker profile (400×400)
 │
@@ -197,8 +198,9 @@ For staging, replace `audio.kfbg.org` with `ryansham.github.io/kfbg-audio-journe
 
 | Image | Path | Recommended size |
 |---|---|---|
-| Trail map thumbnail | `images/journeys/grounding-walk/grounding-walk-map-preview.jpg` | 1500px+ wide, PNG or JPG |
-| Full KFBG farm map | `images/maps/kfbg-map-full.jpg` | 1500px+ wide, PNG or JPG |
+| Fallback route map (small map and fullscreen) | `images/maps/route-map.jpg` | Copy of the Sanity Map Full Image |
+
+The fallback is only shown when Sanity can't be reached (including localhost and the LAN test URL, which Sanity's CORS blocks). It must be the route map: the chapter page's map button titles the map "Stop N · name" and asks the visitor to find number N, which only matches the big 1–5 stop numbers on the route map. The old facility map numbers its buildings 1–37.
 
 Maps can also be uploaded via Sanity Studio (Journey → Map Preview Image / Map Full Image). Sanity CDN serves the original at full resolution for sharp zoom.
 
