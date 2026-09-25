@@ -1,5 +1,5 @@
-/* KFBG Audio Journey — SW v51 */
-const PAGE_CACHE='kfbg-pages-v51';
+/* KFBG Audio Journey — SW v52 */
+const PAGE_CACHE='kfbg-pages-v52';
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 const PRECACHE=[
