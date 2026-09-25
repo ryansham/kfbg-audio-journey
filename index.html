@@ -2,7 +2,7 @@
 <html lang="zh-Hant" data-lang="zh">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="theme-color" content="#4A5C3A"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="mobile-web-app-capable" content="yes"/>
@@ -36,7 +36,15 @@
   --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
   /* --gd 落喺深橄欖底只有 4.18:1，未夠 AA。呢個係佢嘅淺色版，專用喺 --olm 底上嘅細字。 */
   --gdl:#DCC694;
-  --nav:54px;--bar:168px;--bar-min:32px;--pills:44px;--fs:1rem;
+  --nav:54px;--fs:1rem;
+  /* 播放條最低一行掣同 iPhone home bar 之間嘅距離，同 Kipt 底部 menu 一樣。
+     Face ID iPhone（inset 34px）→ 26px；冇 home bar 或者 Safari 工具列未收起（inset 0）→ 保底 16px。 */
+  --safe-bottom:max(calc(env(safe-area-inset-bottom) - 8px),16px);
+  /* 播放條真實高度，由 JS 用 ResizeObserver 量完寫入（見 watchBarHeight）。以前係三個寫死嘅數
+     （168／32／44），實量全部細過真實高度：首頁遮住 21px、旅程頁 20px、縮細 18px，字級調到最大
+     遮 30px。高度會跟字級、pills、播放列表點點、safe area 變，冇一個常數啱晒。
+     呢個預設值只喺 JS 量到之前用，寧可高估：估多咗只係底部留白多啲，估少咗就係內容被遮。 */
+  --bar-h:calc(194px + var(--safe-bottom));
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 html{font-size:var(--fs);}
@@ -56,7 +64,7 @@ span.en,span.tc{display:inline;}
 #env-badge{position:fixed;top:var(--nav);left:0;right:0;z-index:198;font-size:0.65rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:5px 14px;text-align:center;pointer-events:none;display:none;}
 #env-badge.staging{display:block;background:rgba(196,169,106,0.15);color:var(--gd);border-bottom:1px solid rgba(196,169,106,0.25);}
 #env-badge.production{display:none;}
-#nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav);background:rgba(247,243,236,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0 12px;display:flex;align-items:center;gap:10px;}
+#nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav);background:rgba(247,243,236,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0 max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px;}
 #nav-logo{height:34px;cursor:pointer;flex-shrink:0;display:block;}
 #nav-back{display:none;align-items:center;gap:5px;font-size:0.78rem;color:var(--ol);font-weight:500;cursor:pointer;flex-shrink:0;background:none;border:none;font-family:inherit;}
 #nav-back svg{width:18px;height:18px;}
@@ -70,10 +78,7 @@ span.en,span.tc{display:inline;}
 /* ── VIEWS ── */
 body.env-staging #views{top:calc(var(--nav) + 28px);}
 body.env-staging #nav{top:0;}
-#views{position:fixed;top:var(--nav);left:0;right:0;bottom:calc(var(--bar) - var(--pills));overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
-/* views bottom adjustments */
-body.journey-view #views{bottom:var(--bar);}
-body.bar-min #views{bottom:var(--bar-min);}
+#views{position:fixed;top:var(--nav);left:0;right:0;bottom:var(--bar-h);overflow-y:auto;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;will-change:scroll-position;}
 .view{display:none;}
 .view.on{display:block;}
 
@@ -274,7 +279,7 @@ details[open] summary::after{content:'▾';}
 #bar.minimised #pbt{height:8px;}
 #bar.minimised #pb-time-row{padding:6px 14px 4px;}
 
-#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);}
+#bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--olm);padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);}
 /* seek track — tall touch target, thin visual */
 #pbt{height:22px;background:transparent;cursor:pointer;touch-action:none;position:relative;display:flex;align-items:center;padding:0 13px;}
 #pbt-track{position:absolute;left:13px;right:13px;height:3px;background:rgba(255,255,255,0.15);border-radius:2px;pointer-events:none;}
@@ -367,8 +372,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 .dlcancel{display:block;width:100%;margin-top:11px;padding:11px;background:transparent;border:1px solid var(--bd);border-radius:9px;font-size:0.82rem;font-family:inherit;color:var(--mu);cursor:pointer;}
 
 /* ════ INSTALL BANNER ════ */
-#ib{display:none;position:fixed;bottom:calc(var(--bar) + 8px);left:11px;right:11px;z-index:400;background:var(--olm);border-radius:13px;padding:15px;box-shadow:0 6px 28px rgba(0,0,0,0.28);}
-#ib.sh{display:block;}
 .ibtop{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
 .ibico{width:42px;height:42px;border-radius:9px;overflow:hidden;flex-shrink:0;background:var(--ol);}
 .ibico img{width:100%;height:100%;object-fit:contain;}
@@ -599,7 +602,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <!-- pills row inside bar -->
   <div id="pills-bar-wrap" style="display:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;white-space:nowrap;padding:4px 13px 6px;gap:6px;border-top:1px solid rgba(255,255,255,0.07);"></div>
   <!-- safe area spacer -->
-  <div style="height:env(safe-area-inset-bottom,0px);min-height:4px;"></div>
+  <div style="height:var(--safe-bottom);"></div>
 </div>
 
 <!-- TRANSITION SHEET -->
@@ -1874,6 +1877,13 @@ function toggleBarSize(){
   if(icon) icon.style.transform=isMin?'rotate(180deg)':'rotate(0deg)';
   localStorage.setItem('kfbg-bar-min', isMin?'1':'0');
 }
+// #views 要避開播放條，但播放條幾高冇得寫死：字級、pills、播放列表點點、縮細、
+// safe area 都會令佢變。量真實高度寫入 --bar-h，任何一樣變咗都會自動跟上。
+(function watchBarHeight(){
+  const bar=document.getElementById('bar');
+  if(!bar||!('ResizeObserver' in window))return; // iOS 13.4 之前冇，退回 CSS 預設值
+  new ResizeObserver(()=>document.documentElement.style.setProperty('--bar-h',bar.getBoundingClientRect().height+'px')).observe(bar);
+})();
 function setupScroll(){
   const v=document.getElementById('views');
   v.addEventListener('scroll',()=>{
