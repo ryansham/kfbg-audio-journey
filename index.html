@@ -1292,6 +1292,18 @@ function trackAbandon(exit){
   // scrub bar turns out to be used much.
   track('chapter_abandon',{chapter_number:CH[ai].id,listened_pct:Math.round(aud.currentTime/aud.duration*100),listened_sec:Math.round(aud.currentTime),exit:exit||'switch'});
 }
+// iOS keeps this page running only while audio is actually playing. The moment a chapter ends
+// playback stops, the page is suspended, and any pending setTimeout never fires: measured
+// 2026-09-25 on a real iPhone, screen locked, 60 seconds of silence and the walk simply stopped at
+// the end of the chapter. chapter_complete still arrives, because the ended handler itself runs
+// synchronously — which is why the drop from chapter 1 to chapter 2 looked like lost interest.
+// Both delays below are purely visual (a beat after the chapter, then the title card). With the
+// screen off there is nothing to see and nothing to wait for, so chain straight through instead.
+// Novelslate measured the same platform in 2026-09: ended -> swap src -> play() succeeds in the
+// background 4/4, but only when no timer sits in between.
+const hidden=()=>document.visibilityState==='hidden';
+function afterCard(fn,ms){hidden()?fn():setTimeout(fn,ms);}
+function bgJump(i){hidden()?jump(i,plMode):setTimeout(()=>jump(i,plMode),600);}
 function jump(i,asPL){
   if(i!==ai)trackAbandon('switch');
   if(asPL!==undefined)plMode=asPL;
@@ -1303,7 +1315,7 @@ function jump(i,asPL){
   sh.classList.add('sh');
   aud.pause();playing=false;syncBtns(false);
   if(view==='journey')document.getElementById('s'+i)?.scrollIntoView({behavior:'smooth',block:'start'});
-  setTimeout(()=>{sh.classList.remove('sh');loadCh(i,true);},900);
+  afterCard(()=>{sh.classList.remove('sh');loadCh(i,true);},900);
 }
 function playAll(){plMode=true;document.getElementById('pbplt').classList.add('sh');document.getElementById('pbseq').classList.add('sh');jump(0,true);}
 function tapPlay(i){
@@ -1339,7 +1351,7 @@ aud.addEventListener('timeupdate',()=>{
   const ct=document.getElementById('ct'+ai);if(ct)ct.textContent=fmt(aud.currentTime)+' / '+fmt(aud.duration);
 });
 aud.addEventListener('loadedmetadata',()=>{refreshPBProg(0,aud.duration);const ct=document.getElementById('ct'+ai);if(ct)ct.textContent='0:00 / '+fmt(aud.duration);});
-aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){setTimeout(()=>jump(ai+1,plMode),600);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));document.getElementById('pl'+ai)?.classList.add('dn');playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;document.getElementById('pbplt').classList.remove('sh');document.getElementById('pbseq').classList.remove('sh');document.getElementById('comp')?.classList.add('sh');track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
 aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
 aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 // ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
