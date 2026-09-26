@@ -216,17 +216,9 @@ body.env-staging #nav{top:0;}
 /* 正在播放：撳一下跳去嗰站。取代以前嘅資料行、播放列表標籤同點點 */
 #pb-now{display:flex;align-items:baseline;gap:7px;width:100%;min-height:32px;padding:10px 14px 0;background:none;border:0;cursor:pointer;font-family:inherit;text-align:left;}
 #pb-now[hidden]{display:none;}
-/* 尚未開始時縮成一行：狀態＋站名＋播放掣（Ryan）。一播過就保持完整控制條，暫停都唔縮
-   （Ryan 2026-09-26：暫停唔縮，暫停中要拉得到進度條）。見 barMini */
-#bar.mini{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;}
-#bar.mini #errbar{grid-row:1;grid-column:1/-1;}
-#bar.mini #pb-now{grid-row:2;grid-column:1;min-height:56px;padding:0 6px 0 14px;align-items:center;}
-#bar.mini #pb-ctrl-row{grid-row:2;grid-column:2;display:flex;align-items:center;gap:8px;padding:6px 14px 6px 0;}
-#bar.mini #pb-ctrl-row>:not(#pbplay):not(#offbar){display:none;}
-#bar.mini #offbar{order:-1;}
-#bar.mini #pb-prog{display:none;}
-#bar.mini .pbplay{width:44px;height:44px;}
-#bar.mini>div:last-child{grid-row:3;grid-column:1/-1;}
+/* 尚未開始就成條播放器唔出（Ryan：縮一行都唔要）。由總覽「由第 1 站開始」或者各站「播放第 N 站」開始；
+   一播過就保持完整控制條，暫停都唔收（暫停中要拉得到進度條）。見 barMini；--bar-h 由 ResizeObserver 跟到 0 */
+#bar.mini{display:none;}
 #pbnow-st{font-size:0.72rem;color:var(--gdl);white-space:nowrap;}
 #pbnow-ttl{font-size:0.88rem;font-weight:500;color:var(--cr);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 /* 進度：兩邊時間，中間可拖。以前時間自成一行，而家併埋一行慳位 */
@@ -276,7 +268,8 @@ body.env-staging #nav{top:0;}
 .clp-play{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;background:var(--gd);color:#26311d;
   border:0;border-radius:12px;padding:12px 14px;font:inherit;font-weight:500;margin-bottom:18px;cursor:pointer;}
 .clp-play svg{width:13px;height:13px;fill:#26311d;}
-.clp-play[hidden]{display:none;}
+.clp-play .ip,.clp-play.pl .ip2{display:none;}
+.clp-play.pl .ip{display:inline;}
 /* 強烈建議每位訪客預先下載（山上訊號差）；全部站都下載咗就收埋（body.all-dl，見 checkDlState） */
 .clp-dl{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;margin:-10px 0 14px;padding:6px;background:none;border:0;
   font:inherit;font-size:0.8rem;color:var(--ol);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
@@ -427,6 +420,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 #map-fs-hint{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);font-size:0.62rem;background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.7);padding:4px 12px;border-radius:100px;pointer-events:none;}
 
 /* ── TUTORIAL COACHMARK ── */
+/* 教學期間選單即開即閂：以前要等 0.32 秒滑完先計位，每撳一次「下一步」都見到半秒淨係灰幕 */
+.touring #dr,.touring #drov{transition:none;}
 #tut{position:fixed;inset:0;z-index:900;display:none;transition:background 0s linear 0.18s;}   /* 灰幕等窿淡入完先收，唔會閃 */
 #tut-spot{position:fixed;border-radius:10px;box-shadow:0 0 0 9999px rgba(30,36,24,0.72),0 0 0 3px var(--gd),0 0 0 7px rgba(196,169,106,0.3);pointer-events:none;transition:opacity 0.18s;}
 /* 以前聚光燈會由上一個位置滑去新目標，加上 smooth 捲動途中計位，灰幕成塊郁嚟郁去先定到位。
@@ -642,7 +637,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <div class="drh"><button class="drclose" onclick="drClose()">×</button></div>
   <div class="drb">
     <div class="drs"><div class="drsl">Language / 語言</div><div class="drlang"><button class="drlopt" id="dlen" onclick="setLang('en')">English</button><button class="drlopt ac" id="dlzh" onclick="setLang('zh')">繁中</button></div></div>
-    <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="6" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
+    <div class="drs"><div class="drsl"><span class="en">Text size</span><span class="tc">文字大小</span></div><div class="drfs"><span class="drfsa">A</span><input type="range" class="drsl2" id="fssl" min="0" max="4" step="1" value="2" oninput="setFont(this.value)"/><span class="drfsa bg">A</span></div></div>
     <div class="drs"><div class="drsl"><span class="en">Tutorial</span><span class="tc">使用導覽</span></div><button class="drdlbtn" onclick="replayTour()"><span class="en">Replay tutorial</span><span class="tc">重看導覽</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 2.6-6.4L3 8"/><polyline points="3 3 3 8 8 8"/></svg></button></div>
     <div class="drs">
       <div class="drsl"><span class="en">Offline</span><span class="tc">離線使用</span></div>
@@ -952,7 +947,7 @@ const CH=[
   {id:4,a:'audio/grounding-walk/grounding-walk-ch04.mp3',loc:{en:'Stone Bridge',tc:'石橋'},title:{en:'The Sound of Water: A Listening Journey at the Stone Bridge',tc:'流水之聲：石橋上的聽覺旅程'},sh:{en:'The Sound of Water',tc:'流水之聲'},desc:{en:'Sit quietly by the stone bridge and immerse yourself in the flowing water. Practice receiving the shifts in pitch and distance, finding inner peace within the sounds and the spaces of silence.',tc:'靜坐於石橋聆聽潺潺流水。練習單純地接收聲音的變化、高低與遠近，並在聲音與安靜的空間中尋找內心的平靜。'},prac:{en:'Identify three distinct water sounds: drips, splashes, and steady flow.',tc:'辨別三種不同的水聲：滴水聲、濺水聲和穩定的流水聲。'},tr:`嚟到葛先生花園嘅石橋，眼前，就係潺潺不斷嘅流水。繼續帶住好奇心，觀察呢啲流水。\n\n仔細咁望住啲流水，觀察見到嘅顏色……水流動時喺水面嘅波紋……觀察住水嘅形態、流動嘅方向、每一刻細微嘅變化。\n\n呢一刻，可以除低一邊耳機，細心聆聽流水嘅聲音。呢刻嘅流水聲係大聲、定細聲嘅？高音、定低音嘅？遠、定近嘅？\n\n呢一刻，慢慢將注意力嘅範圍擴展開去，留心任何嘅聲音。留心聲音同聲音之間嘅空間，留心當中寧靜嘅空間。\n\n接住落嚟，慢慢行去下一個停留點：「沁思園」。去沁思園嘅路徑會比較長同有少少斜，亦請留意路面可能有行駛嘅車。`,img:'images/journeys/grounding-walk/grounding-walk-ch04.jpg'},
   {id:5,a:'audio/grounding-walk/grounding-walk-ch05.mp3',loc:{en:'Cascade Garden',tc:'沁思園'},title:{en:'Expansion and Grounding: Reflection at the Cascade Garden',tc:'廣闊與扎根：沁思園的伸展與沉澱'},sh:{en:'Expansion and Grounding',tc:'廣闊與扎根'},desc:{en:'Practice focusing and expanding your awareness at the Cascade Garden. Feel the support of the earth through gentle stretching and deep breathing, allowing your body and mind to be nourished by nature.',tc:'於視野開闊的沁思園練習專注力的集中與擴展。在溫柔的伸展與深呼吸中感受大地的承托，讓身心在自然中療癒與滋養。'},prac:{en:'Place your feet flat on the ground and imagine roots extending into the soil.',tc:'將雙腳平放於地面，想像根系延伸進入泥土。'},tr:`喺沁思園，請繼續帶住好奇心，將注意力放喺感官同身體。\n\n喺之前嘅錄音入面，您已經體驗過注意力可以集中喺一個細細嘅範圍，亦都可以慢慢擴展到一個好廣闊嘅空間。\n\n宜家，將視線集中喺眼前嘅一點，可以係某一棵樹、某一片雲、某個設施咁。集中注意力，帶住好奇心、用眼睛睇真的呢個揀選咗嘅位置。\n\n呢一刻，慢慢將注意力嘅範圍擴展開去……將視野開闊，觀察眼前所有嘅事物……整個天空、所有嘅浮雲……\n\n可以嘅話，畀自己深呼吸幾下。留意埋呼吸時身體有嘅郁動……\n\n慢慢、溫柔咁伸展……讓心，都可以喺呢個大自然之中休息、畀大自然滋養、畀大自然療癒。\n\n你可以放低呢一系列錄音，繼續你既旅程啦。`,img:'images/journeys/grounding-walk/grounding-walk-ch05.jpg'},
 ];
-const FS=['0.94rem','1rem','1.08rem','1.16rem','1.25rem','1.35rem','1.5rem'];
+const FS=['0.94rem','1rem','1.08rem','1.25rem','1.5rem'];   // 七級減到五級（Ryan）；預設同最大唔變
 const SPDS=[1,1.25,1.5];
 const CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
@@ -984,7 +979,8 @@ const _langParam=(function(){
 
 // ════ STATE ════
 let lang=_langParam||localStorage.getItem('kfbg-lang')||'zh';
-let fs=parseInt(localStorage.getItem('kfbg-fs')||'2');
+// 新 key kfbg-fs2：舊 kfbg-fs（0–6）對應去最接近嘅新一級，唔係 4 會由 1.25rem 變 1.5rem
+let fs=(()=>{try{const v=localStorage.getItem('kfbg-fs2');if(v!==null)return +v;const o=localStorage.getItem('kfbg-fs');return o!==null?([0,1,2,3,3,4,4][+o]??2):2;}catch(e){return 2;}})();
 let view='home'; // 'home' | 'journey'
 let ai=0, playing=false, plMode=false, si=0; // si=speed index
 const aud=document.getElementById('aud');
@@ -1139,7 +1135,7 @@ function setNavTitle(){
 function openLink(k){window.open((LINKS[k][dk()]||LINKS[k].en),'_blank','noopener');}
 
 // ════ FONT ════
-function applyFont(v){fs=v;document.documentElement.style.setProperty('--fs',FS[v]||'1rem');document.getElementById('fssl').value=v;localStorage.setItem('kfbg-fs',v);}
+function applyFont(v){v=Math.max(0,Math.min(FS.length-1,v|0));fs=v;document.documentElement.style.setProperty('--fs',FS[v]);document.getElementById('fssl').value=v;try{localStorage.setItem('kfbg-fs2',v);}catch(e){}}
 function setFont(v){applyFont(parseInt(v));}
 
 // ════ VIEW SWITCHING ════
@@ -1428,7 +1424,7 @@ function buildChapterPages(){
       <div class="clp-kick"><span class="en">Stop ${esc(c.id)} · ${esc(c.loc.en)}</span><span class="tc">第 ${esc(c.id)} 站 · ${esc(c.loc.tc)}</span></div>
       <h2 class="clp-title"><span class="en">${esc(c.title.en||c.sh.en)}</span><span class="tc">${esc(c.title.tc||c.sh.tc)}</span></h2>
       ${c.dur?`<div class="clp-meta">${fmt(c.dur)}</div>`:''}
-      <button class="clp-play" data-i="${i}" onclick="tapPlay(${i})"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg><span class="en">Play stop ${esc(c.id)}</span><span class="tc">播放第${zhNum(c.id)}站</span></button>
+      <button class="clp-play" data-i="${i}" onclick="tapPlay(${i})"><svg class="ip2" viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg><svg class="ip" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span class="en">Play stop ${esc(c.id)}</span><span class="tc">播放第${zhNum(c.id)}站</span></button>
       <button class="clp-dl" onclick="clDownload()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="en">Download all audio in advance</span><span class="tc">預先下載全部音頻</span></button>
       ${clBi(c.desc,'p','clp-desc',t=>esc(t))}
       ${clBi(c.prac,'div','prac',(t,k)=>`<div class="pracl">${k==='en'?'Mindful Practice':'正念練習'}</div><div class="pract">${esc(t)}</div>`)}
@@ -1475,8 +1471,14 @@ function clRefresh(){
     d.setAttribute('aria-label',zh?`第 ${CH[k].id} 站`:`Stop ${CH[k].id}`);
     d.setAttribute('aria-current',k===vi?'true':'false');
   });
-  const started=playing||(_playSent&&!aud.error);   // 射咗 chapter_play 先算開始；載入失敗照出掣畀人重試
-  document.querySelectorAll('.clp-play').forEach(b=>b.hidden=(+b.dataset.i===ai&&started));
+  // 播放掣一直喺度（以前播緊就收埋，Ryan 覺得怪）：播緊（或者等緊開始播）嗰站變暫停，圖示同字一齊轉，
+  // 唔係暫停符號旁邊仲寫「播放」，讀屏都會讀錯
+  document.querySelectorAll('.clp-play').forEach(b=>{
+    const k=+b.dataset.i,on=k===ai&&(playing||_wantPlay),id=CH[k]?.id;
+    b.classList.toggle('pl',on);
+    b.querySelector('.en').textContent=(on?'Pause stop ':'Play stop ')+id;
+    b.querySelector('.tc').textContent=(on?'暫停':'播放')+'第'+zhNum(id)+'站';
+  });
   document.querySelectorAll('.ovr').forEach(r=>{const k=+r.dataset.i,d=DONE.has(k);
     r.classList.toggle('dn',d);r.classList.toggle('now',k===ai);
     r.querySelector('.ovst').textContent=d?(lang==='zh'?'，已完成':', completed'):'';});
@@ -2317,6 +2319,7 @@ function startTour(steps,key){
   // 目標冇顯示嘅步驟（例如「加至主畫面」收起咗、由主畫面 app 開）一開始就剔走，「1 / N」先數得啱
   _tutSteps=(Array.isArray(steps)?steps:TUT_STEPS).filter(st=>{const el=document.querySelector(st.sel);return el&&el.getClientRects().length;});
   _tutI=0;_tutOn=true;_tutPrevFocus=document.activeElement;
+  document.body.classList.add('touring');   // 教學期間選單唔滑，換步唔使等（見 CSS .touring）
   let ov=document.getElementById('tut');
   if(!ov){
     ov=document.createElement('div');ov.id='tut';
@@ -2335,7 +2338,6 @@ function startTour(steps,key){
 function tutKey(e){if(e.key==='Escape')endTour();}
 function tutShow(){
   const step=_tutSteps[_tutI];
-  const drMoves=!!(step&&step.open)!==document.getElementById('dr').classList.contains('op');   // 選單要滑入或者滑出
   step&&step.open?drOpen():drClose(); // 需要時打開選單，否則收起
   const el=step&&document.querySelector(step.sel);
   const r0=el&&el.getBoundingClientRect();
@@ -2361,7 +2363,7 @@ function tutShow(){
     tutPos();ov.classList.remove('settling');
     tutPeek(step);
     document.querySelector('#tut-bub .tut-next')?.focus({preventScroll:true});
-  })),drMoves?360:0);
+  })),0);
 }
 function tutPos(){
   if(!_tutOn)return;
@@ -2409,6 +2411,7 @@ function endTour(how){
   // old name GA read it as "finished the tour" and it outnumbered journey_start, so the report lied.
   if(_tutOn&&_tutKey==='kfbg-tour')track('tutorial_end',{how:how||'aborted',step_reached:_tutI+1,of:_tutSteps.length});   // 用 key 分：步驟剔走咗之後唔再係同一個 array // 章節頁提示唔記，分析合約冇呢項
   _tutOn=false;
+  document.body.classList.remove('touring');
   const ov=document.getElementById('tut');if(ov)ov.style.display='none';
   tutPeek(null);
   drClose(); // 若停喺開咗選單嗰步，收埋
@@ -2436,7 +2439,14 @@ function maybeClHint(){
   try{if(localStorage.getItem('kfbg-cl-hint'))return;}catch(e){return;}
   startTour(CL_HINT,'kfbg-cl-hint');
 }
-function replayTour(){drClose();goHome();requestAnimationFrame(()=>requestAnimationFrame(startTour));}
+function replayTour(){
+  drClose();
+  if(clOn){                             // 以前章節頁提示睇過就冇辦法再睇
+    try{localStorage.removeItem('kfbg-cl-hint');}catch(e){}
+    requestAnimationFrame(()=>requestAnimationFrame(()=>startTour(CL_HINT,'kfbg-cl-hint')));return;
+  }
+  goHome();requestAnimationFrame(()=>requestAnimationFrame(startTour));
+}
 
 // ════ START ════
 document.addEventListener('DOMContentLoaded',()=>{init();maybeStartTour();});
