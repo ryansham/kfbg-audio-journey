@@ -1122,7 +1122,9 @@ function syncA11y(){
 }
 function setLang(l){if(l!==lang)track('lang_switch',{from:lang,to:l});applyLang(l);}
 function setNavTitle(){
-  const t=document.getElementById('nav-title');
+  const t=document.getElementById('nav-title'),nb=document.getElementById('nav-back');
+  // 私隱頁返回會返去嚟嘅地方（某一站、總覽、首頁），唔一定係旅程列表
+  nb.querySelector('.en').textContent=view==='privacy'?'Back':'Journeys';nb.querySelector('.tc').textContent=view==='privacy'?'返回':'旅程';
   if(view==='journey'){
     const title=window._j1Title;
     t.textContent=title?(lang==='zh'?title.tc:title.en):(lang==='zh'?'連結大地':'Grounding Walk');
@@ -1456,7 +1458,6 @@ function buildChapterPages(){
 function clLazy(i){if(!clOn||!_cmsSettled)return;for(let k=i-1;k<=i+1;k++){const im=clPagesEl().children[k]?.querySelector('img[data-src]');if(im){im.src=im.dataset.src;im.removeAttribute('data-src');}}}
 // 畫面外嘅頁 inert：Tab 唔會走入去（一入去就會捲走個畫面），讀屏亦唔會讀到其他站
 function clSetView(i){vi=i;[...clPagesEl().children].forEach((sec,k)=>sec.inert=k!==i);clLazy(i);
-  if(clOn&&i<CH.length&&i!==ai&&!(playing||_wantPlay||_playSent||aud.currentTime>0))loadCh(i,false);
   clRefresh();clHeadSolid();
   if(document.getElementById('map-fs').classList.contains('sh')&&!document.getElementById('map-fs-ttl').hidden)clMapTitle();}
 function clRefresh(){
@@ -1951,6 +1952,7 @@ function mapFullscreen(){
 
   // Show overlay
   fs.classList.add('sh');
+  document.getElementById('map-fs-close').focus({preventScroll:true});   // 以前焦點留喺被遮住嘅章節頁
 
   // Reset ready flag while loading
   st.ready=false;
