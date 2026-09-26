@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v58
+   Single Page App — v59
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -1402,8 +1402,9 @@ function jump(i,asPL){
   loadCh(i,true);
   if(follow)clGo(i,false);              // 即時捲，唔用 smooth：可能喺鎖屏時發生，背景唔行動畫
 }
-function playAll(){plMode=true;jump(0,true);openChapters(0);}
+function playAll(){kaUnlock();plMode=true;jump(0,true);openChapters(0);}
 function tapPlay(i){
+  kaUnlock();
   if(i===ai){
     // If audio not yet loaded (readyState 0 = HAVE_NOTHING), reload and play
     if(aud.readyState===0||aud.src===''){loadCh(i,true);}
@@ -1414,6 +1415,7 @@ function tapPlay(i){
   }
 }
 function togglePlay(){
+  kaUnlock();
   if(playing){aud.pause();playing=false;}
   else{
     // 載入失敗（error）或者一粒數據都未收到（readyState 0：請求卡住又唔報錯，山上弱訊號常見）時，
@@ -1454,7 +1456,7 @@ function dbg(ev,x){
   if(!DBG)return;
   try{
     const d=new Date(),p=(n,w)=>String(n).padStart(w||2,'0');
-    const line=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(),3)} ${document.visibilityState==='hidden'?'H':'V'} ${ev} #${CH[ai]?CH[ai].id:'?'} t=${aud.currentTime.toFixed(1)}/${(aud.duration||0).toFixed(0)} rs${aud.readyState} ns${aud.networkState} ${aud.paused?'P':'p'} as=${navigator.audioSession?navigator.audioSession.type+(navigator.audioSession.state?'/'+navigator.audioSession.state:''):'-'}${x?' '+x:''}`;
+    const line=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(),3)} ${document.visibilityState==='hidden'?'H':'V'} ${ev} #${CH[ai]?CH[ai].id:'?'} t=${aud.currentTime.toFixed(1)}/${(aud.duration||0).toFixed(0)} rs${aud.readyState} ns${aud.networkState} ${aud.paused?'P':'p'}${_kaOn?' KA':''} as=${navigator.audioSession?navigator.audioSession.type+(navigator.audioSession.state?'/'+navigator.audioSession.state:''):'-'}${x?' '+x:''}`;
     const a=JSON.parse(localStorage.getItem('kfbg-dbg')||'[]');a.push(line);
     localStorage.setItem('kfbg-dbg',JSON.stringify(a.slice(-400)));
   }catch(e){}
@@ -1482,12 +1484,69 @@ if(DBG){
 aud.addEventListener('timeupdate',()=>{if(aud.duration)refreshPBProg(aud.currentTime,aud.duration);});
 aud.addEventListener('loadedmetadata',()=>refreshPBProg(0,aud.duration));
 aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;if(CH.every((_,k)=>DONE.has(k)))document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
-aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
+aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);kaStop('play');msState('playing');});
 // 載入中轉圈跟音訊本身：撳播放、由暫停繼續、播到一半網絡慢都會出。以前只有 loadCh 嗰條路先有，
 // 由 QR 入嚟撳播放、或者恢復暫停，山上等幾秒都冇任何反應
 aud.addEventListener('waiting',()=>{if(!aud.paused)showLd();});
 ['playing','pause','error'].forEach(ev=>aud.addEventListener(ev,hideLd));
-aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
+aud.addEventListener('pause',()=>{playing=false;syncBtns(false);msState('paused');kaSync('pause');});
+
+// ════ 鎖屏控制＋背景暫停時保持喚醒 ════
+// iPhone 主畫面 app 喺背景暫停 10 秒，iOS 就收咗佢出聲嘅權限兼令佢休眠；之後喺鎖屏撳播放，要打開 app 先交到入嚟
+// （Ryan 2026-09-26 真機偵錯記錄；Apple 論壇 762582 同類，對方自己接咗鎖屏掣都一樣中，所以單接掣唔夠）。
+// 做法：①鎖屏掣由我哋接（Media Session）；②背景暫停期間播一段無聲音頻，iOS 當仲播緊，唔會休眠，鎖屏撳播放即刻由原位繼續。
+// ponytail: 保持喚醒最多 10 分鐘（暫停期間當播緊嘢，會耗電）；過咗就放手，之後同以前一樣要打開 app 先有聲
+const KA_MAX=10*60*1000;
+const ka=new Audio('data:audio/wav;base64,UklGRsQPAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YaAPAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA');   // 0.5 秒無聲 WAV（8 kHz 8-bit），唔經網絡，離線都得
+ka.loop=true;
+var _kaOn=false,_kaT0=0,_kaUnlocked=false;   // var 唔係 let：偵錯記錄喺呢行之前已經會讀 _kaOn，let 會撞 TDZ 靜靜食咗嗰行
+// 撳播放嗰下 play() 即刻 pause()：瀏覽器記住呢粒 element 有用戶撳過，之後背景開佢唔使再要撳擊；唔會真係出聲。
+// 主音訊播緊就唔好掂（iPhone 可能一次只准一粒 element 出聲）
+function kaUnlock(){
+  if(_kaUnlocked||!aud.paused)return;_kaUnlocked=true;
+  try{const pr=ka.play();ka.pause();if(pr)pr.catch(()=>{});}catch(e){}
+}
+function kaWanted(){return hidden()&&aud.paused&&!aud.ended&&aud.currentTime>0&&_playSent;}   // 背景、聽到一半暫停
+function kaSync(why){
+  if(!kaWanted()){kaStop(why);return;}
+  if(_kaOn)return;
+  _kaOn=true;_kaT0=Date.now();msPos();
+  ka.play().then(()=>dbg('ka start',why)).catch(e=>{_kaOn=false;dbg('ka ERR',(e&&e.name)+' '+why);});
+}
+function kaStop(why){if(!_kaOn)return;_kaOn=false;ka.pause();msPos(true);dbg('ka stop',why);}
+ka.addEventListener('timeupdate',()=>{if(_kaOn&&Date.now()-_kaT0>KA_MAX)kaStop('10min');});
+document.addEventListener('visibilitychange',()=>{hidden()?kaSync('hidden'):kaStop('visible');});   // 前台唔會休眠，唔使
+
+function msState(st){try{if('mediaSession' in navigator)navigator.mediaSession.playbackState=st;}catch(e){}}
+// 保持喚醒期間鎖屏顯示主音訊嘅位置（唔係無聲嗰段 0.5 秒）；停咗就清走，交返瀏覽器自己睇主音訊
+function msPos(clear){
+  try{
+    if(!('mediaSession' in navigator)||!navigator.mediaSession.setPositionState)return;
+    if(clear){navigator.mediaSession.setPositionState();return;}
+    if(isFinite(aud.duration)&&aud.duration>0)navigator.mediaSession.setPositionState({duration:aud.duration,position:Math.min(aud.currentTime,aud.duration),playbackRate:aud.playbackRate||1});
+  }catch(e){}
+}
+// 鎖屏播放／暫停：以我哋自己嘅狀態為準。保持喚醒期間 iPhone 可能以為仲播緊，撳「暫停」其實係想播
+function msToggle(want){
+  dbg('ms '+want);
+  const on=playing||_wantPlay;
+  if(on&&want==='pause'){togglePlay();kaSync('ms pause');}   // 喺同一下撳擊入面開無聲音頻
+  else if(!on){kaStop('ms '+want);togglePlay();}
+}
+function msSeek(t){
+  t=Math.max(0,Math.min(aud.duration||0,t));
+  aud.currentTime=t;if(_kaOn)msPos();
+}
+if('mediaSession' in navigator){
+  const H={
+    play:()=>msToggle('play'),
+    pause:()=>msToggle('pause'),
+    seekto:d=>{dbg('ms seekto',Math.round(d.seekTime));msSeek(d.seekTime);},
+    seekbackward:d=>{dbg('ms back');msSeek(aud.currentTime-(d.seekOffset||15));},
+    seekforward:d=>{dbg('ms fwd');msSeek(aud.currentTime+(d.seekOffset||15));},
+  };
+  for(const a in H){try{navigator.mediaSession.setActionHandler(a,H[a]);}catch(e){dbg('ms ERR',a);}}
+}
 // ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
 // no message. On the trail that reads as a dead button. Surface it and leave the retry to the user.
 function errBar(on){document.getElementById('errbar')?.classList.toggle('sh',on);}
@@ -2438,7 +2497,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=58;
+const APP_VER=59;
 let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
