@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v57
+   Single Page App — v58
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -1454,7 +1454,7 @@ function dbg(ev,x){
   if(!DBG)return;
   try{
     const d=new Date(),p=(n,w)=>String(n).padStart(w||2,'0');
-    const line=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(),3)} ${document.visibilityState==='hidden'?'H':'V'} ${ev} #${CH[ai]?CH[ai].id:'?'} t=${aud.currentTime.toFixed(1)}/${(aud.duration||0).toFixed(0)} rs${aud.readyState} ns${aud.networkState} ${aud.paused?'P':'p'} as=${navigator.audioSession?navigator.audioSession.state:'-'}${x?' '+x:''}`;
+    const line=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(),3)} ${document.visibilityState==='hidden'?'H':'V'} ${ev} #${CH[ai]?CH[ai].id:'?'} t=${aud.currentTime.toFixed(1)}/${(aud.duration||0).toFixed(0)} rs${aud.readyState} ns${aud.networkState} ${aud.paused?'P':'p'} as=${navigator.audioSession?navigator.audioSession.type+(navigator.audioSession.state?'/'+navigator.audioSession.state:''):'-'}${x?' '+x:''}`;
     const a=JSON.parse(localStorage.getItem('kfbg-dbg')||'[]');a.push(line);
     localStorage.setItem('kfbg-dbg',JSON.stringify(a.slice(-400)));
   }catch(e){}
@@ -2438,7 +2438,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=57;
+const APP_VER=58;
 let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
