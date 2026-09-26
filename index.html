@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v62
+   Single Page App — v63
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -185,6 +185,7 @@ body.env-staging #nav{top:0;}
 
 /* ════ PRIVACY / LEGAL ════ */
 .legal{max-width:640px;margin:0 auto;padding:28px 18px 70px;}
+.legal h1:focus{outline:none;}
 .legal h1{font-family:'Cormorant Garamond',serif;font-size:clamp(1.5rem,6vw,2rem);font-weight:500;color:var(--tx);line-height:1.2;margin-bottom:6px;}
 [data-lang="zh"] .legal h1{font-family:'Noto Serif TC',serif;}
 .legal-date{font-size:0.68rem;color:var(--mu);margin-bottom:26px;}
@@ -599,26 +600,26 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <li>Each stop now has its own full-screen page. Swipe left or right to browse.</li>
         <li>Each stop has its own play button. Tap it again to pause.</li>
         <li>The player appears once you start listening, leaving more room to read.</li>
-        <li>The journey overview lists every stop. Open the map from a stop to see its number on the map.</li>
+        <li>The journey overview is now a short list of stops. Opening the map from a stop tells you which number to look for.</li>
         <li>Scanning the QR code at a stop opens that stop’s page.</li>
         <li>With the screen locked, the walk carries on to the next stop, and the lock screen shows the stop’s name and number.</li>
-        <li>Pause on the lock screen and carry on from there later, without opening the app.</li>
+        <li>Pause and resume from the lock screen, without opening the app.</li>
         <li>Opened from your Home Screen, the app now loads even with no signal.</li>
         <li>Stops whose audio you have not downloaded remind you to download it first.</li>
         <li>If a stop fails to load, tap play to try again. It picks up where it stopped.</li>
-        <li>The home page has a contents row, and the Add to Home Screen guide can be hidden. Text size now has five steps.</li>
+        <li>The home page has a table of contents, and the Add to Home Screen guide can be hidden. Text size is simplified to five sizes.</li>
         <li>The menu can check for updates. New versions install on their own.</li>
       </ul>
       <ul class="tc">
-        <li>每個站點設有全屏頁面，左右滑動即可瀏覽前後站點。</li>
+        <li>每站設有全屏頁面，左右滑動即可瀏覽前後各站。</li>
         <li>每站設有播放按鈕，收聽中再按一下即可暫停。</li>
         <li>播放器在開始收聽後才出現，閱讀時畫面更寬敞。</li>
-        <li>旅程總覽列出所有站點；在站點頁面打開地圖，會標示該站在地圖上的號碼。</li>
-        <li>掃描站點的 QR 碼，會直接打開該站頁面。</li>
+        <li>旅程總覽改為簡短清單；在各站頁面打開地圖，會提示該站在地圖上的號碼。</li>
+        <li>掃描各站的 QR 碼，會直接打開該站頁面。</li>
         <li>螢幕鎖定後仍會自動播放下一站，鎖定畫面亦會顯示站名及站號。</li>
         <li>在鎖定畫面暫停後，可直接在鎖定畫面繼續播放，無須打開應用程式。</li>
         <li>從主畫面開啟時，即使沒有網絡亦能正常顯示。</li>
-        <li>未下載音頻的站點，會提示你預先下載。</li>
+        <li>未下載音頻的站，會提示你預先下載。</li>
         <li>音頻未能載入時，按播放即可重試，並由中斷處繼續。</li>
         <li>首頁新增目錄，「加至主畫面」說明可以收起；文字大小簡化為五級。</li>
         <li>選單新增「檢查更新」，有新版本時亦會自動更新。</li>
@@ -631,7 +632,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <li>A message appears if a stop’s audio cannot load.</li>
         <li>One failed file no longer stops the rest of a download.</li>
         <li>Each stop shows how long it is before you play it.</li>
-        <li>The player’s stop buttons are easier to read outdoors.</li>
         <li>Better support for screen readers and keyboards.</li>
       </ul>
       <ul class="tc">
@@ -640,7 +640,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <li>音頻未能載入時，會顯示提示。</li>
         <li>下載音頻時，個別檔案失敗不會中斷其餘下載。</li>
         <li>每站在播放前已顯示收聽時間。</li>
-        <li>播放器的站點按鈕更清晰，在戶外亦容易辨認。</li>
         <li>改善螢幕閱讀器及鍵盤操作的支援。</li>
       </ul>
     </div>
@@ -721,7 +720,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
     <div class="drs"><div class="drsl"><span class="en">Follow us</span><span class="tc">關注我們</span></div><div class="drsoc" id="drsoc"></div></div>
     <div class="drs">
-      <div class="drlink drupd" role="button" tabindex="0" onclick="checkUpdate()"><span class="en">Check for updates</span><span class="tc">檢查更新</span><span class="drst" id="upd-st" aria-live="polite"></span></div>
+      <div class="drlink drupd" role="button" tabindex="0" onclick="checkUpdate()"><span class="en">Check for updates</span><span class="tc">檢查更新</span><span class="drst" id="upd-st"></span></div><span class="vh" id="upd-live" role="status"></span>
       <div class="drlink" role="button" tabindex="0" onclick="goPage('changes')"><span class="en">What’s new</span><span class="tc">更新內容</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
       <div class="drlink" role="button" tabindex="0" onclick="goPage('privacy')"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
@@ -740,7 +739,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <!-- install banner removed — now inline on homepage -->
 
 <!-- UPDATE BAR -->
-<div id="ubar"><p class="en"><strong>New version available.</strong></p><p class="tc"><strong>有新版本。</strong></p><button class="ubtn" onclick="applyUpdate(true)"><span class="en">Refresh</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
+<div id="ubar" role="status"><p class="en"><strong>New version available.</strong></p><p class="tc"><strong>有新版本。</strong></p><button class="ubtn" onclick="applyUpdate(true,true)"><span class="en">Update</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
 
 <!-- SINGLE AUDIO ELEMENT — never destroyed -->
 <!-- MAP FULLSCREEN OVERLAY -->
@@ -1086,18 +1085,21 @@ function init(){
   }
   // Fetch from Sanity and refresh content if available
   // 章節頁嘅相等 CMS 有答覆（成功、失敗或者 4 秒）先載。iPhone 離線時 fetch 可以一直唔返，所以要有上限
-  const settleCms=()=>{if(_cmsSettled)return;_cmsSettled=true;if(clOn)clLazy(vi);};
+  // 4 秒都未有答覆（或者答唔到）就先用上次存低嘅內容。iPhone 離線時 fetch 可以一直唔返，而每次改版都會清走
+  // SW 快取入面嘅舊答覆：以前就一直停喺內置後備內容，站相全部空白。之後網絡答返，照用新內容
+  let cmsGot=false;
+  const settleCms=()=>{
+    if(_cmsSettled)return;_cmsSettled=true;
+    if(!cmsGot){try{const cached=localStorage.getItem('kfbg-sanity-cache');if(cached)applyJourneyData(JSON.parse(cached));}catch(e){}}
+    if(clOn)clLazy(vi);
+  };
   setTimeout(settleCms,4000);
   fetchFromSanity().then(journeys=>{
     if(!journeys||!journeys.length) return;
-    // Cache for offline
-    try{localStorage.setItem('kfbg-sanity-cache',JSON.stringify(journeys));}catch(e){}
+    cmsGot=true;
+    try{localStorage.setItem('kfbg-sanity-cache',JSON.stringify(journeys));}catch(e){}   // Cache for offline
     applyJourneyData(journeys);
-  }).catch(()=>{
-    // Sanity unavailable — try local cache
-    const cached=localStorage.getItem('kfbg-sanity-cache');
-    if(cached){try{applyJourneyData(JSON.parse(cached));}catch(e){}}
-  }).finally(settleCms);
+  }).catch(()=>{}).finally(settleCms);
   setTimeout(handleDeepLink,0);
 }
 
@@ -1186,6 +1188,7 @@ function syncA11y(){
   set('#cl-back',     zh?'返回總覽':'Back to overview');
   set('#cl-menu',     zh?'選單':'Menu');
   set('#cl-map',      zh?'查看地圖':'View map');
+  set('.ux',         zh?'關閉':'Close');
   set('.inst-x',      zh?'收起「加至主畫面」':'Hide “Add to Home Screen”');
   set('#toc',         zh?'目錄':'Contents');
   syncBtns(playing);
@@ -1258,6 +1261,7 @@ function goPage(pg){
   document.body.classList.remove('journey-view');
   document.getElementById('views').scrollTop=0;
   setNavTitle();
+  const h=document.querySelector(`#${PAGES[pg].el} h1.${lang==='zh'?'tc':'en'}`);if(h){h.tabIndex=-1;h.focus({preventScroll:true});}
   if(pg==='privacy')track('privacy_view');
 }
 
@@ -1272,11 +1276,11 @@ function navBack(){
 // 以前用站相（16:9），鎖機畫面裁成正方形會切走兩邊
 function setMediaMeta(){
   if(!('mediaSession' in navigator)||typeof MediaMetadata==='undefined'||!CH[ai])return;
-  const c=CH[ai],zh=lang==='zh';
+  const c=CH[ai],zh=lang==='zh',loc=(zh?c.loc.tc:c.loc.en)||c.loc.tc||'';
   try{navigator.mediaSession.metadata=new MediaMetadata({
     title:(zh?c.sh.tc:c.sh.en)||c.sh.tc||'',
-    artist:zh?`第 ${c.id} 站 · ${c.loc.tc||''}`:`Stop ${c.id} · ${c.loc.en||''}`,
-    album:zh?'嘉道理農場暨植物園 · 自助語音旅程':'Kadoorie Farm and Botanic Garden · Audio Journey',
+    artist:(zh?`第 ${c.id} 站`:`Stop ${c.id}`)+(loc?' · '+loc:''),   // 冇地點就唔好留個「 · 」
+    album:zh?'嘉道理農場暨植物園 · 自助語音旅程':'Kadoorie Farm and Botanic Garden · Self-guided Audio Journey',
     artwork:[{src:new URL('images/lockscreen.jpg',location.href).href,sizes:'768x768',type:'image/jpeg'}]});}catch(e){}
 }
 function buildChapters(){
@@ -1332,6 +1336,7 @@ function buildChapters(){
 // ════ AUDIO ════
 function loadCh(i,doPlay){
   ai=i;_wantPlay=!!doPlay;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
+  aud.currentTime=0;   // 未載入前設嘅起播位置（例如更新後還原）會跟住去下一個檔：Chromium 實測第 3 站由第 2 站嘅 200 秒開始
   clRefresh();setMediaMeta();
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
@@ -1352,7 +1357,7 @@ let _heard=new Set();   // 今次開 app 播過嘅站：嗰站頁面唔再叫人
 // gets no event of its own.
 function sendPlay(i){
   if(_playSent)return;
-  _playSent=true;_heard.add(i);
+  _playSent=true;
   ensureWalk(); // before the event below, so this chapter_play carries the walk_id rather than ''
   track('chapter_play',{chapter_number:CH[i].id,is_offline:!navigator.onLine,playlist_mode:plMode});
 }
@@ -1384,7 +1389,12 @@ function trackAbandon(exit){
 // Novelslate measured the same platform in 2026-09: ended -> swap src -> play() succeeds in the
 // background 4/4, but only when no timer sits in between.
 const hidden=()=>document.visibilityState==='hidden';
-function bgJump(i){hidden()?jump(i,plMode):setTimeout(()=>jump(i,plMode),600);}
+let _pj=null;
+function bgJump(i){
+  if(hidden()){jump(i,plMode);return;}
+  _pj={i,t:setTimeout(()=>{_pj=null;jump(i,plMode);},600)};
+}
+document.addEventListener('visibilitychange',()=>{if(hidden()&&_pj){clearTimeout(_pj.t);const i=_pj.i;_pj=null;jump(i,plMode);}});
 function jump(i,asPL){
   const follow=clOn&&vi===ai;          // 睇緊播放中嗰站 → 頁面跟住轉；掃咗走就唔拉返去
   trackAbandon('switch');               // 要喺 aud.pause() 之前（見 trackAbandon 註解）；同一站重播都要記，見上
@@ -1398,9 +1408,8 @@ function playAll(){acStart();plMode=true;jump(0,true);openChapters(0);}
 function tapPlay(i){
   acStart();
   if(i===ai){
-    // If audio not yet loaded (readyState 0 = HAVE_NOTHING), reload and play
-    if(aud.readyState===0||aud.src===''){loadCh(i,true);}
-    else{togglePlay();}
+    togglePlay();   // 未載入、載入失敗、聽完、載入中取消，togglePlay 全部處理。以前 readyState 0 喺呢度直接重新載入：
+                    // 弱訊號下撳咗「播放第 N 站」、個掣變「暫停」，再撳唔係暫停而係再開一次請求，仲多射一次 chapter_play
   }else{
     plMode=false;
     jump(i,false);
@@ -1408,14 +1417,18 @@ function tapPlay(i){
 }
 function togglePlay(){
   acStart();
-  if(playing){aud.pause();playing=false;}
+  if(playing||_wantPlay){aud.pause();playing=false;_wantPlay=false;}   // 載入中撳＝取消（play() 會以 AbortError 結束）
   else{
+    // 聽完再撳＝由頭再聽：當新一次載入，chapter_play／complete 先一對一。以前重播冇 chapter_play，
+    // 播完再射一次 chapter_complete 同 journey_complete（walk_id 已經清咗）
+    if(aud.ended){loadCh(ai,true);return;}
     // 載入失敗（error）或者一粒數據都未收到（readyState 0：請求卡住又唔報錯，山上弱訊號常見）時，
     // play() 唔會自己重新請求，要成個重新載入：網絡返嚟撳一下就救得返。以前每章卡片個掣會咁做，卡退役咗之後冇咗。
     // 記住播到邊，重新載入之後跳返去，唔好由頭播
     if(aud.error||aud.readyState===0){
-      const at=aud.currentTime;loadCh(ai,true);
-      if(at>1)aud.addEventListener('loadedmetadata',()=>{aud.currentTime=at;},{once:true});
+      const at=aud.currentTime,was=ai;loadCh(ai,true);
+      // 只跳返同一站：重試再失敗，呢個 listener 會留到下一次載入，以前會令第 3 站由第 2 站嘅 3:20 開始
+      if(at>1)aud.addEventListener('loadedmetadata',()=>{if(ai===was)aud.currentTime=at;},{once:true});
       return;
     }
     sendPlay(ai);playing=true;
@@ -1440,13 +1453,14 @@ function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.to
 function barMini(){document.getElementById('bar').classList.toggle('mini',!(playing||_wantPlay||_playSent||aud.currentTime>0));}
 aud.addEventListener('timeupdate',()=>{if(aud.duration)refreshPBProg(aud.currentTime,aud.duration);});
 aud.addEventListener('loadedmetadata',()=>refreshPBProg(0,aud.duration));
-aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;if(CH.every((_,k)=>DONE.has(k)))document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
-aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);_idleT0=0;acStart();});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);const first=!_justEnded;_justEnded=true;if(first)track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;if(CH.every((_,k)=>DONE.has(k)))document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();if(first){track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}}});
+aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);acStart();});
 // 載入中轉圈跟音訊本身：撳播放、由暫停繼續、播到一半網絡慢都會出。以前只有 loadCh 嗰條路先有，
 // 由 QR 入嚟撳播放、或者恢復暫停，山上等幾秒都冇任何反應
 aud.addEventListener('waiting',()=>{if(!aud.paused)showLd();});
 ['playing','pause','error'].forEach(ev=>aud.addEventListener(ev,hideLd));
-aud.addEventListener('pause',()=>{playing=false;syncBtns(false);if(hidden()&&!_idleT0)_idleT0=Date.now();});
+aud.addEventListener('playing',()=>{_heard.add(ai);clRefresh();});   // 真係出聲先算聽過：以前撳播放就算，離線播唔到嘅站連下載提示都收埋
+aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 
 // ════ 鎖屏控制＋背景暫停時保持喚醒 ════
 // iPhone 主畫面 app 喺背景暫停 10 秒，iOS 就收咗佢出聲嘅權限兼令佢休眠；之後喺鎖屏撳播放，要打開 app 先交到入嚟
@@ -1472,17 +1486,20 @@ function acStart(){
     if(_ac.state!=='running')_ac.resume().catch(()=>{});
   }catch(e){}
 }
-function acCap(){if(_ac&&_ac.state==='running'&&_idleT0&&Date.now()-_idleT0>KA_MAX){_ac.suspend();}}
+// 背景冇嘢播（暫停、聽完、網絡出錯）滿 10 分鐘就停。用輪詢判斷，唔靠 pause 事件：網絡出錯唔一定有 pause。
+// 返前台唔會自己重開（以前會，會打斷你喺其他 app 聽緊嘅音樂）；下次撳播放先重開
+function acCap(){
+  if(!_ac||_ac.state!=='running')return;
+  if(playing||_wantPlay||!hidden()){_idleT0=0;return;}
+  if(!_idleT0)_idleT0=Date.now();
+  else if(Date.now()-_idleT0>KA_MAX)_ac.suspend();
+}
 setInterval(acCap,30000);   // 背景有 Web Audio 行緊，計時器照行
-document.addEventListener('visibilitychange',()=>{
-  if(hidden()){if(!playing&&!_wantPlay&&!_idleT0)_idleT0=Date.now();}
-  else{_idleT0=0;if(_ac)acStart();}
-});
 
 // 鎖屏播放／暫停：鎖屏顯示嘅就係主音訊嘅真狀態，照做就得；已經係嗰個狀態就唔郁（例如除 AirPods 送嘅暫停）
 function msToggle(want){
-  const on=playing||_wantPlay;
-  if(want==='pause'?on:!on)togglePlay();
+  if(want==='pause'){if(playing||_wantPlay||!aud.paused){aud.pause();playing=false;_wantPlay=false;syncBtns(false);}}
+  else if(!(playing||_wantPlay))togglePlay();
 }
 function msSeek(t){aud.currentTime=Math.max(0,Math.min(aud.duration||0,t));}
 if('mediaSession' in navigator){
@@ -2145,8 +2162,11 @@ function handleDeepLink(){
   // 掃完 QR 之後行咗去第二站，更新完唔應該彈返去 QR 嗰站
   let b=null;try{b=JSON.parse(sessionStorage.getItem('kfbg-back'));sessionStorage.removeItem('kfbg-back');}catch(e){}
   if(b){
-    if(b.view==='journey'){goJourney();if(b.vi!==null&&CH[b.vi])openChapters(b.vi);}
-    if(b.asked)goPage('changes');
+    const o=PAGES[b.view]?(b.pb||{}):b;   // 次要頁：先返去佢嘅來源，再開返嗰頁，返回先會返啱地方
+    if(o.view==='journey'){goJourney();if(o.vi!=null&&CH[o.vi])openChapters(o.vi);}
+    const pg=b.asked?'changes':(PAGES[b.view]?b.view:null);
+    if(pg)goPage(pg);
+    if(b.ai===ai&&b.t>1){aud.currentTime=b.t;refreshPBProg(b.t,CH[ai].dur||0);}   // 返返聽到嘅位置（未載入都得：瀏覽器記住起播位置）
     return;
   }
   if(!_DL)return;
@@ -2259,7 +2279,8 @@ function buildDlList(){
 function dlClick(){if(view==='journey'){runDl(CH.map(c=>c.a));}else{document.getElementById('dlmod').classList.add('op');}}
 function dlClose(){document.getElementById('dlmod').classList.remove('op');}
 function dlJourney(){dlClose();runDl(CH.map(c=>c.a));}
-async function runDl(files){
+async function runDl(files){_dlBusy=true;try{return await runDl1(files);}finally{_dlBusy=false;}}
+async function runDl1(files){
   if(!('caches' in window))return;
   const btn=document.getElementById('drdlbtn');
   const prog=document.getElementById('drprog');
@@ -2349,7 +2370,8 @@ async function checkDlState(){
     const have=new Set(k.map(r=>r.url));_cachedAudio=have;clRefresh();
     const all=CH.length>0&&CH.every(ch=>have.has(new URL(ch.a,location.href).href));
     document.body.classList.toggle('all-dl',all);
-    if(all){const b=document.getElementById('drdlbtn');b.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';b.disabled=true;}
+    if(all){const b=document.getElementById('drdlbtn');b.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';b.disabled=true;
+      if(navigator.onLine)cacheImages();}   // 下載掣已經停用：改版前下載嘅人，靠呢度補返新加嘅圖（例如鎖機畫面圖）；已有嘅唔會再下載
   }catch(e){}
 }
 async function delCache(){
@@ -2444,8 +2466,8 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=62;
-let _stale=false,_upAsked=false,_reloading=false;
+const APP_VER=63;
+let _stale=false,_upAsked=false,_reloadT=0,_dlBusy=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
   navigator.serviceWorker.register('sw.js').catch(()=>{});
@@ -2453,31 +2475,34 @@ function setupSW(){
   // 或者頁面由網絡攞咗新版）就唔使做嘢；頁面舊過先更新。以前一律出「有新版本」條等人撳，唔撳就一直用舊版
   navigator.serviceWorker.addEventListener('message',e=>{
     const m=e.data&&e.data.type==='SW_UPDATED'&&/(\d+)$/.exec(e.data.version||'');
-    if(m&&+m[1]>APP_VER){_stale=true;applyUpdate(_upAsked);}
+    if(m&&+m[1]>APP_VER){_stale=true;applyUpdate(false,_upAsked);}   // 自己撳過「檢查更新」都唔會喺播緊時硬載入
   });
   // 主畫面 app 由背景返嚟唔會重新載入，亦唔會自己檢查新版：返到前台就問一次
   document.addEventListener('visibilitychange',()=>{
     if(document.visibilityState==='visible')navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{});
-    else if(_stale)applyUpdate();   // 切走咗又冇嘢播：靜靜更新，返嚟已經係新版
+    else if(_stale)applyUpdate(false,false);   // 切走咗又冇嘢播：靜靜更新，返嚟已經係新版
   });
 }
 // 更新＝重新載入。之前記住喺邊（總覽／第幾站），載入後返返去（見 handleDeepLink）。
 // 播緊或者聽到一半就唔自動載入（會斷聲、會唔記得聽到邊）：出「有新版本」條畀人自己撳；聽完之後切走 app 就會自動更新
-function applyUpdate(now){
-  if(_reloading)return;   // 重新載入嗰刻頁面會轉入背景，visibilitychange 會再叫一次，唔好蓋咗 asked
-  const busy=playing||_wantPlay||(aud.currentTime>0&&!aud.ended);
-  if(busy&&!now){document.getElementById('ubar').classList.add('sh');return;}
-  _reloading=true;
-  try{sessionStorage.setItem('kfbg-back',JSON.stringify({view,vi:clOn?vi:null,asked:!!now}));}catch(e){}
+// force：訪客撳「更新」嗰下，播緊都照做。asked：載入後打開「更新內容」
+function applyUpdate(force,asked){
+  if(Date.now()-_reloadT<3000)return;   // 重新載入嗰刻頁面轉入背景，visibilitychange 會再叫一次，唔好蓋咗記錄；3 秒後仲喺度＝iPhone 冇做到，可以再試
+  const busy=playing||_wantPlay||(aud.currentTime>0&&!aud.ended)||_dlBusy;   // 下載緊都唔好打斷
+  if(busy&&!force){document.getElementById('ubar').classList.add('sh');return;}
+  _reloadT=Date.now();
+  // 連聽到邊一秒、次要頁由邊度嚟都記住（以前更新完由 0:00 開始，「更新內容」返回去咗首頁）
+  try{sessionStorage.setItem('kfbg-back',JSON.stringify({view,vi:clOn?vi:null,pb:_pageBack,asked:!!asked,ai,t:aud.ended?0:aud.currentTime}));}catch(e){}
   location.reload();
 }
 // 選單「檢查更新」：有新版就即刻更新（係訪客自己要求，播緊都更新），之後打開「更新內容」
 function checkUpdate(){
   const st=document.getElementById('upd-st');
-  const say=(en,tc)=>{st.innerHTML=`<span class="en">${en}</span><span class="tc">${tc}</span>`;};
+  // 同時寫入按鈕外面嘅 role=status：按鈕入面嘅字，讀屏未必讀
+  const say=(en,tc)=>{st.innerHTML=document.getElementById('upd-live').innerHTML=`<span class="en">${en}</span><span class="tc">${tc}</span>`;};
   const fail=()=>{_upAsked=false;say('No connection','未能連線');};
-  if(_stale){applyUpdate(true);return;}
-  if(!('serviceWorker' in navigator)){location.reload();return;}
+  if(_stale){applyUpdate(true,true);return;}
+  if(!('serviceWorker' in navigator)){applyUpdate(true,false);return;}   // 記住喺邊：唔係重新載入會跟返網址嘅 QR 參數跳去第一站
   if(navigator.onLine===false){fail();return;}
   say('Checking…','檢查中…');_upAsked=true;
   const late=new Promise(r=>setTimeout(r,10000,'late'));   // iPhone 離線時 fetch 可以一直唔返
@@ -2486,7 +2511,11 @@ function checkUpdate(){
     const w=r&&(r.installing||r.waiting);
     if(!w){_upAsked=false;say('Up to date','已是最新版本');return;}
     say('Updating…','正在更新…');   // 裝好就會發 SW_UPDATED（見 setupSW），跟住重新載入
-    w.addEventListener('statechange',()=>{if(w.state==='redundant'){_upAsked=false;say('Couldn’t update','未能更新');}});
+    w.addEventListener('statechange',()=>{
+      if(w.state==='redundant'){_upAsked=false;say('Couldn’t update','未能更新');}
+      // 裝好但唔新過頁面（頁面已經係新版，SW 追返上嚟）：唔會重新載入，要講一聲，唔好一直「正在更新…」
+      else if(w.state==='activated')setTimeout(()=>{if(!_stale){_upAsked=false;say('Up to date','已是最新版本');}},800);
+    });
   }).catch(fail);
 }
 

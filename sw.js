@@ -1,7 +1,11 @@
-/* KFBG Audio Journey — SW v62 */
-const PAGE_CACHE='kfbg-pages-v62';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
+/* KFBG Audio Journey — SW v63 */
+const PAGE_CACHE='kfbg-pages-v63';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
+// 字型唔會變，放一個唔跟版本嘅快取：以前放 PAGE_CACHE，每次改版都清走，改版後第一次離線開要多等 3 秒先出畫面
+const FONT_CACHE='kfbg-fonts-v1';
+// staging 喺 /kfbg-audio-journey/、正式喺 /：用 SW 自己嘅範圍，唔寫死 '/'（以前 staging 嘅資料夾網址唔經 SW，離線開唔到）
+const SCOPE=self.registration&&self.registration.scope?new URL(self.registration.scope).pathname:'/';
 const PRECACHE=[
   // ponytail: app shell only. The journey images this app actually displays come from cdn.sanity.io
   // (measured on prod), so precaching the local copies cost every first visitor 1351KB for files
@@ -12,8 +16,9 @@ const PRECACHE=[
   // whose local image paths are then uncached — that narrow case shows broken images.
   // og-image.jpg stays out too: only social scrapers read it, server-side.
   // images/lockscreen.jpg (165KB, lock-screen art) likewise: fetched on first play, stored on Download.
-  './', './index.html', './manifest.json',
-  './KFBG_Logo.png', './KFBG_Logo_192.png',
+  // './' 同 index.html 係同一份（每次裝多下載 176KB），離線時資料夾網址會用 index.html 頂上；192 圖示只有 manifest 用，頁面冇讀
+  './index.html', './manifest.json',
+  './KFBG_Logo.png',
   './images/speakers/stanley-chan.jpg', // genuinely displayed — CMS speaker has no photo, so the local file is the live one
 ];
 // cache:'reload' — addAll() otherwise reads the browser's HTTP cache, which can bake a stale
@@ -31,7 +36,7 @@ function netFirst(req,ms,fromCache,save){
     .catch(()=>Response.error());
 }
 self.addEventListener('install',e=>{e.waitUntil(caches.open(PAGE_CACHE).then(c=>c.addAll(PRECACHE.map(u=>new Request(u,{cache:'reload'})))).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==PAGE_CACHE&&k!==AUDIO_CACHE&&k!==IMAGE_CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.matchAll({includeUncontrolled:true})).then(clients=>clients.forEach(c=>c.postMessage({type:'SW_UPDATED',version:PAGE_CACHE}))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('kfbg-')&&![PAGE_CACHE,AUDIO_CACHE,IMAGE_CACHE,FONT_CACHE].includes(k)).map(k=>caches.delete(k)))).then(()=>self.clients.matchAll({includeUncontrolled:true})).then(clients=>clients.filter(c=>!self.registration||c.url.startsWith(self.registration.scope)).forEach(c=>c.postMessage({type:'SW_UPDATED',version:PAGE_CACHE}))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   const url=new URL(e.request.url);const path=url.pathname;
   const isAudio=path.endsWith('.mp3'); // match by extension so a Sanity-hosted audio_url still gets offline caching
@@ -40,20 +45,21 @@ self.addEventListener('fetch',e=>{
   const isSanityApi=url.hostname.includes('sanity.io')&&!isSanityImg;
   const isLocalImg=(path.includes('/images/')&&(path.endsWith('.jpg')||path.endsWith('.png')));
   const isFont=url.hostname==='fonts.googleapis.com'||url.hostname==='fonts.gstatic.com';
-  const isPage=path==='/'||path.endsWith('/index.html')||path.endsWith('/manifest.json')||path.endsWith('/KFBG_Logo.png')||path.endsWith('/og-image.jpg');
+  const isPage=path===SCOPE||path.endsWith('/index.html')||path.endsWith('/manifest.json')||path.endsWith('/KFBG_Logo.png')||path.endsWith('/og-image.jpg');
 
   if(isAudio){
     // Audio: cache-first (user explicitly downloaded)
     e.respondWith(caches.open(AUDIO_CACHE).then(c=>c.match(e.request).then(cached=>cached||fetch(e.request).then(res=>{if(res.status===200)c.put(e.request,res.clone());return res;})))); // only full 200s are cacheable — Cache API rejects 206 range responses
   } else if(isSanityImg||isLocalImg){
-    // Images: check IMAGE_CACHE first, then PAGE_CACHE, then network
+    // Images: check IMAGE_CACHE first, then PAGE_CACHE (precache), then network. 睇過嘅相存入 IMAGE_CACHE：
+    // 以前存 PAGE_CACHE，每次改版都清走，未撳下載嘅人睇過嘅相離線就冇咗
     e.respondWith(
       caches.open(IMAGE_CACHE).then(ic=>ic.match(e.request).then(cached=>{
         if(cached) return cached;
         return caches.open(PAGE_CACHE).then(pc=>pc.match(e.request).then(cached2=>{
           if(cached2) return cached2;
           return fetch(e.request).then(res=>{
-            if(res.ok) pc.put(e.request,res.clone());
+            if(res.ok) ic.put(e.request,res.clone());
             return res;
           });
         }));
@@ -65,7 +71,7 @@ self.addEventListener('fetch',e=>{
   } else if(isFont){
     // Google Fonts：<head> 嘅樣式表會阻住畫面顯示，離線時等佢就成版唔出。快取優先（字型檔永遠唔變），背景更新；
     // 冇快取又等唔到就回空白，用後備字體照出版面。樣式表冇 crossorigin，回應係 opaque，都照存
-    e.respondWith(caches.open(PAGE_CACHE).then(c=>c.match(e.request).then(hit=>{
+    e.respondWith(caches.open(FONT_CACHE).then(c=>c.match(e.request).then(hit=>{
       const net=fetch(e.request).then(res=>{if(res.ok||res.type==='opaque')c.put(e.request,res.clone());return res;});
       net.catch(()=>{});
       if(hit)return hit;
@@ -74,7 +80,7 @@ self.addEventListener('fetch',e=>{
     })));
   } else if(isPage){
     // no-cache forces revalidation so a heuristically-cached page can't outlive a release
-    const cleanReq=(path.endsWith('/index.html')||path==='/')?new Request(url.origin+path,{cache:'no-cache'}):e.request;
+    const cleanReq=(path.endsWith('/index.html')||path===SCOPE)?new Request(url.origin+path,{cache:'no-cache'}):e.request;
     e.respondWith(netFirst(cleanReq,3000,async()=>await caches.match(cleanReq)||await caches.match('./index.html'),res=>{if(res.ok)caches.open(PAGE_CACHE).then(c=>c.put(cleanReq,res));})); // 過咗 3 秒用快取：見 netFirst
   }
 });

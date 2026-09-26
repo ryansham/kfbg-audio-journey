@@ -12,7 +12,7 @@ function load({ fetchImpl, cached = [], onLine = true }) {
   const key = r => (typeof r === 'string' ? new URL(r, BASE).href : r.url);
   const cache = { match: async r => store.get(key(r))?.clone(), put: async (r, res) => { store.set(key(r), res); }, addAll: async () => {} };
   const handlers = {};
-  const self = { addEventListener: (t, f) => (handlers[t] = f), navigator: { onLine }, clients: { matchAll: async () => [], claim: async () => {} }, skipWaiting() {} };
+  const self = { addEventListener: (t, f) => (handlers[t] = f), navigator: { onLine }, registration: { scope: BASE }, clients: { matchAll: async () => [], claim: async () => {} }, skipWaiting() {} };
   const caches = { open: async () => cache, match: r => cache.match(r), keys: async () => [], delete: async () => true };
   new Function('self', 'caches', 'fetch', 'Request', src)(self, caches, fetchImpl, Req);
   return { fetch: handlers.fetch, store };
@@ -20,6 +20,7 @@ function load({ fetchImpl, cached = [], onLine = true }) {
 function run(h, url) {
   let p; const t0 = Date.now();
   h.fetch({ request: new Req(url), respondWith: x => (p = Promise.resolve(x)) });
+  if (!p) return Promise.resolve({ res: new Response('NOT HANDLED'), ms: 0 });   // SW 冇接呢個請求＝瀏覽器自己去網絡，離線就開唔到
   // 8 秒都交唔到嘢＝主畫面 app 會黑屏（舊版 sw.js 就係咁）
   const never = new Promise(r => setTimeout(r, 8000, null)).then(() => ({ res: new Response('NEVER ANSWERED'), ms: 8000 }));
   return Promise.race([p.then(res => ({ res, ms: Date.now() - t0 })), never]);
@@ -58,6 +59,10 @@ const check = (name, ok, extra = '') => { console.log(`${ok ? '✅' : '❌'} ${n
 { const h = load({ fetchImpl: hang, cached: [['https://bw3aid78.apicdn.sanity.io/q?x=1', '{"result":[]}', 'application/json']] });
   const { res, ms } = await run(h, 'https://bw3aid78.apicdn.sanity.io/q?x=1');
   check('Sanity API：卡住，有快取 → 交快取', (await res.text()) === '{"result":[]}' && ms >= 3900 && ms < 4600, `${ms}ms`); }
+// 9. 資料夾網址（staging 係 /kfbg-audio-journey/）：離線要交快取嘅 index.html（以前只認 '/'，staging 完全唔經 SW）
+{ const h = load({ fetchImpl: hang, cached: [['index.html', 'CACHED']], onLine: false });
+  const { res, ms } = await run(h, BASE);
+  check('資料夾網址：已知離線 → 交 index.html', (await res.text()) === 'CACHED' && ms < 200, `${ms}ms`); }
 // 8. 頁面版本號要同 sw.js 一樣：頁面細過 SW 就會以為自己係舊版，每次更新都多載入一次
 { const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const a = +(/const APP_VER=(\d+)/.exec(html) || [])[1], b = +(/kfbg-pages-v(\d+)/.exec(src) || [])[1];
