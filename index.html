@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v53
+   Single Page App — v54
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -192,6 +192,8 @@ body.env-staging #nav{top:0;}
 [data-lang="zh"] .legal h2{letter-spacing:0.1em;font-size:0.72rem;text-transform:none;}
 .legal p{font-size:0.86rem;color:var(--tm);line-height:1.85;margin-bottom:10px;}
 .legal-foot{margin-top:32px;padding-top:18px;border-top:1px solid var(--bd);}
+.legal ul{padding-left:1.1em;margin-bottom:10px;}
+.legal li{font-size:0.86rem;color:var(--tm);line-height:1.75;margin-bottom:6px;}
 .legal-foot p{font-size:0.78rem;color:var(--mu);}
 
 /* ════ SPEAKER CARD ════ */
@@ -374,6 +376,8 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 .drlink{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--sa);border-radius:9px;text-decoration:none;color:var(--tm);font-size:0.8rem;margin-bottom:7px;min-height:44px;transition:background 0.18s;cursor:pointer;}
 .drlink:hover{background:var(--bd);}
 .drlink svg{width:12px;height:12px;stroke:var(--mu);fill:none;stroke-width:2;flex-shrink:0;}
+.drst{flex:1 0 auto;font-size:0.72rem;color:var(--mu);margin-left:10px;text-align:right;}   /* 「檢查更新」結果：擺唔落同一行就成句落去下一行（大字級英文），唔好逼「檢查更新」摺行 */
+.drupd{flex-wrap:wrap;}
 .drsoc{display:flex;gap:9px;flex-wrap:wrap;}
 .drsb{width:38px;height:38px;border-radius:50%;background:var(--ol);display:flex;align-items:center;justify-content:center;text-decoration:none;}
 .drsb svg{width:15px;height:15px;fill:#fff;}
@@ -584,6 +588,62 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
   </div>
 
+  <!-- WHAT'S NEW：只寫用戶見到嘅分別（Ryan）。每次上線加一段喺最頂，日子用上線嗰個月 -->
+  <div id="vc" class="view">
+    <div class="legal">
+      <h1 class="en">What’s new</h1>
+      <h1 class="tc nst">更新內容</h1>
+      <h2 class="en">September 2026</h2>
+      <h2 class="tc nst">2026 年 9 月</h2>
+      <ul class="en">
+        <li>Each stop now has its own full-screen page. Swipe left or right to browse.</li>
+        <li>Each stop has its own play button. Tap it again to pause.</li>
+        <li>The player appears once you start listening, leaving more room to read.</li>
+        <li>The journey overview lists every stop. Open the map from a stop to see its number on the map.</li>
+        <li>Scanning the QR code at a stop opens that stop’s page.</li>
+        <li>With the screen locked, the walk carries on to the next stop, and the lock screen shows the stop’s name and number.</li>
+        <li>Opened from your Home Screen, the app now loads even with no signal.</li>
+        <li>Stops whose audio you have not downloaded remind you to download it first.</li>
+        <li>If a stop fails to load, tap play to try again. It picks up where it stopped.</li>
+        <li>The home page has a contents row, and the Add to Home Screen guide can be hidden. Text size now has five steps.</li>
+        <li>The menu can check for updates. New versions install on their own.</li>
+      </ul>
+      <ul class="tc">
+        <li>每個站點設有全屏頁面，左右滑動即可瀏覽前後站點。</li>
+        <li>每站設有播放按鈕，收聽中再按一下即可暫停。</li>
+        <li>播放器在開始收聽後才出現，閱讀時畫面更寬敞。</li>
+        <li>旅程總覽列出所有站點；在站點頁面打開地圖，會標示該站在地圖上的號碼。</li>
+        <li>掃描站點的 QR 碼，會直接打開該站頁面。</li>
+        <li>螢幕鎖定後仍會自動播放下一站，鎖定畫面亦會顯示站名及站號。</li>
+        <li>從主畫面開啟時，即使沒有網絡亦能正常顯示。</li>
+        <li>未下載音頻的站點，會提示你預先下載。</li>
+        <li>音頻未能載入時，按播放即可重試，並由中斷處繼續。</li>
+        <li>首頁新增目錄，「加至主畫面」說明可以收起；文字大小簡化為五級。</li>
+        <li>選單新增「檢查更新」，有新版本時亦會自動更新。</li>
+      </ul>
+      <h2 class="en">August 2026</h2>
+      <h2 class="tc nst">2026 年 8 月</h2>
+      <ul class="en">
+        <li>Added a Privacy &amp; Cookies notice to the menu.</li>
+        <li>Much less to download on your first visit, so the app opens faster.</li>
+        <li>A message appears if a stop’s audio cannot load.</li>
+        <li>One failed file no longer stops the rest of a download.</li>
+        <li>Each stop shows how long it is before you play it.</li>
+        <li>The player’s stop buttons are easier to read outdoors.</li>
+        <li>Better support for screen readers and keyboards.</li>
+      </ul>
+      <ul class="tc">
+        <li>選單新增「私隱與 Cookie」說明。</li>
+        <li>首次開啟需要下載的資料大減，載入更快。</li>
+        <li>音頻未能載入時，會顯示提示。</li>
+        <li>下載音頻時，個別檔案失敗不會中斷其餘下載。</li>
+        <li>每站在播放前已顯示收聽時間。</li>
+        <li>播放器的站點按鈕更清晰，在戶外亦容易辨認。</li>
+        <li>改善螢幕閱讀器及鍵盤操作的支援。</li>
+      </ul>
+    </div>
+  </div>
+
 </div>
 
 <!-- ════ 章節全屏頁 ════ -->
@@ -659,7 +719,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
     </div>
     <div class="drs"><div class="drsl"><span class="en">Follow us</span><span class="tc">關注我們</span></div><div class="drsoc" id="drsoc"></div></div>
     <div class="drs">
-      <div class="drlink" role="button" tabindex="0" onclick="goPrivacy()"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="drlink drupd" role="button" tabindex="0" onclick="checkUpdate()"><span class="en">Check for updates</span><span class="tc">檢查更新</span><span class="drst" id="upd-st" aria-live="polite"></span></div>
+      <div class="drlink" role="button" tabindex="0" onclick="goPage('changes')"><span class="en">What’s new</span><span class="tc">更新內容</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="drlink" role="button" tabindex="0" onclick="goPage('privacy')"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
   </div>
 </div>
@@ -676,7 +738,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <!-- install banner removed — now inline on homepage -->
 
 <!-- UPDATE BAR -->
-<div id="ubar"><p class="en"><strong>New version available.</strong> Refresh to update.</p><p class="tc"><strong>有新版本。</strong>重新整理以更新。</p><button class="ubtn" onclick="location.reload(true)"><span class="en">Refresh</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
+<div id="ubar"><p class="en"><strong>New version available.</strong></p><p class="tc"><strong>有新版本。</strong></p><button class="ubtn" onclick="applyUpdate(true)"><span class="en">Refresh</span><span class="tc">更新</span></button><button class="ux" onclick="this.parentElement.classList.remove('sh')">×</button></div>
 
 <!-- SINGLE AUDIO ELEMENT — never destroyed -->
 <!-- MAP FULLSCREEN OVERLAY -->
@@ -982,7 +1044,7 @@ const _langParam=(function(){
 let lang=_langParam||localStorage.getItem('kfbg-lang')||'zh';
 // 新 key kfbg-fs2：舊 kfbg-fs（0–6）對應去最接近嘅新一級，唔係 4 會由 1.25rem 變 1.5rem
 let fs=(()=>{try{const v=localStorage.getItem('kfbg-fs2');if(v!==null)return +v;const o=localStorage.getItem('kfbg-fs');return o!==null?([0,1,2,3,3,4,4][+o]??2):2;}catch(e){return 2;}})();
-let view='home'; // 'home' | 'journey'
+let view='home'; // 'home' | 'journey' | 'privacy' | 'changes'（後兩個見 PAGES）
 let ai=0, playing=false, plMode=false, si=0; // si=speed index
 const aud=document.getElementById('aud');
 
@@ -1126,12 +1188,12 @@ function setLang(l){if(l!==lang)track('lang_switch',{from:lang,to:l});applyLang(
 function setNavTitle(){
   const t=document.getElementById('nav-title'),nb=document.getElementById('nav-back');
   // 私隱頁返回會返去嚟嘅地方（某一站、總覽、首頁），唔一定係旅程列表
-  nb.querySelector('.en').textContent=view==='privacy'?'Back':'Journeys';nb.querySelector('.tc').textContent=view==='privacy'?'返回':'旅程';
+  nb.querySelector('.en').textContent=PAGES[view]?'Back':'Journeys';nb.querySelector('.tc').textContent=PAGES[view]?'返回':'旅程';
   if(view==='journey'){
     const title=window._j1Title;
     t.textContent=title?(lang==='zh'?title.tc:title.en):(lang==='zh'?'連結大地':'Grounding Walk');
-  } else if(view==='privacy'){
-    t.textContent=lang==='zh'?'私隱與 Cookie':'Privacy & Cookies';
+  } else if(PAGES[view]){
+    t.textContent=lang==='zh'?PAGES[view].tc:PAGES[view].en;
   } else {
     t.textContent='';
   }
@@ -1148,7 +1210,7 @@ function goHome(){
   view='home';
   document.getElementById('vh').classList.add('on');
   document.getElementById('vj').classList.remove('on');
-  document.getElementById('vp').classList.remove('on');
+  for(const k in PAGES)document.getElementById(PAGES[k].el).classList.remove('on');
   document.getElementById('nav-back').style.display='none';
   document.getElementById('views').scrollTop=0;
   document.body.classList.remove('journey-view');
@@ -1159,7 +1221,7 @@ function goJourney(){
   view='journey';
   document.getElementById('vj').classList.add('on');
   document.getElementById('vh').classList.remove('on');
-  document.getElementById('vp').classList.remove('on');
+  for(const k in PAGES)document.getElementById(PAGES[k].el).classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
   document.getElementById('views').scrollTop=0;
   setNavTitle();
@@ -1174,33 +1236,34 @@ function goJourney(){
   });
 }
 
-// ponytail: third view reuses the existing .view/.on machinery — no router, no new nav pattern.
-// Returning always goes home, which is where the drawer that opened it lives.
-let _privBack=null;
-function goPrivacy(){
-  _privBack={view,vi:clOn?vi:null};
+// ponytail: secondary pages reuse the existing .view/.on machinery — no router, no new nav pattern.
+// 返回會返去嚟嘅地方（某一站、總覽、首頁）
+const PAGES={privacy:{el:'vp',en:'Privacy & Cookies',tc:'私隱與 Cookie'},changes:{el:'vc',en:'What’s new',tc:'更新內容'}};
+let _pageBack=null;
+function goPage(pg){
+  if(!PAGES[view])_pageBack={view,vi:clOn?vi:null};   // 由一版次要頁去另一版：返回仍然返去最初嚟嘅地方
   drClose();
   if(clOn)closeChapters();
-  view='privacy';
-  document.getElementById('vp').classList.add('on');
+  view=pg;
+  for(const k in PAGES)document.getElementById(PAGES[k].el).classList.toggle('on',k===pg);
   document.getElementById('vh').classList.remove('on');
   document.getElementById('vj').classList.remove('on');
   document.getElementById('nav-back').style.display='flex';
   document.body.classList.remove('journey-view');
   document.getElementById('views').scrollTop=0;
   setNavTitle();
-  track('privacy_view');
+  if(pg==='privacy')track('privacy_view');
 }
 
 function navBack(){
-  const b=_privBack;_privBack=null;
-  if(view==='privacy'&&b&&b.view==='journey'){goJourney();if(b.vi!==null)openChapters(b.vi);return;}
+  const b=_pageBack;_pageBack=null;
+  if(PAGES[view]&&b&&b.view==='journey'){goJourney();if(b.vi!==null)openChapters(b.vi);return;}
   goHome();
 }
 
 // ════ BUILD CHAPTER CONTENT ════
-// 鎖機畫面同控制中心：用播緊嗰站嘅相、站名同站號。冇相就用 og-image（社交分享圖）。
-// og-image 中間係白格 logo，裁成正方形同舊嘅白底 logo 差唔多，所以唔做首選
+// 鎖機畫面同控制中心：站名同站號跟播緊嗰站；圖用正方形 lockscreen.jpg（森林＋白格 logo，Ryan 揀 A）。
+// 以前用站相（16:9），鎖機畫面裁成正方形會切走兩邊
 function setMediaMeta(){
   if(!('mediaSession' in navigator)||typeof MediaMetadata==='undefined'||!CH[ai])return;
   const c=CH[ai],zh=lang==='zh';
@@ -1208,8 +1271,7 @@ function setMediaMeta(){
     title:(zh?c.sh.tc:c.sh.en)||c.sh.tc||'',
     artist:zh?`第 ${c.id} 站 · ${c.loc.tc||''}`:`Stop ${c.id} · ${c.loc.en||''}`,
     album:zh?'嘉道理農場暨植物園 · 自助語音旅程':'Kadoorie Farm and Botanic Garden · Audio Journey',
-    artwork:[c.img?{src:new URL(c.img,location.href).href,sizes:'800x450',type:'image/jpeg'}
-                  :{src:new URL('og-image.jpg',location.href).href,sizes:'1200x630',type:'image/jpeg'}]});}catch(e){}
+    artwork:[{src:new URL('images/lockscreen.jpg',location.href).href,sizes:'768x768',type:'image/jpeg'}]});}catch(e){}
 }
 function buildChapters(){
   buildChapterPages();
@@ -2021,6 +2083,14 @@ function mapFsClose(){
 // ════ SCROLL PROGRESS ════
 // QR CODE DEEP LINK
 function handleDeepLink(){
+  // 更新重新載入之前喺邊，就返去邊（見 applyUpdate）；自己撳更新嘅，再打開「更新內容」。優先過網址嘅 QR 參數：
+  // 掃完 QR 之後行咗去第二站，更新完唔應該彈返去 QR 嗰站
+  let b=null;try{b=JSON.parse(sessionStorage.getItem('kfbg-back'));sessionStorage.removeItem('kfbg-back');}catch(e){}
+  if(b){
+    if(b.view==='journey'){goJourney();if(b.vi!==null&&CH[b.vi])openChapters(b.vi);}
+    if(b.asked)goPage('changes');
+    return;
+  }
   if(!_DL)return;
   const idx=_DL.chapter-1;
   goJourney();
@@ -2104,6 +2174,7 @@ let _drOpener=null;
 function drOpen(){
   const dr=document.getElementById('dr');if(!dr.classList.contains('op'))_drOpener=document.activeElement;
   dr.classList.add('op');document.getElementById('drov').classList.add('op');
+  document.getElementById('upd-st').textContent='';   // 上次「檢查更新」嘅結果唔再準
   dr.querySelector('.drclose')?.focus({preventScroll:true});   // 以前焦點留喺背後，Tab 要行勻成版先入到選單
 }
 function drClose(){
@@ -2183,6 +2254,7 @@ function getImageUrls(){
   const spk=SPEAKERS['grounding-walk'];
   if(spk&&spk.img) urls.push(spk.img);
   urls.push('images/speakers/stanley-chan.jpg');
+  urls.push('images/lockscreen.jpg');   // 鎖機畫面圖：離線時都有（唔放 sw.js 預載，第一次嚟唔使下載）
   // Journey card
   urls.push('images/journeys/grounding-walk/grounding-walk-card.jpg');
   // Deduplicate
@@ -2312,13 +2384,51 @@ function setupOffline(){
 }
 
 // ════ SW ════
+// 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
+const APP_VER=54;
+let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
-  // sw.js 每次 activate 都會發 SW_UPDATED，第一次安裝都發。載入時冇舊 SW 控制＝第一次嚟，冇「新版本」可言：
-  // 以前每個新訪客一開頁就見到「有新版本」（差唔多全部流量都係新訪客）
-  const hadSW=!!navigator.serviceWorker.controller;
   navigator.serviceWorker.register('sw.js').catch(()=>{});
-  navigator.serviceWorker.addEventListener('message',e=>{if(hadSW&&e.data&&e.data.type==='SW_UPDATED')document.getElementById('ubar').classList.add('sh');});
+  // sw.js 每次 activate 都會發 SW_UPDATED（連第一次安裝都發），附版本號。頁面本身已經係嗰個版本（第一次嚟、
+  // 或者頁面由網絡攞咗新版）就唔使做嘢；頁面舊過先更新。以前一律出「有新版本」條等人撳，唔撳就一直用舊版
+  navigator.serviceWorker.addEventListener('message',e=>{
+    const m=e.data&&e.data.type==='SW_UPDATED'&&/(\d+)$/.exec(e.data.version||'');
+    if(m&&+m[1]>APP_VER){_stale=true;applyUpdate(_upAsked);}
+  });
+  // 主畫面 app 由背景返嚟唔會重新載入，亦唔會自己檢查新版：返到前台就問一次
+  document.addEventListener('visibilitychange',()=>{
+    if(document.visibilityState==='visible')navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{});
+    else if(_stale)applyUpdate();   // 切走咗又冇嘢播：靜靜更新，返嚟已經係新版
+  });
+}
+// 更新＝重新載入。之前記住喺邊（總覽／第幾站），載入後返返去（見 handleDeepLink）。
+// 播緊或者聽到一半就唔自動載入（會斷聲、會唔記得聽到邊）：出「有新版本」條畀人自己撳；聽完之後切走 app 就會自動更新
+function applyUpdate(now){
+  if(_reloading)return;   // 重新載入嗰刻頁面會轉入背景，visibilitychange 會再叫一次，唔好蓋咗 asked
+  const busy=playing||_wantPlay||(aud.currentTime>0&&!aud.ended);
+  if(busy&&!now){document.getElementById('ubar').classList.add('sh');return;}
+  _reloading=true;
+  try{sessionStorage.setItem('kfbg-back',JSON.stringify({view,vi:clOn?vi:null,asked:!!now}));}catch(e){}
+  location.reload();
+}
+// 選單「檢查更新」：有新版就即刻更新（係訪客自己要求，播緊都更新），之後打開「更新內容」
+function checkUpdate(){
+  const st=document.getElementById('upd-st');
+  const say=(en,tc)=>{st.innerHTML=`<span class="en">${en}</span><span class="tc">${tc}</span>`;};
+  const fail=()=>{_upAsked=false;say('No connection','未能連線');};
+  if(_stale){applyUpdate(true);return;}
+  if(!('serviceWorker' in navigator)){location.reload();return;}
+  if(navigator.onLine===false){fail();return;}
+  say('Checking…','檢查中…');_upAsked=true;
+  const late=new Promise(r=>setTimeout(r,10000,'late'));   // iPhone 離線時 fetch 可以一直唔返
+  Promise.race([navigator.serviceWorker.getRegistration().then(r=>r?r.update().then(()=>r):null),late]).then(r=>{
+    if(r==='late'){fail();return;}
+    const w=r&&(r.installing||r.waiting);
+    if(!w){_upAsked=false;say('Up to date','已是最新版本');return;}
+    say('Updating…','正在更新…');   // 裝好就會發 SW_UPDATED（見 setupSW），跟住重新載入
+    w.addEventListener('statechange',()=>{if(w.state==='redundant'){_upAsked=false;say('Couldn’t update','未能更新');}});
+  }).catch(fail);
 }
 
 // ════ TUTORIAL COACHMARK ════

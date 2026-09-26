@@ -77,7 +77,8 @@ npx sanity dataset copy staging production                                  # �
 2. 改內容 → 喺 Sanity `staging` dataset 編輯 → staging 即見
 
 ### 發佈到 Production（release checklist）
-1. **Bump 版本**：`index.html` 註解 `vNN` + `sw.js` 嘅 `kfbg-pages-vNN`（兩處同步）
+1. **Bump 版本**：`index.html` 註解 `vNN`、`index.html` 嘅 `const APP_VER=NN` + `sw.js` 嘅 `kfbg-pages-vNN`（三處同步，`node tests/sw-offline.mjs` 會驗 APP_VER 同 sw.js 一致）。舊版頁面見到新版本號就會自動更新（播緊就出提示條），所以一定要升
+1b. **更新內容頁**：`index.html` `#vc` 最頂加一段，日子用上線嗰個月；只寫用戶見到嘅分別，唔寫技術字眼
 2. **備份 prod 內容**：`cd studio && npx sanity dataset export production backups/prod-YYYYMMDD.tar.gz`
 3. **推送內容**：`npx sanity dataset copy staging production`
 4. **上傳 code** 到 DirectAdmin `public_html`：`index.html`、`sw.js`、`manifest.json`、`.htaccess`、`images/`、`audio/`、圖標

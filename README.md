@@ -230,7 +230,8 @@ The `studio/` folder does **not** need to be copied to the server.
 
 When to re-deploy code to the server:
 - After bug fixes or new features (generated via Claude)
-- `sw.js` version must be bumped with each deploy to invalidate old caches
+- `sw.js` version must be bumped with each deploy to invalidate old caches, together with `APP_VER` in `index.html` (same number; `node tests/sw-offline.mjs` checks). An open page older than the new service worker reloads itself, or shows the update bar while audio is playing
+- Add the release to the What's new page (`#vc` in `index.html`): user-visible changes only
 
 When **not** needed:
 - Content changes via Sanity Studio → updates instantly, no deployment

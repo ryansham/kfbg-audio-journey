@@ -58,6 +58,10 @@ const check = (name, ok, extra = '') => { console.log(`${ok ? '✅' : '❌'} ${n
 { const h = load({ fetchImpl: hang, cached: [['https://bw3aid78.apicdn.sanity.io/q?x=1', '{"result":[]}', 'application/json']] });
   const { res, ms } = await run(h, 'https://bw3aid78.apicdn.sanity.io/q?x=1');
   check('Sanity API：卡住，有快取 → 交快取', (await res.text()) === '{"result":[]}' && ms >= 3900 && ms < 4600, `${ms}ms`); }
+// 8. 頁面版本號要同 sw.js 一樣：頁面細過 SW 就會以為自己係舊版，每次更新都多載入一次
+{ const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const a = +(/const APP_VER=(\d+)/.exec(html) || [])[1], b = +(/kfbg-pages-v(\d+)/.exec(src) || [])[1];
+  check('版本號：index.html APP_VER 同 sw.js PAGE_CACHE 一致', a > 0 && a === b, `index ${a} · sw ${b}`); }
 
 console.log(fails ? `\n❌ ${fails} 項失敗` : '\n✅ 全部通過');
 process.exit(fails ? 1 : 0);

@@ -1,5 +1,5 @@
-/* KFBG Audio Journey — SW v53 */
-const PAGE_CACHE='kfbg-pages-v53';
+/* KFBG Audio Journey — SW v54 */
+const PAGE_CACHE='kfbg-pages-v54';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 const PRECACHE=[
@@ -11,6 +11,7 @@ const PRECACHE=[
   // Trade: a first visit that ALSO cannot reach Sanity falls back to the hardcoded chapter list,
   // whose local image paths are then uncached — that narrow case shows broken images.
   // og-image.jpg stays out too: only social scrapers read it, server-side.
+  // images/lockscreen.jpg (165KB, lock-screen art) likewise: fetched on first play, stored on Download.
   './', './index.html', './manifest.json',
   './KFBG_Logo.png', './KFBG_Logo_192.png',
   './images/speakers/stanley-chan.jpg', // genuinely displayed — CMS speaker has no photo, so the local file is the live one
