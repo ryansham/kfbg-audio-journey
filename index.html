@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v61
+   Single Page App — v62
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -1456,9 +1456,13 @@ aud.addEventListener('pause',()=>{playing=false;syncBtns(false);if(hidden()&&!_i
 // （Ryan 真機）。Web Audio 唔會做鎖屏「正在播放」，鎖屏照顯示主音訊嘅狀態同位置。
 // ponytail: 背景冇嘢播滿 10 分鐘就停（當播緊嘢會耗電）；之後同以前一樣，要打開 app 先有聲
 const KA_MAX=10*60*1000;
+// 🧪 staging 測試（Ryan 2026-09-26）：撳鎖屏播放器開 app，會彈出另一個 Instagram 視窗兼自己播返；今日加保持喚醒之前冇見過。
+// 呢版暫時關咗保持喚醒，睇佢係咪元兇（Media Session 掣照留）。有結果就改返或者拆走，唔好帶上正式網站
+const KEEP_AWAKE=false;
 let _ac=null,_idleT0=0;
 // 第一次撳播放喺撳擊入面開（iPhone 要撳擊先准開聲），之後一直行；停咗（上限、來電打斷）就喺下次播放或者返 app 再開
 function acStart(){
+  if(!KEEP_AWAKE)return;
   try{
     if(!_ac){
       const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
@@ -2440,7 +2444,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=61;
+const APP_VER=62;
 let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
