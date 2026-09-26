@@ -275,7 +275,7 @@ body.env-staging #nav{top:0;}
 .clp-dl{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;margin:-10px 0 14px;padding:6px;background:none;border:0;
   font:inherit;font-size:0.8rem;color:var(--ol);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .clp-dl svg{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
-.all-dl .clp-dl{display:none;}
+.all-dl .clp-dl,.clp-dl[hidden]{display:none;}
 .clp-desc{font-size:0.98rem;color:var(--tm);line-height:1.9;margin-bottom:18px;}
 .clp-tr{border-top:1px solid var(--bd);padding:14px 0;}
 .clp-trl{font-size:0.64rem;letter-spacing:0.16em;color:var(--ol);font-weight:600;margin-bottom:6px;}
@@ -1099,6 +1099,7 @@ function applyLang(l,save=true){
   setNavTitle();
   refreshPBText();
   clRefresh();
+  setMediaMeta();   // 鎖機畫面字跟語言
   syncA11y();
 }
 // ponytail: the icon-only buttons had no accessible name — a screen reader announced them as just
@@ -1198,8 +1199,21 @@ function navBack(){
 }
 
 // ════ BUILD CHAPTER CONTENT ════
+// 鎖機畫面同控制中心：用播緊嗰站嘅相、站名同站號。冇相就用 og-image（社交分享圖）。
+// og-image 中間係白格 logo，裁成正方形同舊嘅白底 logo 差唔多，所以唔做首選
+function setMediaMeta(){
+  if(!('mediaSession' in navigator)||typeof MediaMetadata==='undefined'||!CH[ai])return;
+  const c=CH[ai],zh=lang==='zh';
+  try{navigator.mediaSession.metadata=new MediaMetadata({
+    title:(zh?c.sh.tc:c.sh.en)||c.sh.tc||'',
+    artist:zh?`第 ${c.id} 站 · ${c.loc.tc||''}`:`Stop ${c.id} · ${c.loc.en||''}`,
+    album:zh?'嘉道理農場暨植物園 · 自助語音旅程':'Kadoorie Farm and Botanic Garden · Audio Journey',
+    artwork:[c.img?{src:new URL(c.img,location.href).href,sizes:'800x450',type:'image/jpeg'}
+                  :{src:new URL('og-image.jpg',location.href).href,sizes:'1200x630',type:'image/jpeg'}]});}catch(e){}
+}
 function buildChapters(){
   buildChapterPages();
+  setMediaMeta();   // CMS 資料到咗：換返真嘅相同站名
   const mins=Math.round(CH.reduce((a,c)=>a+(c.dur||0),0)/60);   // staging 冇時長就唔寫
   const sum=document.getElementById('pasum');
   if(sum)sum.innerHTML=`<span class="en">${CH.length} stops${mins?` · about ${mins} min`:''}</span><span class="tc">${CH.length} 站${mins?` · 約 ${mins} 分鐘`:''}</span>`;
@@ -1250,7 +1264,7 @@ function buildChapters(){
 // ════ AUDIO ════
 function loadCh(i,doPlay){
   ai=i;_wantPlay=!!doPlay;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
-  clRefresh();
+  clRefresh();setMediaMeta();
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
   _justEnded=false;_abandonSent=false;_playSent=false;
@@ -1405,7 +1419,7 @@ function fmt(s){if(!isFinite(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Ma
 // 每站一頁，左右掃。vi＝睇緊邊一頁（0..N-1 係站，N 係完成頁）；ai＝播緊邊一站，兩者刻意分開：
 // 掃嚟睇唔會轉聲，要撳「播放此站」先會。掃頁、點點、IntersectionObserver 一律唔 call
 // jump／tapPlay／track，所以分析事件只喺音訊真係轉咗先射（PRD 分析合約）。
-let clOn=false, vi=0, _clIO=null, _clTo=-1, _clToT=0, _clOpener=null, _cmsSettled=false;
+let clOn=false, vi=0, _clIO=null, _clTo=-1, _clToT=0, _clOpener=null, _cmsSettled=false, _cachedAudio=new Set();   // _cachedAudio：checkDlState 量到喺快取嘅音檔
 const clPagesEl=()=>document.getElementById('cl-pages');
 // 每種語言只出有內容嗰個：CMS 欄位可以淨係填咗中文或者英文，唔可以令另一種語言出空框
 const clBi=(o,tag,cls,inner)=>['en','tc'].map(k=>o[k]?`<${tag} class="${cls} ${k}">${inner(o[k],k)}</${tag}>`:'').join('');
@@ -1485,6 +1499,10 @@ function clRefresh(){
     r.classList.toggle('dn',d);r.classList.toggle('now',k===ai);
     r.querySelector('.ovst').textContent=d?(lang==='zh'?'，已完成':', completed'):'';});
   // 睇緊播放中嗰站時收埋「正在播放」一行：頁面已經講咗係邊站，唔收嘅話固定元素超出 170px
+  // 「預先下載全部音頻」只出喺未下載、又未聽過嘅站（Ryan）：聽緊或者聽完嘅站再叫人下載會令人以為播唔到。
+  // 注意 iPhone 係串流播放，聽過唔代表存咗落機；呢度收起嘅只係提示字，唔係話嗰站可以離線
+  [...clPagesEl().children].forEach((sec,k)=>{const dl=sec.querySelector('.clp-dl');if(!dl||k>=n)return;
+    dl.hidden=_cachedAudio.has(new URL(CH[k].a,location.href).href)||DONE.has(k)||(k===ai&&(playing||_wantPlay||_playSent||aud.currentTime>0));});
   const now=document.getElementById('pb-now');if(now)now.hidden=clOn&&vi===ai&&!document.getElementById('bar').classList.contains('mini');
   document.querySelectorAll('.clp-img img').forEach(im=>im.alt=zh?im.dataset.altTc:im.dataset.altEn);
   // 完成頁任何時候都掃得到：未聽完就講聽咗幾多，唔好話「已完成全部」
@@ -2198,7 +2216,7 @@ async function checkDlState(){
   if(!('caches' in window))return;
   try{const c=await caches.open(CACHE);const k=await c.keys();document.getElementById('drdel').style.display=k.some(r=>r.url.endsWith('.mp3'))?'inline-block':'none';
     // 全部站都喺快取就收埋章節頁嗰句「下載全部音頻」
-    const have=new Set(k.map(r=>r.url));
+    const have=new Set(k.map(r=>r.url));_cachedAudio=have;clRefresh();
     const all=CH.length>0&&CH.every(ch=>have.has(new URL(ch.a,location.href).href));
     document.body.classList.toggle('all-dl',all);
     if(all){const b=document.getElementById('drdlbtn');b.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';b.disabled=true;}
