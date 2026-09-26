@@ -402,7 +402,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     // 由呢日起 QR 深連結唔再自動播，訪客撳播放先射 chapter_play。以前一掃 QR 就記一次播放，
     // 瀏覽器擋咗自動播都照記，所以呢日之後第一章播放數會跌，唔代表少咗人聽。
     // 🔴 上線當日改做真實上載日期。
-    $UI_SINCE = '2026-09-26';
+    $UI_SINCE = '2026-09-27';
 
     // exit 逐章拆開。POCKET 一定要同「真的離開」分家：它代表訪客把手機放進口袋繼續聽，
     // 舊版把它記成放棄，第一章因此虛高（222 放棄 + 58 聽完 > 270 播放）。
