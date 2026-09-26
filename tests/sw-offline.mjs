@@ -19,7 +19,7 @@ function load({ fetchImpl, cached = [], onLine = true }) {
 }
 function run(h, url) {
   let p; const t0 = Date.now();
-  h.fetch({ request: new Req(url), respondWith: x => (p = Promise.resolve(x)) });
+  h.fetch({ request: new Req(url), respondWith: x => (p = Promise.resolve(x)), waitUntil() {} });
   if (!p) return Promise.resolve({ res: new Response('NOT HANDLED'), ms: 0 });   // SW 冇接呢個請求＝瀏覽器自己去網絡，離線就開唔到
   // 8 秒都交唔到嘢＝主畫面 app 會黑屏（舊版 sw.js 就係咁）
   const never = new Promise(r => setTimeout(r, 8000, null)).then(() => ({ res: new Response('NEVER ANSWERED'), ms: 8000 }));
@@ -30,23 +30,28 @@ const pending = (p, ms) => Promise.race([p.then(() => false), new Promise(r => s
 let fails = 0;
 const check = (name, ok, extra = '') => { console.log(`${ok ? '✅' : '❌'} ${name} ${extra}`); if (!ok) fails++; };
 
-// 1. 頁面：fetch 一直唔返，有快取 → 3 秒左右交快取（以前永遠等，黑屏）
+// 1. 頁面：fetch 一直唔返（iPhone 飛行模式），有快取 → 即刻交快取（以前永遠等＝黑屏；之後等 3 秒＝黑屏約 5 秒）
 { const h = load({ fetchImpl: hang, cached: [['index.html', 'CACHED']] });
   const { res, ms } = await run(h, BASE + 'index.html');
-  check('頁面：fetch 卡住，有快取 → 交快取', (await res.text()) === 'CACHED' && ms >= 2900 && ms < 3600, `${ms}ms`); }
+  check('頁面：fetch 卡住，有快取 → 即刻交快取', (await res.text()) === 'CACHED' && ms < 200, `${ms}ms`); }
 // 2. 頁面：已知離線（onLine false）→ 即刻交快取
 { const h = load({ fetchImpl: hang, cached: [['index.html', 'CACHED']], onLine: false });
   const { res, ms } = await run(h, BASE + 'index.html');
   check('頁面：已知離線 → 即刻交快取', (await res.text()) === 'CACHED' && ms < 200, `${ms}ms`); }
 // 3. 頁面：冇快取、網絡慢 → 唔可以交空嘢，要繼續等網絡
 { const h = load({ fetchImpl: hang });
-  let p; h.fetch({ request: new Req(BASE + 'index.html'), respondWith: x => (p = Promise.resolve(x)) });
+  let p; h.fetch({ request: new Req(BASE + 'index.html'), respondWith: x => (p = Promise.resolve(x)), waitUntil() {} });
   check('頁面：冇快取 → 繼續等網絡，唔交空嘢', await pending(p, 3500)); }
-// 4. 頁面：網絡正常 → 用網絡版，兼更新快取
+// 4. 頁面：網絡正常、有舊快取 → 即刻交快取，背景更新快取（下次開就係新版；今次靠 SW_UPDATED 重新載入）
 { const h = load({ fetchImpl: async () => new Response('FRESH'), cached: [['index.html', 'OLD']] });
+  const { res, ms } = await run(h, BASE + 'index.html');
+  await new Promise(r => setTimeout(r, 50));
+  check('頁面：有快取 → 即刻交，背景更新', (await res.text()) === 'OLD' && ms < 200 && (await h.store.get(BASE + 'index.html').clone().text()) === 'FRESH', `${ms}ms`); }
+// 4b. 頁面：第一次嚟（冇快取）、網絡正常 → 網絡版，兼存低
+{ const h = load({ fetchImpl: async () => new Response('FRESH') });
   const { res } = await run(h, BASE + 'index.html');
   await new Promise(r => setTimeout(r, 50));
-  check('頁面：網絡正常 → 新版兼更新快取', (await res.text()) === 'FRESH' && (await h.store.get(BASE + 'index.html').clone().text()) === 'FRESH'); }
+  check('頁面：冇快取 → 網絡版兼存低', (await res.text()) === 'FRESH' && (await h.store.get(BASE + 'index.html').clone().text()) === 'FRESH'); }
 // 5. Google Fonts 樣式表：卡住又冇快取 → 3 秒後交空白 CSS，唔好阻住畫面
 { const h = load({ fetchImpl: hang });
   const { res, ms } = await run(h, 'https://fonts.googleapis.com/css2?family=X');

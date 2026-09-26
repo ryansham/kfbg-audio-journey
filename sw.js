@@ -1,5 +1,5 @@
-/* KFBG Audio Journey — SW v63 */
-const PAGE_CACHE='kfbg-pages-v63';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
+/* KFBG Audio Journey — SW v64 */
+const PAGE_CACHE='kfbg-pages-v64';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 // 字型唔會變，放一個唔跟版本嘅快取：以前放 PAGE_CACHE，每次改版都清走，改版後第一次離線開要多等 3 秒先出畫面
@@ -79,8 +79,18 @@ self.addEventListener('fetch',e=>{
       return Promise.race([net,new Promise(r=>setTimeout(r,3000,null))]).then(r=>r||empty()).catch(empty);
     })));
   } else if(isPage){
+    // 快取優先，背景去網絡攞新版存低（Ryan 2026-09-27：飛行模式冷開要黑屏約 5 秒）。以前網絡優先等 3 秒，iPhone 離線時
+    // fetch 唔會即刻失敗、onLine 又報 true，所以每次都等足。有新版時：瀏覽器開頁會自己檢查 sw.js → 新 SW 裝好發 SW_UPDATED →
+    // 頁面見到自己版本號舊咗就重新載入（見 index.html applyUpdate），所以唔會卡喺舊版；代價係改版後第一次開會先見舊版一兩秒
+    const isDoc=path===SCOPE||path.endsWith('/index.html');
     // no-cache forces revalidation so a heuristically-cached page can't outlive a release
-    const cleanReq=(path.endsWith('/index.html')||path===SCOPE)?new Request(url.origin+path,{cache:'no-cache'}):e.request;
-    e.respondWith(netFirst(cleanReq,3000,async()=>await caches.match(cleanReq)||await caches.match('./index.html'),res=>{if(res.ok)caches.open(PAGE_CACHE).then(c=>c.put(cleanReq,res));})); // 過咗 3 秒用快取：見 netFirst
+    const cleanReq=isDoc?new Request(url.origin+path,{cache:'no-cache'}):e.request;
+    const net=fetch(cleanReq).then(res=>{if(res.ok){const copy=res.clone();caches.open(PAGE_CACHE).then(c=>c.put(cleanReq,copy));}return res;});
+    net.catch(()=>{});
+    if(e.waitUntil)e.waitUntil(net.catch(()=>{}));   // 交咗快取之後，背景更新都要做完
+    e.respondWith((async()=>{
+      const hit=await caches.match(cleanReq)||(isDoc?await caches.match('./index.html'):null);   // 資料夾網址用 index.html 頂；manifest 等唔好
+      return hit||net.catch(()=>Response.error());   // 第一次嚟冇快取：等網絡
+    })());
   }
 });

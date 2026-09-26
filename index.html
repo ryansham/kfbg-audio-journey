@@ -24,11 +24,13 @@
 <meta name="twitter:image" content="https://audio-journey.kfbg.org/og-image.jpg"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/>
+<!-- 唔阻住第一次顯示：離線又未存低樣式表時，以前要等 3 秒先有畫面（見 sw.js）。載到先換字體 -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@300;400;500&family=Noto+Serif+TC:wght@400;500&display=swap" rel="stylesheet"/></noscript>
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v63
+   Single Page App — v64
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -1087,10 +1089,12 @@ function init(){
   // 章節頁嘅相等 CMS 有答覆（成功、失敗或者 4 秒）先載。iPhone 離線時 fetch 可以一直唔返，所以要有上限
   // 4 秒都未有答覆（或者答唔到）就先用上次存低嘅內容。iPhone 離線時 fetch 可以一直唔返，而每次改版都會清走
   // SW 快取入面嘅舊答覆：以前就一直停喺內置後備內容，站相全部空白。之後網絡答返，照用新內容
-  let cmsGot=false;
+  // 有上次存低嘅內容就即刻用（離線冷開唔使先見內置後備內容、相全部空白，4 秒後先換），網絡答返再換新
+  let cmsGot=false,cmsCached=false;
+  try{const cached=localStorage.getItem('kfbg-sanity-cache');if(cached){applyJourneyData(JSON.parse(cached));cmsCached=true;_cmsSettled=true;}}catch(e){}
   const settleCms=()=>{
     if(_cmsSettled)return;_cmsSettled=true;
-    if(!cmsGot){try{const cached=localStorage.getItem('kfbg-sanity-cache');if(cached)applyJourneyData(JSON.parse(cached));}catch(e){}}
+    if(!cmsGot&&!cmsCached){try{const cached=localStorage.getItem('kfbg-sanity-cache');if(cached)applyJourneyData(JSON.parse(cached));}catch(e){}}
     if(clOn)clLazy(vi);
   };
   setTimeout(settleCms,4000);
@@ -1470,9 +1474,8 @@ aud.addEventListener('pause',()=>{playing=false;syncBtns(false);});
 // （Ryan 真機）。Web Audio 唔會做鎖屏「正在播放」，鎖屏照顯示主音訊嘅狀態同位置。
 // ponytail: 背景冇嘢播滿 10 分鐘就停（當播緊嘢會耗電）；之後同以前一樣，要打開 app 先有聲
 const KA_MAX=10*60*1000;
-// 🧪 staging 測試（Ryan 2026-09-26）：撳鎖屏播放器開 app，會彈出另一個 Instagram 視窗兼自己播返；今日加保持喚醒之前冇見過。
-// 呢版暫時關咗保持喚醒，睇佢係咪元兇（Media Session 掣照留）。有結果就改返或者拆走，唔好帶上正式網站
-const KEEP_AWAKE=false;
+// 開關：2026-09-26 懷疑佢令撳鎖屏播放器時彈出其他主畫面書籤，關咗試，照彈（Ryan 真機，iOS 27.2 beta）→ 唔係佢，開返
+const KEEP_AWAKE=true;
 let _ac=null,_idleT0=0;
 // 第一次撳播放喺撳擊入面開（iPhone 要撳擊先准開聲），之後一直行；停咗（上限、來電打斷）就喺下次播放或者返 app 再開
 function acStart(){
@@ -2466,7 +2469,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=63;
+const APP_VER=64;
 let _stale=false,_upAsked=false,_reloadT=0,_dlBusy=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
