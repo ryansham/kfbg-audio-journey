@@ -1,5 +1,5 @@
-/* KFBG Audio Journey — SW v60 */
-const PAGE_CACHE='kfbg-pages-v60';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
+/* KFBG Audio Journey — SW v61 */
+const PAGE_CACHE='kfbg-pages-v61';   // 版本號要同 index.html 嘅 APP_VER 一樣（頁面靠佢判斷自己係咪舊版）
 const AUDIO_CACHE='kfbg-audio-v1';
 const IMAGE_CACHE='kfbg-images-v1';
 const PRECACHE=[

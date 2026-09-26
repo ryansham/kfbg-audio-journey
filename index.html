@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v60
+   Single Page App — v61
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -378,9 +378,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 .drlink svg{width:12px;height:12px;stroke:var(--mu);fill:none;stroke-width:2;flex-shrink:0;}
 .drst{flex:1 0 auto;font-size:0.72rem;color:var(--mu);margin-left:10px;text-align:right;}   /* 「檢查更新」結果：擺唔落同一行就成句落去下一行（大字級英文），唔好逼「檢查更新」摺行 */
 .drupd{flex-wrap:wrap;}
-/* 偵錯記錄（只限 staging，搵到鎖屏冇聲原因就拆走） */
-.dbgb{border:1px solid var(--bd);background:none;border-radius:8px;padding:8px 14px;min-height:40px;font:inherit;font-size:0.75rem;color:var(--tm);margin-right:8px;cursor:pointer;}
-#dbg-log{margin-top:10px;max-height:55vh;overflow:auto;white-space:pre-wrap;word-break:break-all;font:0.6rem/1.5 ui-monospace,Menlo,monospace;background:var(--sa);border-radius:8px;padding:10px;color:var(--tx);}
 .drsoc{display:flex;gap:9px;flex-wrap:wrap;}
 .drsb{width:38px;height:38px;border-radius:50%;background:var(--ol);display:flex;align-items:center;justify-content:center;text-decoration:none;}
 .drsb svg{width:15px;height:15px;fill:#fff;}
@@ -605,6 +602,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <li>The journey overview lists every stop. Open the map from a stop to see its number on the map.</li>
         <li>Scanning the QR code at a stop opens that stop’s page.</li>
         <li>With the screen locked, the walk carries on to the next stop, and the lock screen shows the stop’s name and number.</li>
+        <li>Pause on the lock screen and carry on from there later, without opening the app.</li>
         <li>Opened from your Home Screen, the app now loads even with no signal.</li>
         <li>Stops whose audio you have not downloaded remind you to download it first.</li>
         <li>If a stop fails to load, tap play to try again. It picks up where it stopped.</li>
@@ -618,6 +616,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <li>旅程總覽列出所有站點；在站點頁面打開地圖，會標示該站在地圖上的號碼。</li>
         <li>掃描站點的 QR 碼，會直接打開該站頁面。</li>
         <li>螢幕鎖定後仍會自動播放下一站，鎖定畫面亦會顯示站名及站號。</li>
+        <li>在鎖定畫面暫停後，可直接在鎖定畫面繼續播放，無須打開應用程式。</li>
         <li>從主畫面開啟時，即使沒有網絡亦能正常顯示。</li>
         <li>未下載音頻的站點，會提示你預先下載。</li>
         <li>音頻未能載入時，按播放即可重試，並由中斷處繼續。</li>
@@ -725,11 +724,6 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <div class="drlink drupd" role="button" tabindex="0" onclick="checkUpdate()"><span class="en">Check for updates</span><span class="tc">檢查更新</span><span class="drst" id="upd-st" aria-live="polite"></span></div>
       <div class="drlink" role="button" tabindex="0" onclick="goPage('changes')"><span class="en">What’s new</span><span class="tc">更新內容</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
       <div class="drlink" role="button" tabindex="0" onclick="goPage('privacy')"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
-    </div>
-    <div class="drs" id="dbg-sec" hidden>
-      <div class="drsl">偵錯記錄（只限 staging）</div>
-      <button class="dbgb" onclick="dbgCopy(this)">複製</button><button class="dbgb" onclick="dbgClear()">清除</button>
-      <pre id="dbg-log"></pre>
     </div>
   </div>
 </div>
@@ -1055,9 +1049,9 @@ let fs=(()=>{try{const v=localStorage.getItem('kfbg-fs2');if(v!==null)return +v;
 let view='home'; // 'home' | 'journey' | 'privacy' | 'changes'（後兩個見 PAGES）
 let ai=0, playing=false, plMode=false, si=0; // si=speed index
 const aud=document.getElementById('aud');
-// iPhone 主畫面 app 喺鎖屏暫停十幾秒，再由鎖屏撳播放：元素報「播緊」但冇聲，之後換站喺背景載唔落（Ryan 2026-09-26 真機，
-// 偵錯記錄重現；同 Apple 論壇 762582、WebKit 261858 同類）。話畀 WebKit 知呢版係播放類 app（Audio Session API，Safari 16.4+）：
-// Apple 修背景 AudioContext 被暫停（WebKit 261554）就係睇呢個設定。未證實修到，要真機試；唔支援嘅瀏覽器乜都唔做
+// 話畀 WebKit 知呢版係播放類 app（Audio Session API，Safari 16.4+）。背景保持喚醒嘅 AudioContext（見 acStart）靠佢先唔會
+// 一轉背景就被暫停（WebKit 261554）。真機（Ryan 2026-09-26）：單靠呢行，鎖屏暫停後要打開 app 先有聲；加埋 acStart 先修好。
+// 唔支援嘅瀏覽器乜都唔做
 try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
 
 // ════ INIT ════
@@ -1338,7 +1332,6 @@ function buildChapters(){
 // ════ AUDIO ════
 function loadCh(i,doPlay){
   ai=i;_wantPlay=!!doPlay;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
-  dbg('loadCh',`play=${!!doPlay} dl=${_cachedAudio.has(new URL(CH[i].a,location.href).href)} sw=${!!(navigator.serviceWorker&&navigator.serviceWorker.controller)}`);
   clRefresh();setMediaMeta();
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
@@ -1346,7 +1339,7 @@ function loadCh(i,doPlay){
   if(doPlay){
     sendPlay(i);
     showLd();
-    aud.play().then(()=>{dbg('play()ok');hideLd();_wantPlay=false;playing=true;syncBtns(true);}).catch(e=>{dbg('play()ERR',e&&e.name);hideLd();_wantPlay=false;playing=false;syncBtns(false);});
+    aud.play().then(()=>{hideLd();_wantPlay=false;playing=true;syncBtns(true);}).catch(()=>{hideLd();_wantPlay=false;playing=false;syncBtns(false);});
   }else{playing=false;syncBtns(false);}
 }
 let _justEnded=false,_abandonSent=false,_playSent=false,_wantPlay=false;   // _wantPlay：撳咗播放、仲等緊 play() 有結果
@@ -1394,7 +1387,6 @@ const hidden=()=>document.visibilityState==='hidden';
 function bgJump(i){hidden()?jump(i,plMode):setTimeout(()=>jump(i,plMode),600);}
 function jump(i,asPL){
   const follow=clOn&&vi===ai;          // 睇緊播放中嗰站 → 頁面跟住轉；掃咗走就唔拉返去
-  dbg('jump',`to#${CH[i]?CH[i].id:'?'} ${hidden()?'bg':'fg'}`);
   trackAbandon('switch');               // 要喺 aud.pause() 之前（見 trackAbandon 註解）；同一站重播都要記，見上
   if(asPL!==undefined)plMode=asPL;
   aud.pause();playing=false;syncBtns(false);
@@ -1427,7 +1419,7 @@ function togglePlay(){
       return;
     }
     sendPlay(ai);playing=true;
-    aud.play().catch(e=>{dbg('play()ERR',e&&e.name);playing=false;syncBtns(false);});   // 播唔到就唔好扮播緊
+    aud.play().catch(()=>{playing=false;syncBtns(false);});   // 播唔到就唔好扮播緊
   }
   syncBtns(playing);
 }
@@ -1446,41 +1438,6 @@ function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.to
 // 只有「尚未開始」先縮細，同狀態字眼一致（refreshNowState 嘅 'new'）。等緊開始播（_wantPlay）唔縮，
 // 換站時先 pause 再 loadCh 嗰一刻亦因此唔會閃
 function barMini(){document.getElementById('bar').classList.toggle('mini',!(playing||_wantPlay||_playSent||aud.currentTime>0));}
-// ════ 偵錯記錄（只限 staging）════
-// 診斷：iPhone 鎖屏暫停、等一陣、鎖屏再播、拉到尾，下一站畫面似播緊但冇聲（Ryan 2026-09-26）；喺 app 內拉到尾再鎖屏就正常。
-// 本機重現唔到（冇 iPhone、冇 iOS 模擬器），所以記低每個音訊事件：時間、前後台（V/H）、第幾站、播到邊、
-// readyState、networkState、暫停（P）定播緊（p）。存 localStorage，選單最底睇、複製。正式網站唔記唔顯示。搵到原因修好就拆走
-const DBG=SANITY_DATASET==='staging';
-let _dbgT=0;
-function dbg(ev,x){
-  if(!DBG)return;
-  try{
-    const d=new Date(),p=(n,w)=>String(n).padStart(w||2,'0');
-    const line=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(),3)} ${document.visibilityState==='hidden'?'H':'V'} ${ev} #${CH[ai]?CH[ai].id:'?'} t=${aud.currentTime.toFixed(1)}/${(aud.duration||0).toFixed(0)} rs${aud.readyState} ns${aud.networkState} ${aud.paused?'P':'p'}${_ac?' ac='+_ac.state:''} as=${navigator.audioSession?navigator.audioSession.type+(navigator.audioSession.state?'/'+navigator.audioSession.state:''):'-'}${x?' '+x:''}`;
-    const a=JSON.parse(localStorage.getItem('kfbg-dbg')||'[]');a.push(line);
-    localStorage.setItem('kfbg-dbg',JSON.stringify(a.slice(-400)));
-  }catch(e){}
-}
-function dbgLines(){try{return JSON.parse(localStorage.getItem('kfbg-dbg')||'[]');}catch(e){return [];}}
-function dbgShow(){
-  const s=document.getElementById('dbg-sec');if(!DBG||!s)return;
-  s.hidden=false;const pre=document.getElementById('dbg-log');
-  pre.textContent=dbgLines().slice(-150).join('\n')||'（未有記錄）';pre.scrollTop=pre.scrollHeight;
-}
-function dbgCopy(b){
-  const t=`${navigator.userAgent}\nAPP_VER ${APP_VER} · ${navigator.standalone?'主畫面':'Safari 分頁'}\n`+dbgLines().join('\n');
-  navigator.clipboard.writeText(t).then(()=>{b.textContent='已複製';},()=>{b.textContent='複製唔到，請截圖';});
-}
-function dbgClear(){try{localStorage.removeItem('kfbg-dbg');}catch(e){}dbgShow();}
-if(DBG){
-  ['loadstart','loadedmetadata','canplay','play','playing','pause','waiting','stalled','seeking','seeked','ended','emptied','abort','ratechange'].forEach(ev=>aud.addEventListener(ev,()=>dbg(ev)));
-  aud.addEventListener('error',()=>dbg('error','code'+(aud.error&&aud.error.code)));
-  aud.addEventListener('timeupdate',()=>{const n=Date.now();if(n-_dbgT>5000){_dbgT=n;dbg('tick');}});
-  document.addEventListener('visibilitychange',()=>dbg('vis'));
-  ['pagehide','pageshow','online','offline','focus','blur'].forEach(ev=>window.addEventListener(ev,()=>dbg(ev)));
-  ['freeze','resume'].forEach(ev=>document.addEventListener(ev,()=>dbg(ev)));
-  try{if(navigator.audioSession){dbg('audioSession',`type=${navigator.audioSession.type}`);navigator.audioSession.addEventListener('statechange',()=>dbg('audioSession',navigator.audioSession.state));}}catch(e){dbg('audioSession','ERR '+e.name);}
-}
 aud.addEventListener('timeupdate',()=>{if(aud.duration)refreshPBProg(aud.currentTime,aud.duration);});
 aud.addEventListener('loadedmetadata',()=>refreshPBProg(0,aud.duration));
 aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;if(CH.every((_,k)=>DONE.has(k)))document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
@@ -1493,13 +1450,13 @@ aud.addEventListener('pause',()=>{playing=false;syncBtns(false);if(hidden()&&!_i
 
 // ════ 鎖屏控制＋背景暫停時保持喚醒 ════
 // iPhone 主畫面 app 喺背景暫停 10 秒，iOS 就收咗佢出聲嘅權限兼令佢休眠；之後喺鎖屏撳播放，要打開 app 先交到入嚟
-// （Ryan 2026-09-26 真機偵錯記錄；Apple 論壇 762582 同類，對方自己接咗鎖屏掣都一樣中，所以單接掣唔夠）。
+// （Ryan 2026-09-26 真機，staging 事件記錄證實；Apple 論壇 762582 同類，對方自己接咗鎖屏掣都一樣中，所以單接掣唔夠）。
 // 做法：①鎖屏掣由我哋接（Media Session）；②Web Audio 一直輸出一個聽唔到嘅訊號（-80 dB 直流），iOS 當 app 仲出緊聲，唔會休眠。
 // 唔用第二粒 <audio> 播無聲檔：v59 試過，鎖屏當咗佢係正在播放，暫停咗都顯示「播緊」、撳掣次序亂晒，返 app 仲會自己播返
 // （Ryan 真機）。Web Audio 唔會做鎖屏「正在播放」，鎖屏照顯示主音訊嘅狀態同位置。
 // ponytail: 背景冇嘢播滿 10 分鐘就停（當播緊嘢會耗電）；之後同以前一樣，要打開 app 先有聲
 const KA_MAX=10*60*1000;
-var _ac=null,_idleT0=0;   // var 唔係 let：偵錯記錄喺呢行之前已經會讀 _ac，let 會撞 TDZ 靜靜食咗嗰行
+let _ac=null,_idleT0=0;
 // 第一次撳播放喺撳擊入面開（iPhone 要撳擊先准開聲），之後一直行；停咗（上限、來電打斷）就喺下次播放或者返 app 再開
 function acStart(){
   try{
@@ -1507,12 +1464,11 @@ function acStart(){
       const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
       _ac=new C();
       const src=_ac.createConstantSource();src.offset.value=0.0001;src.connect(_ac.destination);src.start();
-      _ac.addEventListener('statechange',()=>dbg('ac',_ac.state));
     }
-    if(_ac.state!=='running')_ac.resume().catch(e=>dbg('ac ERR',e&&e.name));
-  }catch(e){dbg('ac ERR',e&&e.name);}
+    if(_ac.state!=='running')_ac.resume().catch(()=>{});
+  }catch(e){}
 }
-function acCap(){if(_ac&&_ac.state==='running'&&_idleT0&&Date.now()-_idleT0>KA_MAX){_ac.suspend();dbg('ac cap','10min');}}
+function acCap(){if(_ac&&_ac.state==='running'&&_idleT0&&Date.now()-_idleT0>KA_MAX){_ac.suspend();}}
 setInterval(acCap,30000);   // 背景有 Web Audio 行緊，計時器照行
 document.addEventListener('visibilitychange',()=>{
   if(hidden()){if(!playing&&!_wantPlay&&!_idleT0)_idleT0=Date.now();}
@@ -1521,7 +1477,6 @@ document.addEventListener('visibilitychange',()=>{
 
 // 鎖屏播放／暫停：鎖屏顯示嘅就係主音訊嘅真狀態，照做就得；已經係嗰個狀態就唔郁（例如除 AirPods 送嘅暫停）
 function msToggle(want){
-  dbg('ms '+want);
   const on=playing||_wantPlay;
   if(want==='pause'?on:!on)togglePlay();
 }
@@ -1530,11 +1485,11 @@ if('mediaSession' in navigator){
   const H={
     play:()=>msToggle('play'),
     pause:()=>msToggle('pause'),
-    seekto:d=>{dbg('ms seekto',Math.round(d.seekTime));msSeek(d.seekTime);},
-    seekbackward:d=>{dbg('ms back');msSeek(aud.currentTime-(d.seekOffset||15));},
-    seekforward:d=>{dbg('ms fwd');msSeek(aud.currentTime+(d.seekOffset||15));},
+    seekto:d=>msSeek(d.seekTime),
+    seekbackward:d=>msSeek(aud.currentTime-(d.seekOffset||15)),
+    seekforward:d=>msSeek(aud.currentTime+(d.seekOffset||15)),
   };
-  for(const a in H){try{navigator.mediaSession.setActionHandler(a,H[a]);}catch(e){dbg('ms ERR',a);}}
+  for(const a in H){try{navigator.mediaSession.setActionHandler(a,H[a]);}catch(e){}}
 }
 // ponytail: a failed load used to change nothing on screen — spinner cleared, button back to idle,
 // no message. On the trail that reads as a dead button. Surface it and leave the retry to the user.
@@ -2274,7 +2229,6 @@ function drOpen(){
   const dr=document.getElementById('dr');if(!dr.classList.contains('op'))_drOpener=document.activeElement;
   dr.classList.add('op');document.getElementById('drov').classList.add('op');
   document.getElementById('upd-st').textContent='';   // 上次「檢查更新」嘅結果唔再準
-  dbgShow();
   dr.querySelector('.drclose')?.focus({preventScroll:true});   // 以前焦點留喺背後，Tab 要行勻成版先入到選單
 }
 function drClose(){
@@ -2486,7 +2440,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=60;
+const APP_VER=61;
 let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
