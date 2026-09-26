@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v55
+   Single Page App — v56
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -1346,6 +1346,7 @@ function loadCh(i,doPlay){
   }else{playing=false;syncBtns(false);}
 }
 let _justEnded=false,_abandonSent=false,_playSent=false,_wantPlay=false;   // _wantPlay：撳咗播放、仲等緊 play() 有結果
+let _heard=new Set();   // 今次開 app 播過嘅站：嗰站頁面唔再叫人下載（見 clRefresh）；刪除已下載音頻會清走
 // One chapter_play per chapter load, whichever route started it: loadCh(i,true) when a chapter is
 // tapped, togglePlay() when the play button starts audio that was loaded but never played — the
 // commonest case, since reopening the app restores the last chapter paused. Routing both through
@@ -1354,7 +1355,7 @@ let _justEnded=false,_abandonSent=false,_playSent=false,_wantPlay=false;   // _w
 // gets no event of its own.
 function sendPlay(i){
   if(_playSent)return;
-  _playSent=true;
+  _playSent=true;_heard.add(i);
   ensureWalk(); // before the event below, so this chapter_play carries the walk_id rather than ''
   track('chapter_play',{chapter_number:CH[i].id,is_offline:!navigator.onLine,playlist_mode:plMode});
 }
@@ -1605,10 +1606,11 @@ function clRefresh(){
     r.classList.toggle('dn',d);r.classList.toggle('now',k===ai);
     r.querySelector('.ovst').textContent=d?(lang==='zh'?'，已完成':', completed'):'';});
   // 睇緊播放中嗰站時收埋「正在播放」一行：頁面已經講咗係邊站，唔收嘅話固定元素超出 170px
-  // 「預先下載全部音頻」只出喺未下載、又未聽過嘅站（Ryan）：聽緊或者聽完嘅站再叫人下載會令人以為播唔到。
-  // 注意 iPhone 係串流播放，聽過唔代表存咗落機；呢度收起嘅只係提示字，唔係話嗰站可以離線
+  // 「預先下載全部音頻」只出喺未下載嘅站；今次開 app 播過嘅站都收埋（Ryan：播緊或者啱啱聽完嘅站再叫人下載，會令人以為播唔到）。
+  // 以前用 DONE（永久記住聽完邊站）：刪除已下載音頻之後提示都唔返嚟，隔幾日再嚟嘅訪客亦永遠見唔到（Ryan 2026-09-26）。
+  // iPhone 係串流播放，聽過唔代表存咗落機，所以只可以記今次，唔可以永久當已下載
   [...clPagesEl().children].forEach((sec,k)=>{const dl=sec.querySelector('.clp-dl');if(!dl||k>=n)return;
-    dl.hidden=_cachedAudio.has(new URL(CH[k].a,location.href).href)||DONE.has(k)||(k===ai&&(playing||_wantPlay||_playSent||aud.currentTime>0));});
+    dl.hidden=_cachedAudio.has(new URL(CH[k].a,location.href).href)||_heard.has(k)||(k===ai&&(playing||_wantPlay||aud.currentTime>0));});
   const now=document.getElementById('pb-now');if(now)now.hidden=clOn&&vi===ai&&!document.getElementById('bar').classList.contains('mini');
   document.querySelectorAll('.clp-img img').forEach(im=>im.alt=zh?im.dataset.altTc:im.dataset.altEn);
   // 完成頁任何時候都掃得到：未聽完就講聽咗幾多，唔好話「已完成全部」
@@ -2346,6 +2348,7 @@ async function delCache(){
   const b=document.getElementById('drdlbtn');b.disabled=false;
   b.innerHTML='<span class="en">Download all audio</span><span class="tc">下載全部音頻</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
   document.getElementById('drprog').style.display='none';document.getElementById('drpfill').style.width='0%';
+  _heard.clear();   // 刪咗就所有站都要再提示下載（播緊嗰站除外，見 clRefresh）
   checkDlState();
 }
 
@@ -2430,7 +2433,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=55;
+const APP_VER=56;
 let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
