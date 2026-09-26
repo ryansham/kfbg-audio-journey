@@ -31,9 +31,9 @@
    Single Page App — v52
    ══════════════════════════════════ */
 :root{
-  --ol:#4A5C3A;--olm:#3B4A2F;--oll:#8A9A78;
+  --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
   --cr:#F7F3EC;--sa:#EEEBE4;--bd:#D8D3CB;
-  --tx:#1E2418;--tm:#444;--mu:#7A7A6A;--gd:#C4A96A;
+  --tx:#1E2418;--tm:#444;--mu:#686858;--gd:#C4A96A;
   /* --gd 落喺深橄欖底只有 4.18:1，未夠 AA。呢個係佢嘅淺色版，專用喺 --olm 底上嘅細字。 */
   --gdl:#DCC694;
   --nav:54px;--fs:1rem;
@@ -96,7 +96,7 @@ body.env-staging #nav{top:0;}
 /* 收起掣：撳咗記住（kfbg-inst-hide），由目錄「加至主畫面」打開返；由主畫面 app 開就成段唔出（body.installed） */
 .inst-x{position:absolute;top:4px;right:4px;width:44px;height:44px;display:grid;place-items:center;background:none;border:0;border-radius:10px;color:var(--mu);cursor:pointer;}
 .inst-x svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
-.inst-hide .inst-block,.installed .inst-block,.installed .toc-inst{display:none;}
+.inst-hide .inst-block,.installed .inst-block,.installed .toc-inst,.installed .dr-note{display:none;}
 /* 首頁目錄：三段內容（為何創作、加至主畫面、選擇旅程）。「選擇旅程」排喺最底，要捲過兩大段先見到 */
 .toc{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:20px 14px 28px;}
 .toc button{border:1px solid var(--bd);border-radius:99px;background:none;padding:8px 15px;min-height:36px;font:inherit;font-size:0.8rem;color:var(--ol);cursor:pointer;}
@@ -108,7 +108,7 @@ body.env-staging #nav{top:0;}
 .inst-title{font-size:0.92rem;font-weight:500;color:var(--tx);margin-bottom:2px;}
 .inst-sub{font-size:0.72rem;color:var(--mu);}
 .inst-tabs{display:flex;gap:6px;margin-bottom:14px;}
-.inst-tab{flex:1;padding:7px;border:1px solid var(--bd);border-radius:8px;background:transparent;font-family:inherit;font-size:0.78rem;color:var(--mu);cursor:pointer;transition:all 0.18s;}
+.inst-tab{flex:1;min-height:44px;padding:7px;border:1px solid var(--bd);border-radius:8px;background:transparent;font-family:inherit;font-size:0.78rem;color:var(--mu);cursor:pointer;transition:all 0.18s;}
 .inst-tab.active{background:var(--ol);border-color:var(--ol);color:#fff;font-weight:500;}
 .inst-panel{display:flex;flex-direction:column;gap:10px;}
 .inst-step{display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--tm);line-height:1.55;}
@@ -266,6 +266,7 @@ body.env-staging #nav{top:0;}
    原型試過：16:9 相塞入近乎正方嘅框會左右切走四成，構圖唔同就睇落有大有細。 */
 .clp-img{aspect-ratio:16/9;max-height:62vh;margin-inline:auto;background:var(--sa);}   /* 打橫時相會窄過畫面，置中 */
 .clp-img img{width:100%;height:100%;object-fit:cover;display:block;}
+.clp-img img:not([src]){visibility:hidden;}   /* 延遲載入未開始時唔好印 alt 字 */
 .clp-body{padding:18px max(18px,env(safe-area-inset-right)) 0 max(18px,env(safe-area-inset-left));}
 .clp-body.noimg{padding-top:calc(70px + env(safe-area-inset-top));}
 .clp-kick{font-size:0.68rem;letter-spacing:0.14em;color:var(--ol);font-weight:500;}
@@ -277,7 +278,7 @@ body.env-staging #nav{top:0;}
 .clp-play svg{width:13px;height:13px;fill:#26311d;}
 .clp-play[hidden]{display:none;}
 /* 強烈建議每位訪客預先下載（山上訊號差）；全部站都下載咗就收埋（body.all-dl，見 checkDlState） */
-.clp-dl{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin:-8px 0 18px;padding:6px;background:none;border:0;
+.clp-dl{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:44px;margin:-10px 0 14px;padding:6px;background:none;border:0;
   font:inherit;font-size:0.8rem;color:var(--ol);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .clp-dl svg{width:14px;height:14px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .all-dl .clp-dl{display:none;}
@@ -350,11 +351,11 @@ body.env-staging #nav{top:0;}
 /* ════ DRAWER ════ */
 #drov{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0);pointer-events:none;transition:background 0.3s;}
 #drov.op{background:rgba(0,0,0,0.35);pointer-events:all;}
-#dr{position:fixed;top:0;right:0;bottom:0;width:min(310px,88vw);z-index:500;background:var(--cr);box-shadow:-8px 0 32px rgba(0,0,0,0.15);transform:translateX(100%);transition:transform 0.32s cubic-bezier(0.32,0.72,0,1);display:flex;flex-direction:column;overflow-y:auto;}
-#dr.op{transform:translateX(0);}
+#dr{position:fixed;top:0;right:0;bottom:0;width:min(310px,88vw);z-index:500;background:var(--cr);box-shadow:-8px 0 32px rgba(0,0,0,0.15);transform:translateX(100%);visibility:hidden;transition:transform 0.32s cubic-bezier(0.32,0.72,0,1),visibility 0s linear 0.32s;display:flex;flex-direction:column;overflow-y:auto;}
+#dr.op{transform:translateX(0);visibility:visible;transition:transform 0.32s cubic-bezier(0.32,0.72,0,1),visibility 0s;}   /* 收埋時 visibility:hidden：以前 14 粒掣喺畫面外照樣 Tab 得入去 */
 #dr:not(.op){box-shadow:none;}   /* 收埋時陰影會漏入畫面右邊，米色章節頁上面好明顯 */
 .drh{padding:13px 13px 11px;background:var(--ol);display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;}
-.drclose{background:rgba(255,255,255,0.12);border:none;color:rgba(247,243,236,0.7);width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;}
+.drclose{background:rgba(255,255,255,0.12);border:none;color:rgba(247,243,236,0.92);width:44px;height:44px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;}
 .drb{padding:14px;flex:1;}
 .dr-note{display:flex;gap:8px;align-items:flex-start;background:rgba(196,169,106,0.1);border:1px solid rgba(196,169,106,0.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:0.75rem;color:var(--mu);line-height:1.55;}
 .dr-note svg{flex-shrink:0;margin-top:2px;stroke:var(--gd);}
@@ -371,7 +372,7 @@ input.drsl2::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px
 input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--ol);border:none;cursor:pointer;}
 .drdlbtn{width:100%;padding:12px 15px;background:var(--ol);color:#fff;border:none;border-radius:11px;font-size:0.82rem;font-family:inherit;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:9px;margin-bottom:7px;transition:opacity 0.2s;}
 .drdlbtn:disabled{opacity:0.45;cursor:default;}
-.drdel{display:none;font-size:0.73rem;color:#c0392b;text-decoration:underline;cursor:pointer;background:none;border:none;font-family:inherit;padding:1px 0;margin-top:3px;}
+.drdel{display:none;min-height:44px;font-size:0.73rem;color:#c0392b;text-decoration:underline;cursor:pointer;background:none;border:none;font-family:inherit;padding:1px 0;margin-top:3px;}
 .drprog{margin-top:5px;display:none;}
 .drpbar{height:3px;background:var(--sa);border-radius:2px;overflow:hidden;}
 .drpfill{height:100%;background:var(--ol);width:0%;transition:width 0.3s;border-radius:2px;}
@@ -384,13 +385,13 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 .drsb svg{width:15px;height:15px;fill:#fff;}
 
 /* ════ DL MODAL ════ */
-#dlmod{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-#dlmod.op{opacity:1;pointer-events:all;}
+#dlmod{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;visibility:hidden;transition:opacity 0.25s,visibility 0s linear 0.25s;}
+#dlmod.op{opacity:1;pointer-events:all;visibility:visible;transition:opacity 0.25s,visibility 0s;}
 .dlbox{background:var(--cr);border-radius:17px 17px 0 0;padding:18px 15px 34px;width:100%;max-width:480px;}
 .dlbtit{font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--mu);margin-bottom:13px;}
 .dljrow{display:flex;align-items:center;justify-content:space-between;padding:12px 13px;background:var(--sa);border-radius:9px;margin-bottom:7px;}
 .dljname{font-size:0.82rem;color:var(--tm);flex:1;line-height:1.3;}
-.dljbtn{background:var(--ol);color:#fff;border:none;padding:6px 13px;border-radius:100px;font-size:0.73rem;font-family:inherit;cursor:pointer;}
+.dljbtn{background:var(--ol);color:#fff;border:none;min-height:44px;padding:6px 16px;border-radius:100px;font-size:0.73rem;font-family:inherit;cursor:pointer;}
 .dlcancel{display:block;width:100%;margin-top:11px;padding:11px;background:transparent;border:1px solid var(--bd);border-radius:9px;font-size:0.82rem;font-family:inherit;color:var(--mu);cursor:pointer;}
 
 /* ════ INSTALL BANNER ════ */
@@ -449,7 +450,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 <!-- NAV -->
 <nav id="nav">
   <img id="nav-logo" src="KFBG_Logo.png" alt="KFBG" onerror="this.style.opacity='0.01'"/>
-  <button id="nav-back" onclick="goHome()">
+  <button id="nav-back" onclick="navBack()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
     <span class="en">Journeys</span><span class="tc">旅程</span>
   </button>
@@ -494,7 +495,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <div class="inst-head">
         <div class="inst-ico"><img src="KFBG_Logo.png" alt="KFBG"/></div>
         <div>
-          <div class="inst-title"><span class="en">Save to Home Screen</span><span class="tc">加至主畫面</span></div>
+          <div class="inst-title"><span class="en">Add to Home Screen</span><span class="tc">加至主畫面</span></div>
           <div class="inst-sub"><span class="en">Listen offline · No App Store needed</span><span class="tc">可離線收聽 · 無需應用程式商店</span></div>
         </div>
       </div>
@@ -508,7 +509,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <div class="inst-step"><div class="inst-n">1</div><span class="en">Open this page in <strong>Safari</strong> (not Chrome)</span><span class="tc">請使用 <strong>Safari</strong> 開啟此頁面（非 Chrome）</span></div>
         <div class="inst-step"><div class="inst-n">2</div><span class="en">Tap the <strong>Share ↑</strong> icon at the bottom of Safari</span><span class="tc">點擊 Safari 底部的<strong>分享 ↑</strong>圖示</span></div>
         <div class="inst-step"><div class="inst-n">3</div><span class="en">Scroll down and tap <strong>"Add to Home Screen"</strong></span><span class="tc">向下捲動並點選<strong>「加至主畫面」</strong></span></div>
-        <div class="inst-step"><div class="inst-n">4</div><span class="en">Tap <strong>"Add"</strong> — then you can save this web app to your home page</span><span class="tc">點選<strong>「加入」</strong>——即可將此網頁應用程式儲存至主畫面</span></div>
+        <div class="inst-step"><div class="inst-n">4</div><span class="en">Tap <strong>"Add"</strong> — then you can save this web app to your home page</span><span class="tc">點選<strong>「加入」</strong>，即可將此網頁應用程式儲存至主畫面</span></div>
         <div class="inst-step"><div class="inst-n">5</div><span class="en">Afterwards, tap the <strong>top right ☰ menu</strong> to download all audio files and listen offline</span><span class="tc">之後，點擊右上角<strong>☰ 選單</strong>下載所有音頻，即可離線收聽</span></div>
       </div>
       <!-- Android steps -->
@@ -516,7 +517,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <div class="inst-step"><div class="inst-n">1</div><span class="en">Open this page in <strong>Chrome</strong> on your Android phone</span><span class="tc">使用 Android 手機的 <strong>Chrome</strong> 開啟此頁面</span></div>
         <div class="inst-step"><div class="inst-n">2</div><span class="en">Tap the <strong>three dots ⋮</strong> menu at the top right</span><span class="tc">點擊右上角的<strong>三點選單 ⋮</strong></span></div>
         <div class="inst-step"><div class="inst-n">3</div><span class="en">Tap <strong>"Add to Home Screen"</strong> or <strong>"Install App"</strong></span><span class="tc">點選<strong>「加至主畫面」</strong>或<strong>「安裝應用程式」</strong></span></div>
-        <div class="inst-step"><div class="inst-n">4</div><span class="en">Confirm the name and tap <strong>"Add"</strong> — then you can save this web app to your home page</span><span class="tc">確認名稱後點選<strong>「加入」</strong>——即可將此網頁應用程式儲存至主畫面</span></div>
+        <div class="inst-step"><div class="inst-n">4</div><span class="en">Confirm the name and tap <strong>"Add"</strong> — then you can save this web app to your home page</span><span class="tc">確認名稱後點選<strong>「加入」</strong>，即可將此網頁應用程式儲存至主畫面</span></div>
         <div class="inst-step"><div class="inst-n">5</div><span class="en">Afterwards, tap the <strong>top right ☰ menu</strong> to download all audio files and listen offline</span><span class="tc">之後，點擊右上角<strong>☰ 選單</strong>下載所有音頻，即可離線收聽</span></div>
       </div>
       <button class="inst-add" id="inst-add-btn" style="display:none;" onclick="ibInstall()"><span class="en">Add to Home Screen</span><span class="tc">加至主畫面</span></button>
@@ -524,7 +525,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 
     <div class="lib" id="jlib">
       <div class="lib-lbl"><span class="en">Choose your journey</span><span class="tc">選擇你的旅程</span></div>
-      <div class="jc" onclick="goJourney()">
+      <div class="jc" role="button" tabindex="0" onclick="goJourney()">
         <div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-card.jpg" loading="lazy" alt="Grounding Walk at the Lower Hillside of KFBG"/><div class="jbadge"><span class="en">Lower Hillside</span><span class="tc">下山區</span></div><div class="jnum">1</div></div>
         <div class="jbody">
           <div class="jkick"><span class="en">Journey 01 · Available now</span><span class="tc">旅程 01 · 現已開放</span></div>
@@ -532,7 +533,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
           <div class="jtitle tc nst">連結大地 — 下山區靜心漫步</div>
           <p class="jdesc en">Five stops through the lower hillside. Touch bark, breathe soil, listen to water.</p>
           <p class="jdesc tc">穿越下山區的五個站點。觸摸樹皮，呼吸土壤的氣息，聆聽流水聲。</p>
-          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span class="en">5 stops</span><span class="tc">5站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
+          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg><span class="en">5 stops</span><span class="tc">5 站</span></div><span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
         </div>
       </div>
       <div class="jc locked"><div class="ji"><img src="images/journeys/grounding-walk/grounding-walk-ch03.jpg" loading="lazy" alt=""/><div class="jnum">2</div><div class="jsoon"><span class="en">Coming soon</span><span class="tc">即將推出</span></div></div><div class="jbody"><div class="jkick"><span class="en">Journey 02</span><span class="tc">旅程 02</span></div><div class="jtitle en">Upper Farm Trail</div><div class="jtitle tc nst">上農場步道</div></div></div>
@@ -567,22 +568,22 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <h2 class="en">Records and analytics</h2>
       <h2 class="tc nst">記錄與分析</h2>
       <p class="en">Your interactions with this app are recorded for data analysis, so that the content can be improved. This includes technical information such as device type, browser and approximate area. We do not collect your name, email address or phone number, and we cannot identify you.</p>
-      <p class="tc">您在本應用程式內的互動會被記錄，用作數據分析，以改善內容。記錄範圍包括裝置類型、瀏覽器及大概地區等技術資料。當中不會收集您的姓名、電郵或電話號碼，我們亦無法辨識您的身分。</p>
+      <p class="tc">你在本應用程式內的互動會被記錄，用作數據分析，以改善內容。記錄範圍包括裝置類型、瀏覽器及大概地區等技術資料。當中不會收集你的姓名、電郵或電話號碼，我們亦無法辨識你的身分。</p>
 
       <h2 class="en">Cookies</h2>
       <h2 class="tc nst">Cookie</h2>
       <p class="en">This app uses a third-party analytics service, which stores cookies on your device. The data is read in aggregate only. You may block or delete these cookies in your browser settings — the app works normally without them.</p>
-      <p class="tc">本應用程式使用第三方分析服務，會在您的裝置存放 cookie。相關資料只作整體分析。您可在瀏覽器設定中封鎖或刪除；即使封鎖，本應用程式仍可正常使用。</p>
+      <p class="tc">本應用程式使用第三方分析服務，會在你的裝置存放 cookie。相關資料只作整體分析。你可在瀏覽器設定中封鎖或刪除；即使封鎖，本應用程式仍可正常使用。</p>
 
       <h2 class="en">Offline use</h2>
       <h2 class="tc nst">離線使用</h2>
       <p class="en">Downloaded audio is stored on your own device and is never uploaded. Deleting this app, or clearing this site's data in your browser, removes everything held on your device.</p>
-      <p class="tc">已下載的音頻儲存在您的裝置上，不會上傳。刪除本應用程式或在瀏覽器中清除本網站資料，即可移除裝置上儲存的一切。</p>
+      <p class="tc">已下載的音頻儲存在你的裝置上，不會上傳。刪除本應用程式或在瀏覽器中清除本網站資料，即可移除裝置上儲存的一切。</p>
 
       <div class="legal-foot">
         <p class="en">This notice covers the Self-guided Audio Journey. KFBG's general website terms and privacy policy apply in addition.</p>
         <p class="tc">本說明適用於自助語音旅程。嘉道理農場暨植物園網站的一般條款及私隱政策同時適用。</p>
-        <div class="drlink" onclick="openLink('terms')" style="margin-top:12px;"><span class="en">KFBG Terms &amp; Conditions</span><span class="tc">KFBG 條款及細則</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+        <div class="drlink" role="button" tabindex="0" onclick="openLink('terms')" style="margin-top:12px;"><span class="en">KFBG Terms &amp; Conditions</span><span class="tc">嘉道理農場暨植物園條款及細則</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
       </div>
     </div>
   </div>
@@ -608,7 +609,7 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
   <!-- 正在播放：撳一下跳去嗰站 -->
   <button id="pb-now" onclick="jumpToCurrent()"><span id="pbnow-st"></span><span id="pbnow-ttl"></span></button>
   <!-- 離線同錯誤提示：放喺播放條，唔理喺邊一頁都見到 -->
-  <div id="errbar"><span class="en">This stop could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此站載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
+  <div id="errbar" role="alert"><span class="en">This stop could not load. Check your connection and tap play again — or download the audio from the ☰ menu while you still have signal.</span><span class="tc">此站載入失敗。請檢查網絡後再次點擊播放；或趁仍有訊號時，於 ☰ 選單下載音頻。</span></div>
   <!-- 進度：兩邊時間 -->
   <div id="pb-prog">
     <span id="pbt2">0:00</span>
@@ -650,19 +651,19 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
         <span class="en">Please add this app to your Home Screen first — otherwise audio will not play offline even after downloading.</span>
         <span class="tc">請先將此應用程式加至主畫面，否則即使下載後仍無法離線收聽。</span>
       </div>
-      <button class="drdlbtn" id="drdlbtn" onclick="dlClick()"><span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+      <button class="drdlbtn" id="drdlbtn" onclick="dlClick()"><span class="en">Download all audio</span><span class="tc">下載全部音頻</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
       <div class="drprog" id="drprog"><div class="drpbar"><div class="drpfill" id="drpfill"></div></div><div class="drptxt" id="drptxt"></div></div>
       <button class="drdel" id="drdel" onclick="delCache()"><span class="en">Delete downloaded audio</span><span class="tc">刪除已下載音頻</span></button>
     </div>
     <div class="drs">
       <div class="drsl"><span class="en">Kadoorie Farm and Botanic Garden</span><span class="tc">嘉道理農場暨植物園</span></div>
-      <div class="drlink" onclick="openLink('home')"><span class="en">kfbg.org · Homepage</span><span class="tc">kfbg.org · 主頁</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-      <div class="drlink" onclick="openLink('events')"><span class="en">Events &amp; Programmes</span><span class="tc">活動及課程</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-      <div class="drlink" onclick="openLink('donate')"><span class="en">Donate</span><span class="tc">捐款</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="drlink" role="button" tabindex="0" onclick="openLink('home')"><span class="en">kfbg.org · Homepage</span><span class="tc">kfbg.org · 主頁</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="drlink" role="button" tabindex="0" onclick="openLink('events')"><span class="en">Events &amp; Programmes</span><span class="tc">活動及課程</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+      <div class="drlink" role="button" tabindex="0" onclick="openLink('donate')"><span class="en">Donate</span><span class="tc">捐款</span><svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
     </div>
     <div class="drs"><div class="drsl"><span class="en">Follow us</span><span class="tc">關注我們</span></div><div class="drsoc" id="drsoc"></div></div>
     <div class="drs">
-      <div class="drlink" onclick="goPrivacy()"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+      <div class="drlink" role="button" tabindex="0" onclick="goPrivacy()"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
     </div>
   </div>
 </div>
@@ -1113,6 +1114,9 @@ function syncA11y(){
   set('#map-fs-close',zh?'關閉地圖':'Close map');
   set('.drclose',     zh?'關閉選單':'Close menu');
   set('#pbt',         zh?'播放進度，可用左右方向鍵快轉':'Seek, use arrow keys');
+  set('.pbprev',      zh?'上一站':'Previous stop');
+  set('.pbnxt',       zh?'下一站':'Next stop');
+  set('#fssl',        zh?'文字大小':'Text size');
   set('#cl-back',     zh?'返回總覽':'Back to overview');
   set('#cl-menu',     zh?'選單':'Menu');
   set('#cl-map',      zh?'查看地圖':'View map');
@@ -1172,7 +1176,9 @@ function goJourney(){
 
 // ponytail: third view reuses the existing .view/.on machinery — no router, no new nav pattern.
 // Returning always goes home, which is where the drawer that opened it lives.
+let _privBack=null;
 function goPrivacy(){
+  _privBack={view,vi:clOn?vi:null};
   drClose();
   if(clOn)closeChapters();
   view='privacy';
@@ -1184,6 +1190,12 @@ function goPrivacy(){
   document.getElementById('views').scrollTop=0;
   setNavTitle();
   track('privacy_view');
+}
+
+function navBack(){
+  const b=_privBack;_privBack=null;
+  if(view==='privacy'&&b&&b.view==='journey'){goJourney();if(b.vi!==null)openChapters(b.vi);return;}
+  goHome();
 }
 
 // ════ BUILD CHAPTER CONTENT ════
@@ -1344,7 +1356,7 @@ function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.to
 function barMini(){document.getElementById('bar').classList.toggle('mini',!(playing||_wantPlay||_playSent||aud.currentTime>0));}
 aud.addEventListener('timeupdate',()=>{if(aud.duration)refreshPBProg(aud.currentTime,aud.duration);});
 aud.addEventListener('loadedmetadata',()=>refreshPBProg(0,aud.duration));
-aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
+aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;if(CH.every((_,k)=>DONE.has(k)))document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
 aud.addEventListener('play',()=>{playing=true;syncBtns(true);errBar(false);});
 // 載入中轉圈跟音訊本身：撳播放、由暫停繼續、播到一半網絡慢都會出。以前只有 loadCh 嗰條路先有，
 // 由 QR 入嚟撳播放、或者恢復暫停，山上等幾秒都冇任何反應
@@ -1376,9 +1388,9 @@ function refreshPBText(){
 // 「正在播放／已暫停 · 第 N 站」。syncBtns 每次播放狀態一變都會 call，所以用參數唔用 playing。
 function refreshNowState(on){
   const c=CH[ai];if(!c)return;
-  const st=on?'play':(_playSent||aud.currentTime>0)?'pause':'new';   // 預載咗但未播過＝尚未開始，唔係「已暫停」
+  const st=on?'play':aud.ended?'done':(_playSent||aud.currentTime>0)?'pause':'new';   // 預載咗但未播過＝尚未開始，唔係「已暫停」
   document.getElementById('pbnow-st').textContent=lang==='zh'
-    ?`${{play:'正在播放',pause:'已暫停',new:'尚未開始'}[st]} · 第 ${c.id} 站`:`${{play:'Now playing',pause:'Paused',new:'Not started'}[st]} · Stop ${c.id}`;
+    ?`${{play:'正在播放',pause:'已暫停',new:'尚未開始',done:'已播完'}[st]} · 第 ${c.id} 站`:`${{play:'Now playing',pause:'Paused',new:'Not started',done:'Finished'}[st]} · Stop ${c.id}`;
 }
 function refreshPBProg(cur,dur){
   const p=dur>0?(cur/dur)*100:0;
@@ -1417,7 +1429,7 @@ function buildChapterPages(){
       <h2 class="clp-title"><span class="en">${esc(c.title.en||c.sh.en)}</span><span class="tc">${esc(c.title.tc||c.sh.tc)}</span></h2>
       ${c.dur?`<div class="clp-meta">${fmt(c.dur)}</div>`:''}
       <button class="clp-play" data-i="${i}" onclick="tapPlay(${i})"><svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"/></svg><span class="en">Play stop ${esc(c.id)}</span><span class="tc">播放第${zhNum(c.id)}站</span></button>
-      <button class="clp-dl" onclick="clDownload()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="en">Download all audio for offline listening</span><span class="tc">下載全部音頻，離線也能收聽</span></button>
+      <button class="clp-dl" onclick="clDownload()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span class="en">Download all audio in advance</span><span class="tc">預先下載全部音頻</span></button>
       ${clBi(c.desc,'p','clp-desc',t=>esc(t))}
       ${clBi(c.prac,'div','prac',(t,k)=>`<div class="pracl">${k==='en'?'Mindful Practice':'正念練習'}</div><div class="pract">${esc(t)}</div>`)}
       ${c.tr?`<div class="clp-tr"><div class="clp-trl"><span class="en">Audio Transcript</span><span class="tc">音頻文字稿</span></div><div class="clp-trb en" style="font-style:italic;color:var(--mu);">Transcript is available in Chinese only.</div><div class="clp-trb">${esc(c.tr)}</div></div>`:''}
@@ -1447,7 +1459,9 @@ function buildChapterPages(){
 // CMS 未有答覆之前唔載：後備內容嘅相同 CMS 嘅唔同，載咗都係嘥（見 init 嘅 settleCms）
 function clLazy(i){if(!clOn||!_cmsSettled)return;for(let k=i-1;k<=i+1;k++){const im=clPagesEl().children[k]?.querySelector('img[data-src]');if(im){im.src=im.dataset.src;im.removeAttribute('data-src');}}}
 // 畫面外嘅頁 inert：Tab 唔會走入去（一入去就會捲走個畫面），讀屏亦唔會讀到其他站
-function clSetView(i){vi=i;[...clPagesEl().children].forEach((sec,k)=>sec.inert=k!==i);clLazy(i);clRefresh();clHeadSolid();
+function clSetView(i){vi=i;[...clPagesEl().children].forEach((sec,k)=>sec.inert=k!==i);clLazy(i);
+  if(clOn&&i<CH.length&&i!==ai&&!(playing||_wantPlay||_playSent||aud.currentTime>0))loadCh(i,false);
+  clRefresh();clHeadSolid();
   if(document.getElementById('map-fs').classList.contains('sh')&&!document.getElementById('map-fs-ttl').hidden)clMapTitle();}
 function clRefresh(){
   const n=CH.length, lbl=document.getElementById('cl-lbl'), dots=document.getElementById('cl-dots');
@@ -1455,7 +1469,7 @@ function clRefresh(){
   const zh=lang==='zh', f=document.activeElement;
   // 站號一律用 CMS 嘅 chapter_number（c.id），同路線地圖上嘅號碼、「正在播放 · 第 N 站」一致
   lbl.innerHTML=vi<n?`<span class="en">Stop ${esc(CH[vi].id)} of ${n}</span><span class="tc">第 ${esc(CH[vi].id)}／${n} 站</span>`
-                    :`<span class="en">Complete</span><span class="tc">完成</span>`;
+                    :CH.every((_,k)=>DONE.has(k))?`<span class="en">Complete</span><span class="tc">完成</span>`:`<span class="en">End</span><span class="tc">終點</span>`;
   [...dots.children].forEach((d,k)=>{
     d.classList.toggle('on',k===vi);d.classList.toggle('play',k===ai&&k!==vi);
     d.setAttribute('aria-label',zh?`第 ${CH[k].id} 站`:`Stop ${CH[k].id}`);
@@ -1475,7 +1489,7 @@ function clRefresh(){
     hEl.innerHTML=all?'<span class="en">Journey Complete</span><span class="tc">旅程完成</span>':'<span class="en">End of the journey</span><span class="tc">旅程終點</span>';
     document.getElementById('clc-p').innerHTML=all
       ?'<span class="en">You have walked every stop. Take a breath before you return.</span><span class="tc">你已完成全部站點。在回程前，靜靜感受此刻的覺察。</span>'
-      :`<span class="en">You have finished ${nd} of ${n} stops.</span><span class="tc">已完成 ${nd}／${n} 個站點。</span>`;
+      :`<span class="en">You have finished ${nd} of ${n} stops.</span><span class="tc">已完成 ${nd}／${n} 站。</span>`;
   }
   // 撳完「播放此站」或者「正在播放」，嗰粒掣會收埋；焦點唔好跌去 body，交畀控制條播放掣
   if(f&&f.hidden)document.getElementById('pbplay').focus({preventScroll:true});
@@ -2030,7 +2044,7 @@ function buildHomeCards(cards){
     const isPublished=c.status==='published';
     const imgSrc=c.img||(isPublished?'images/journeys/grounding-walk/grounding-walk-card.jpg':'images/journeys/grounding-walk/grounding-walk-ch02.jpg');
     if(isPublished){
-      return `<div class="jc" onclick="goJourney()">
+      return `<div class="jc" role="button" tabindex="0" onclick="goJourney()">
         <div class="ji"><img src="${esc(imgSrc)}" loading="lazy" alt="${esc(c.area_en||'')}"/>
           <div class="jbadge"><span class="en">${esc(c.area_en||'')}</span><span class="tc">${esc(c.area_tc||'')}</span></div>
           <div class="jnum">${c.num}</div></div>
@@ -2040,8 +2054,8 @@ function buildHomeCards(cards){
           <div class="jtitle tc nst">${esc(c.title_tc||'')}</div>
           <p class="jdesc en">${esc(c.tagline_en||'')}</p>
           <p class="jdesc tc">${esc(c.tagline_tc||'')}</p>
-          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span class="en">${c.stops||0} stops</span><span class="tc">${c.stops||0}站</span></div>
+          <div class="jfoot"><div class="jmeta"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span class="en">${c.stops||0} stops</span><span class="tc">${c.stops||0} 站</span></div>
             <span class="jcta en">Start →</span><span class="jcta tc">開始 →</span></div>
         </div>
       </div>`;
@@ -2063,8 +2077,28 @@ function buildHomeCards(cards){
 function buildSoc(){document.getElementById('drsoc').innerHTML=SOC.map(s=>`<a href="${s.h}" class="drsb" target="_blank" rel="noopener" aria-label="${s.l}"><svg viewBox="0 0 24 24">${s.s}</svg></a>`).join('');}
 
 // ════ DRAWER ════
-function drOpen(){document.getElementById('dr').classList.add('op');document.getElementById('drov').classList.add('op');}
-function drClose(){document.getElementById('dr').classList.remove('op');document.getElementById('drov').classList.remove('op');}
+let _drOpener=null;
+function drOpen(){
+  const dr=document.getElementById('dr');if(!dr.classList.contains('op'))_drOpener=document.activeElement;
+  dr.classList.add('op');document.getElementById('drov').classList.add('op');
+  dr.querySelector('.drclose')?.focus({preventScroll:true});   // 以前焦點留喺背後，Tab 要行勻成版先入到選單
+}
+function drClose(){
+  const dr=document.getElementById('dr'),was=dr.classList.contains('op');
+  dr.classList.remove('op');document.getElementById('drov').classList.remove('op');
+  const o=_drOpener;_drOpener=null;
+  if(was&&o&&o!==document.body&&document.contains(o)&&!o.closest('[inert]'))o.focus({preventScroll:true});
+}
+// Esc：關選單、全屏地圖。教學自己有 Esc（tutKey）
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  if(document.getElementById('dr').classList.contains('op'))drClose();
+  else if(document.getElementById('map-fs').classList.contains('sh'))mapFsClose();
+});
+// role=button 嘅 div（旅程卡、選單連結）：Enter／空白鍵當撳
+document.addEventListener('keydown',e=>{
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches?.('div[role=button]')){e.preventDefault();e.target.click();}
+});
 
 // ════ DOWNLOAD ════
 function buildDlList(){
@@ -2101,7 +2135,7 @@ async function runDl(files){
       btn.disabled=false;
       checkDlState(); // whatever did land is real — let the user delete/retry from a true state
       txt.textContent=lang==='zh'
-        ?`已下載 ${files.length-failed}/${files.length} — ${failed} 個章節失敗，請再試一次`
+        ?`已下載 ${files.length-failed}/${files.length}，${failed} 站下載失敗，請再試一次`
         :`Saved ${files.length-failed}/${files.length} — ${failed} failed, please retry`;
       return;
     }
@@ -2160,7 +2194,9 @@ async function checkDlState(){
   try{const c=await caches.open(CACHE);const k=await c.keys();document.getElementById('drdel').style.display=k.some(r=>r.url.endsWith('.mp3'))?'inline-block':'none';
     // 全部站都喺快取就收埋章節頁嗰句「下載全部音頻」
     const have=new Set(k.map(r=>r.url));
-    document.body.classList.toggle('all-dl',CH.length>0&&CH.every(ch=>have.has(new URL(ch.a,location.href).href)));
+    const all=CH.length>0&&CH.every(ch=>have.has(new URL(ch.a,location.href).href));
+    document.body.classList.toggle('all-dl',all);
+    if(all){const b=document.getElementById('drdlbtn');b.innerHTML='<span class="en">Downloaded ✓</span><span class="tc">已下載 ✓</span>';b.disabled=true;}
   }catch(e){}
 }
 async function delCache(){
@@ -2168,7 +2204,7 @@ async function delCache(){
   await caches.delete(CACHE);
   document.getElementById('drdel').style.display='none';
   const b=document.getElementById('drdlbtn');b.disabled=false;
-  b.innerHTML='<span class="en">Download audio chapters</span><span class="tc">下載音頻章節</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  b.innerHTML='<span class="en">Download all audio</span><span class="tc">下載全部音頻</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
   document.getElementById('drprog').style.display='none';document.getElementById('drpfill').style.width='0%';
   checkDlState();
 }
