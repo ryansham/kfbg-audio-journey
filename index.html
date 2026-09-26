@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v52
+   Single Page App — v53
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -66,6 +66,7 @@ span.en,span.tc{display:inline;}
 #env-badge.production{display:none;}
 #nav{position:fixed;top:0;left:0;right:0;z-index:300;height:var(--nav);background:rgba(247,243,236,0.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--bd);padding:0 max(12px,env(safe-area-inset-right)) 0 max(12px,env(safe-area-inset-left));display:flex;align-items:center;gap:10px;}
 #nav-logo{height:34px;cursor:pointer;flex-shrink:0;display:block;}
+.journey-view #nav-logo{display:none;}   /* 旅程頁唔出 logo，淨係首頁出（Ryan） */
 #nav-back{display:none;align-items:center;gap:5px;font-size:0.78rem;color:var(--ol);font-weight:500;cursor:pointer;flex-shrink:0;background:none;border:none;font-family:inherit;}
 #nav-back svg{width:18px;height:18px;}
 #nav-title{font-size:0.78rem;color:var(--mu);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
