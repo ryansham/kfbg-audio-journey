@@ -28,7 +28,7 @@
 <style>
 /* ══════════════════════════════════
    KFBG Self-guided Audio Journey
-   Single Page App — v54
+   Single Page App — v55
    ══════════════════════════════════ */
 :root{
   --ol:#4A5C3A;--olm:#3B4A2F;--oll:#5E6E4E;
@@ -378,6 +378,9 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
 .drlink svg{width:12px;height:12px;stroke:var(--mu);fill:none;stroke-width:2;flex-shrink:0;}
 .drst{flex:1 0 auto;font-size:0.72rem;color:var(--mu);margin-left:10px;text-align:right;}   /* 「檢查更新」結果：擺唔落同一行就成句落去下一行（大字級英文），唔好逼「檢查更新」摺行 */
 .drupd{flex-wrap:wrap;}
+/* 偵錯記錄（只限 staging，搵到鎖屏冇聲原因就拆走） */
+.dbgb{border:1px solid var(--bd);background:none;border-radius:8px;padding:8px 14px;min-height:40px;font:inherit;font-size:0.75rem;color:var(--tm);margin-right:8px;cursor:pointer;}
+#dbg-log{margin-top:10px;max-height:55vh;overflow:auto;white-space:pre-wrap;word-break:break-all;font:0.6rem/1.5 ui-monospace,Menlo,monospace;background:var(--sa);border-radius:8px;padding:10px;color:var(--tx);}
 .drsoc{display:flex;gap:9px;flex-wrap:wrap;}
 .drsb{width:38px;height:38px;border-radius:50%;background:var(--ol);display:flex;align-items:center;justify-content:center;text-decoration:none;}
 .drsb svg{width:15px;height:15px;fill:#fff;}
@@ -722,6 +725,11 @@ input.drsl2::-moz-range-thumb{width:22px;height:22px;border-radius:50%;backgroun
       <div class="drlink drupd" role="button" tabindex="0" onclick="checkUpdate()"><span class="en">Check for updates</span><span class="tc">檢查更新</span><span class="drst" id="upd-st" aria-live="polite"></span></div>
       <div class="drlink" role="button" tabindex="0" onclick="goPage('changes')"><span class="en">What’s new</span><span class="tc">更新內容</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
       <div class="drlink" role="button" tabindex="0" onclick="goPage('privacy')"><span class="en">Privacy &amp; Cookies</span><span class="tc">私隱與 Cookie</span><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></div>
+    </div>
+    <div class="drs" id="dbg-sec" hidden>
+      <div class="drsl">偵錯記錄（只限 staging）</div>
+      <button class="dbgb" onclick="dbgCopy(this)">複製</button><button class="dbgb" onclick="dbgClear()">清除</button>
+      <pre id="dbg-log"></pre>
     </div>
   </div>
 </div>
@@ -1326,6 +1334,7 @@ function buildChapters(){
 // ════ AUDIO ════
 function loadCh(i,doPlay){
   ai=i;_wantPlay=!!doPlay;aud.src=CH[i].a;aud.load();aud.playbackRate=SPDS[si];
+  dbg('loadCh',`play=${!!doPlay} dl=${_cachedAudio.has(new URL(CH[i].a,location.href).href)} sw=${!!(navigator.serviceWorker&&navigator.serviceWorker.controller)}`);
   clRefresh();setMediaMeta();
   localStorage.setItem('kfbg-pos',i);
   refreshPBText();refreshPBProg(0,CH[i].dur||0);syncBtns(false);
@@ -1333,7 +1342,7 @@ function loadCh(i,doPlay){
   if(doPlay){
     sendPlay(i);
     showLd();
-    aud.play().then(()=>{hideLd();_wantPlay=false;playing=true;syncBtns(true);}).catch(()=>{hideLd();_wantPlay=false;playing=false;syncBtns(false);});
+    aud.play().then(()=>{dbg('play()ok');hideLd();_wantPlay=false;playing=true;syncBtns(true);}).catch(e=>{dbg('play()ERR',e&&e.name);hideLd();_wantPlay=false;playing=false;syncBtns(false);});
   }else{playing=false;syncBtns(false);}
 }
 let _justEnded=false,_abandonSent=false,_playSent=false,_wantPlay=false;   // _wantPlay：撳咗播放、仲等緊 play() 有結果
@@ -1380,6 +1389,7 @@ const hidden=()=>document.visibilityState==='hidden';
 function bgJump(i){hidden()?jump(i,plMode):setTimeout(()=>jump(i,plMode),600);}
 function jump(i,asPL){
   const follow=clOn&&vi===ai;          // 睇緊播放中嗰站 → 頁面跟住轉；掃咗走就唔拉返去
+  dbg('jump',`to#${CH[i]?CH[i].id:'?'} ${hidden()?'bg':'fg'}`);
   trackAbandon('switch');               // 要喺 aud.pause() 之前（見 trackAbandon 註解）；同一站重播都要記，見上
   if(asPL!==undefined)plMode=asPL;
   aud.pause();playing=false;syncBtns(false);
@@ -1410,7 +1420,7 @@ function togglePlay(){
       return;
     }
     sendPlay(ai);playing=true;
-    aud.play().catch(()=>{playing=false;syncBtns(false);});   // 播唔到就唔好扮播緊
+    aud.play().catch(e=>{dbg('play()ERR',e&&e.name);playing=false;syncBtns(false);});   // 播唔到就唔好扮播緊
   }
   syncBtns(playing);
 }
@@ -1429,6 +1439,40 @@ function syncBtns(on){const pb=document.getElementById('pbplay');pb.classList.to
 // 只有「尚未開始」先縮細，同狀態字眼一致（refreshNowState 嘅 'new'）。等緊開始播（_wantPlay）唔縮，
 // 換站時先 pause 再 loadCh 嗰一刻亦因此唔會閃
 function barMini(){document.getElementById('bar').classList.toggle('mini',!(playing||_wantPlay||_playSent||aud.currentTime>0));}
+// ════ 偵錯記錄（只限 staging）════
+// 診斷：iPhone 鎖屏暫停、等一陣、鎖屏再播、拉到尾，下一站畫面似播緊但冇聲（Ryan 2026-09-26）；喺 app 內拉到尾再鎖屏就正常。
+// 本機重現唔到（冇 iPhone、冇 iOS 模擬器），所以記低每個音訊事件：時間、前後台（V/H）、第幾站、播到邊、
+// readyState、networkState、暫停（P）定播緊（p）。存 localStorage，選單最底睇、複製。正式網站唔記唔顯示。搵到原因修好就拆走
+const DBG=SANITY_DATASET==='staging';
+let _dbgT=0;
+function dbg(ev,x){
+  if(!DBG)return;
+  try{
+    const d=new Date(),p=(n,w)=>String(n).padStart(w||2,'0');
+    const line=`${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${p(d.getMilliseconds(),3)} ${document.visibilityState==='hidden'?'H':'V'} ${ev} #${CH[ai]?CH[ai].id:'?'} t=${aud.currentTime.toFixed(1)}/${(aud.duration||0).toFixed(0)} rs${aud.readyState} ns${aud.networkState} ${aud.paused?'P':'p'}${x?' '+x:''}`;
+    const a=JSON.parse(localStorage.getItem('kfbg-dbg')||'[]');a.push(line);
+    localStorage.setItem('kfbg-dbg',JSON.stringify(a.slice(-400)));
+  }catch(e){}
+}
+function dbgLines(){try{return JSON.parse(localStorage.getItem('kfbg-dbg')||'[]');}catch(e){return [];}}
+function dbgShow(){
+  const s=document.getElementById('dbg-sec');if(!DBG||!s)return;
+  s.hidden=false;const pre=document.getElementById('dbg-log');
+  pre.textContent=dbgLines().slice(-150).join('\n')||'（未有記錄）';pre.scrollTop=pre.scrollHeight;
+}
+function dbgCopy(b){
+  const t=`${navigator.userAgent}\nAPP_VER ${APP_VER} · ${navigator.standalone?'主畫面':'Safari 分頁'}\n`+dbgLines().join('\n');
+  navigator.clipboard.writeText(t).then(()=>{b.textContent='已複製';},()=>{b.textContent='複製唔到，請截圖';});
+}
+function dbgClear(){try{localStorage.removeItem('kfbg-dbg');}catch(e){}dbgShow();}
+if(DBG){
+  ['loadstart','loadedmetadata','canplay','play','playing','pause','waiting','stalled','seeking','seeked','ended','emptied','abort','ratechange'].forEach(ev=>aud.addEventListener(ev,()=>dbg(ev)));
+  aud.addEventListener('error',()=>dbg('error','code'+(aud.error&&aud.error.code)));
+  aud.addEventListener('timeupdate',()=>{const n=Date.now();if(n-_dbgT>5000){_dbgT=n;dbg('tick');}});
+  document.addEventListener('visibilitychange',()=>dbg('vis'));
+  ['pagehide','pageshow','online','offline','focus','blur'].forEach(ev=>window.addEventListener(ev,()=>dbg(ev)));
+  ['freeze','resume'].forEach(ev=>document.addEventListener(ev,()=>dbg(ev)));
+}
 aud.addEventListener('timeupdate',()=>{if(aud.duration)refreshPBProg(aud.currentTime,aud.duration);});
 aud.addEventListener('loadedmetadata',()=>refreshPBProg(0,aud.duration));
 aud.addEventListener('ended',()=>{DONE.add(ai);localStorage.setItem('kfbg-done',JSON.stringify([...DONE]));playing=false;syncBtns(false);_justEnded=true;track('chapter_complete',{chapter_number:CH[ai].id,listened_sec:Math.round(aud.duration||0)});if(ai<CH.length-1){bgJump(ai+1);}else{plMode=false;if(CH.every((_,k)=>DONE.has(k)))document.getElementById('comp')?.classList.add('sh');if(clOn&&vi===ai)clGo(CH.length,false);clRefresh();track('journey_complete',{chapters_done:DONE.size,walk_minutes:walkStart?Math.round((Date.now()-walkStart)/60000):0});endWalk();}});
@@ -2175,6 +2219,7 @@ function drOpen(){
   const dr=document.getElementById('dr');if(!dr.classList.contains('op'))_drOpener=document.activeElement;
   dr.classList.add('op');document.getElementById('drov').classList.add('op');
   document.getElementById('upd-st').textContent='';   // 上次「檢查更新」嘅結果唔再準
+  dbgShow();
   dr.querySelector('.drclose')?.focus({preventScroll:true});   // 以前焦點留喺背後，Tab 要行勻成版先入到選單
 }
 function drClose(){
@@ -2385,7 +2430,7 @@ function setupOffline(){
 
 // ════ SW ════
 // 頁面版本號：要同 sw.js 嘅 PAGE_CACHE（kfbg-pages-vNN）一樣，node tests/sw-offline.mjs 會驗
-const APP_VER=54;
+const APP_VER=55;
 let _stale=false,_upAsked=false,_reloading=false;
 function setupSW(){
   if(!('serviceWorker' in navigator))return;
