@@ -328,6 +328,16 @@ function mmss(float $seconds): string {
 
 function bi(string $zh, string $en): array { return ['zh' => $zh, 'en' => $en]; }
 
+// GA 嘅 deviceCategory＋operatingSystem → 我哋嘅五類。裝置表同來源細分共用。
+// 分類係 mobile 但作業系統報 Macintosh 呢類怪 UA 真係出現過：落「其他」，唔好當 iPhone
+function devBucket(string $cat, string $os): string {
+    if ($cat === 'desktop') return 'desktop';
+    if ($cat === 'tablet')  return 'tablet';
+    if ($cat === 'mobile' && $os === 'iOS')     return 'ios';
+    if ($cat === 'mobile' && $os === 'Android') return 'android';
+    return 'other';
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 
 /**
@@ -375,6 +385,9 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
         req(['customEvent:chapter_number', 'eventName', 'customEvent:exit'],
             ['customEvent:listened_sec', 'eventCount'], eventFilter($CHAPTER_EVENTS)),
         req(['customEvent:is_offline'], ['eventCount'], eventFilter(['audio_error']), null, 20),
+        // 來源 × 裝置：來源表每行下面按裝置再分。使用次數同互動時間逐個 session 只屬一個來源、一部裝置，
+        // 所以加得埋，每組加起來等於來源嗰行（人數就唔得：同一人可以用兩部機）
+        req(['sessionSourceMedium', 'deviceCategory', 'operatingSystem'], ['sessions', 'userEngagementDuration']),
     ]));
 
     $tot     = rows($batchA[0]);
@@ -392,6 +405,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     $exitRow = rows(isset($batchC[1]) ? $batchC[1] : []);
     $secRow  = rows(isset($batchC[2]) ? $batchC[2] : []);
     $errRow  = rows(isset($batchC[3]) ? $batchC[3] : []);
+    $srcDevRows = rows(isset($batchC[4]) ? $batchC[4] : []);
 
     // ── 09-24 起才有的欄位 ──
     $FIELDS_SINCE  = '2026-09-24';
@@ -544,6 +558,31 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     foreach ($srcRows as $m) { $srcTotal += (int)$m[0]; }
     if ($srcTotal <= 0) $srcTotal = max($sessions, 1);
 
+    // 來源 × 裝置。唔喺 $srcName 嘅來源歸入「其他」，同來源表嗰行一樣
+    $srcDev = [];
+    foreach ($srcDevRows as $k => $m) {
+        $parts = explode('|', (string)$k);
+        $sk = isset($srcName[$parts[0] ?? '']) ? $parts[0] : '__other';
+        $b  = devBucket($parts[1] ?? '', $parts[2] ?? '');
+        if (!isset($srcDev[$sk][$b])) $srcDev[$sk][$b] = [0, 0.0];
+        $srcDev[$sk][$b][0] += (int)$m[0];
+        $srcDev[$sk][$b][1] += (float)($m[1] ?? 0);
+    }
+    $devLabel = [
+        'ios' => bi('iPhone／iPad', 'iPhone / iPad'), 'android' => bi('Android 手機', 'Android phone'),
+        'tablet' => bi('平板電腦', 'Tablet'), 'desktop' => bi('桌面電腦', 'Desktop computer'), 'other' => bi('其他', 'Other'),
+    ];
+    // 佔比以該來源為基數（每組加埋 100），由多到少排
+    $devOf = function (string $sk) use ($srcDev, $devLabel): array {
+        $out = [];
+        foreach (($srcDev[$sk] ?? []) as $b => $v) {
+            if ($v[0] <= 0) continue;
+            $out[] = ['name' => $devLabel[$b], 'sessions' => $v[0], 'pct' => '', 'avg' => mmss($v[1] / $v[0])];
+        }
+        usort($out, function ($a, $b) { return $b['sessions'] <=> $a['sessions']; });
+        return $out ? withPcts($out) : [];
+    };
+
     $sources = []; $otherSessions = 0; $internal = ['sessions' => 0, 'avg' => '—'];
     foreach ($srcRows as $name => $m) {
         $s = (int)$m[0];
@@ -558,11 +597,12 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
             'pct' => '',        // 下面一次過算，令一組加起來剛好 100
             'avg' => $avg,
             'hi'  => !$isInternal,
+            'devices' => $devOf($name),
         ];
     }
     if ($otherSessions > 0) {
         $sources[] = ['name' => bi('其他', 'Other'), 'tag' => null, 'sessions' => $otherSessions,
-                      'pct' => '', 'avg' => '—', 'hi' => false];
+                      'pct' => '', 'avg' => '—', 'hi' => false, 'devices' => $devOf('__other')];
     }
     $sources = withPcts($sources);
     // 文字那句「X% 來自 QR」直接讀表格那一行，不要另外算一次 —— 分開算的話，
@@ -581,13 +621,7 @@ function buildPayload(callable $fetch, string $start, string $end, DateTimeZone 
     ];
     foreach ($devRows as $k => $m) {
         $parts = explode('|', (string)$k);
-        $cat = $parts[0] ?? ''; $os = $parts[1] ?? '';
-        $n = (int)$m[0];
-        if ($cat === 'desktop')                       $devBuckets['desktop']['n'] += $n;
-        elseif ($cat === 'tablet')                    $devBuckets['tablet']['n']  += $n;
-        elseif ($cat === 'mobile' && $os === 'iOS')   $devBuckets['ios']['n']     += $n;
-        elseif ($cat === 'mobile' && $os === 'Android') $devBuckets['android']['n'] += $n;
-        else                                          $devBuckets['other']['n']   += $n;
+        $devBuckets[devBucket($parts[0] ?? '', $parts[1] ?? '')]['n'] += (int)$m[0];
     }
     $devTotal = 0;
     foreach ($devBuckets as $b) { $devTotal += $b['n']; }

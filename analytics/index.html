@@ -153,6 +153,15 @@ td.n,th.n{text-align:right;}
 td.n{font-weight:500;}
 tr:last-child td{border-bottom:none;}
 tbody tr.hi td{background:var(--card-2);}
+/* 來源下面嘅裝置細分：縮入、細字，同來源行分得開 */
+tbody tr.sub td{padding-top:6px;padding-bottom:6px;font-size:.84rem;color:var(--ink-2);border-bottom-style:dashed;}
+tbody tr.sub td:first-child{padding-left:34px;}
+tbody tr.sub td.n{font-weight:400;}
+tbody tr.sub:last-child td{border-bottom:none;}   /* 唔加：上面 dashed 會蓋返「最後一行冇底線」，變粗虛線 */
+/* 長條＋數字（Ryan）：條長＝佔該來源嘅比例，同「佔比」一欄同一個數 */
+.dvn{display:block;}
+.dvb{display:block;height:8px;margin-top:5px;max-width:260px;background:var(--rule-soft);border-radius:4px;overflow:hidden;}
+.dvb i{display:block;height:100%;background:var(--data-strong);border-radius:4px;}
 .tag{display:inline-block;font-size:.72rem;padding:1px 8px;border-radius:99px;border:1px solid var(--rule);color:var(--ink-3);margin-left:7px;vertical-align:1px;}
 
 .twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:12px;}
@@ -300,7 +309,7 @@ const T = {
     ex_switch: '換去另一章', ex_paused: '暫停之後關閉', ex_pocket: '熄屏後繼續聽', ex_unlab: '改動前，分不出',
     sinceOnly: '這一項由 9 月 24 日才開始記錄，暫時未有足夠數據。',
     noData: '這段期間沒有足夠的章節記錄可以計算。',
-    cap_sources: '「平均使用時間」與上面一樣是互動時間，只計算螢幕亮著的部分。佔比以表內三行的總和為基數，所以加起來是 100%。',
+    cap_sources: '「平均使用時間」與上面一樣是互動時間，只計算螢幕亮著的部分。每個來源下面按裝置再分。來源的佔比以各來源的總和為基數；裝置的佔比以該來源為基數。兩者各自加起來都是 100%。',
     unknownCh: (c, a) => `另有 ${c} 次聽完、${a} 次中途離開沒有帶章節編號，未計入上圖 —— 分析系統登記這個欄位之前的記錄，事後不會補上。`,
     lede_funnel: (d, x) => `<strong>每 ${x.playRatio ? x.playRatio : '幾'} 位掃描 QR code 的訪客，只有一位真正按下播放。</strong>這是目前最值得處理的一點。頁面載入正常，不是技術故障；比較可能是進入後不夠清楚下一步要做什麼，或者現場環境不方便即時收聽。`,
     lede_chapters: (d, x) => `聽完的次數逐章遞減：<strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>。${x.listenedPctKnown ? `訪客真正中途退出某一章時，平均只聽了該章的 ${x.listenedPct}。` : ''}`,
@@ -365,7 +374,7 @@ const T = {
     ex_switch: 'Tapped another chapter', ex_paused: 'Paused, then closed', ex_pocket: 'Screen off, kept listening', ex_unlab: 'Before the change, not separable',
     sinceOnly: 'This is only recorded from 24 September and there is not enough data yet.',
     noData: 'There are not enough chapter records in this period to calculate it.',
-    cap_sources: '"Average time" is engagement time, as above: it counts only the part with the screen on. Shares are calculated against the sum of the three rows in this table, so they add to 100%.',
+    cap_sources: '"Average time" is engagement time, as above: it counts only the part with the screen on. Each source is broken down by device underneath. A source\'s share is calculated against the sum of all sources; a device\'s share is calculated against its own source. Each set adds to 100%.',
     unknownCh: (c, a) => `A further ${c} completions and ${a} part-way exits carry no chapter number and are not in the chart above — records made before that field was registered in Analytics do not get one added afterwards.`,
     lede_funnel: (d, x) => `<strong>Only one in ${x.playRatio ? x.playRatio : 'a few'} visitors who scan the QR code actually presses play.</strong> This is the point most worth addressing. The page loads correctly, so this is not a technical fault; more likely it is not clear enough what to do next, or the setting makes listening there and then awkward.`,
     lede_chapters: (d, x) => `Completions fall away chapter by chapter: <strong>${d.chapters.map(c => c.complete).join(' → ')}</strong>.${x.listenedPctKnown ? ` When a visitor genuinely leaves a chapter part-way, they have on average heard ${x.listenedPct} of it.` : ''}`,
@@ -708,7 +717,11 @@ function render() {
         <thead><tr><th>${T_.th_source}</th><th class="n">${T_.th_sessions}</th><th class="n">${T_.th_pct}</th><th class="n">${T_.th_avg}</th></tr></thead>
         <tbody>${d.sources.map(s =>
           `<tr class="${s.hi ? 'hi' : ''}"><td>${esc(L(s.name))}${s.tag ? `<span class="tag">${esc(L(s.tag))}</span>` : ''}</td>` +
-          `<td class="n">${s.sessions}</td><td class="n">${esc(s.pct)}</td><td class="n">${esc(s.avg)}</td></tr>`).join('')}</tbody>
+          `<td class="n">${s.sessions}</td><td class="n">${esc(s.pct)}</td><td class="n">${esc(s.avg)}</td></tr>` +
+          // 每個來源下面按裝置再分（佔比以該來源為基數）
+          (s.devices || []).map(v =>
+            `<tr class="sub"><td><span class="dvn">${esc(L(v.name))}</span><span class="dvb" aria-hidden="true"><i style="width:${esc(v.pct)}"></i></span></td><td class="n">${v.sessions}</td><td class="n">${esc(v.pct)}</td><td class="n">${esc(v.avg)}</td></tr>`).join('')
+        ).join('')}</tbody>
       </table>
     </div>
     <p class="cap">${T_.cap_sources}</p>

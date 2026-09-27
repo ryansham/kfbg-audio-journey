@@ -104,6 +104,17 @@ $batchC = [
         '2|chapter_abandon|hidden_paused' => [300, 2],
     ], 2),
     rep(['false' => [5], 'true' => [3]], 1),         // audio_error × is_offline
+    rep([                                            // 來源 × 裝置：次數、互動秒數（QR 加埋 = 102，同來源表一致）
+        'btl / qr-code|mobile|iOS'             => [60, 5000],
+        'btl / qr-code|mobile|Android'         => [38, 3500],
+        'btl / qr-code|tablet|iOS'             => [3, 400],
+        'btl / qr-code|desktop|Windows'        => [1, 43],
+        '(direct) / (none)|desktop|Macintosh'  => [12, 6000],
+        '(direct) / (none)|mobile|iOS'         => [3, 1478],
+        // 唔喺名單嘅來源要歸入「其他」嗰組，同來源表一樣
+        '(not set)|mobile|iOS'                 => [2, 11],
+        'qr-codes.io / referral|mobile|Android'=> [1, 585],
+    ], 3),
 ];
 
 $calls = 0;
@@ -240,6 +251,17 @@ check('百分比加埋 100', array_sum(array_map(function ($d) {
 check('怪 UA 落「其他」不落 iPhone', $out['devices'][4]['sessions'], 1);
 check('怪 UA 那一行真係「其他」', $out['devices'][4]['name']['zh'], '其他');
 check('桌面把 Mac 同 Windows 加埋', $out['devices'][2]['sessions'], 14);
+
+echo "\n來源 × 裝置\n";
+$qrRow = null; $otherRow = null;
+foreach ($out['sources'] as $s) { if ($s['name']['zh'] === '園區 QR code') $qrRow = $s; if ($s['name']['zh'] === '其他') $otherRow = $s; }
+check('QR 下面按裝置由多到少', array_map(function ($d) { return $d['name']['zh']; }, $qrRow['devices']),
+      ['iPhone／iPad', 'Android 手機', '平板電腦', '桌面電腦']);
+check('QR 裝置次數加埋等於 QR 嗰行', array_sum(array_column($qrRow['devices'], 'sessions')), $qrRow['sessions']);
+check('QR 裝置百分比加埋 100', array_sum(array_map(function ($d) { return (int)rtrim($d['pct'], '%'); }, $qrRow['devices'])), 100);
+check('QR iPhone 佔 QR 嘅 59%（60/102，唔係佔全部）', $qrRow['devices'][0]['pct'], '59%');
+check('QR iPhone 平均使用時間 5000/60 秒', $qrRow['devices'][0]['avg'], '1:23');
+check('未列名來源歸入「其他」組', array_column($otherRow['devices'], 'sessions'), [2, 1]);
 
 echo "\n訪客地區\n";
 check('只列頭四個加「其他地區」', count($out['places']), 5);
